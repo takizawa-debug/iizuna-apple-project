@@ -1,7 +1,7 @@
 /* --- config.js --- */
 window.LZ_CONFIG = {
   // メインコンテンツ用GAS
-  ENDPOINT: "https://script.google.com/macros/s/AKfycbwqYo2uMrlPWXw99BBldUrEXGuZYGkaRjphpH8FgVF5FTSRWMMKZM77EAva0hZdR8TReg/exec",
+  ENDPOINT: "https://script.google.com/macros/s/AKfycbzcKvhSQDYFRWPg53d-SmnSLKztiYK7JwH64VAlvF6l_7q5394Lb04BHBRi5dKk6HWBsA/exec",
 
   // アナリティクス用設定
   ANALYTICS: {
