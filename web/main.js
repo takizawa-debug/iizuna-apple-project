@@ -251,7 +251,7 @@ function cardHTML(it, pad, groupKey){
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
         alt="${esc(title)}"
-        onerror="console.error('Image load failed:', this.src); this.parentElement.classList.add('is-empty');">` : ""}
+        onerror="this.parentElement?.classList.add('is-empty');">` : ""}
       </div>
       <div class="lz-body">
         <h3 class="lz-title-sm">${esc(title)}</h3>
@@ -311,7 +311,7 @@ function showModalFromCard(card){
   const main=card.dataset.main;
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
   const gallery=[main, ...subs].filter(Boolean);
-  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}"></div>` : '';
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(esc(t))}"></div>` : '';
   const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="">`).join("")}</div>` : '';
   const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
   const dlUrl = card.dataset.dl || "";
@@ -345,11 +345,11 @@ function showModalFromCard(card){
       try{
         await ensurePdfLibs(); const url = shareUrlFromCard(card);
         const clone = MODAL.cloneNode(true); clone.querySelector(".lz-actions")?.remove(); clone.style.maxHeight="none"; clone.style.height="auto"; clone.style.width="800px";
-        clone.querySelectorAll("img").forEach(img=>{ img.setAttribute("crossorigin","anonymous"); img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); });
+        clone.querySelectorAll("img").forEach(img=>{ img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); });
         document.body.appendChild(clone);
         const qrDiv = document.createElement("div"); new QRCode(qrDiv,{ text:url, width:64, height:64, correctLevel: QRCode.CorrectLevel.L });
         const qrCanvas = qrDiv.querySelector("canvas"), qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
-        const canvas = await html2canvas(clone,{scale:2, backgroundColor:"#ffffff", useCORS:true, allowTaint:false}); document.body.removeChild(clone);
+        const canvas = await html2canvas(clone,{scale:2, backgroundColor:"#ffffff", useCORS:false, allowTaint:true}); document.body.removeChild(clone);
         const { jsPDF } = window.jspdf; const pdf = new jsPDF("p","mm","a4");
         const margin=12, pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight(), innerW=pageW-margin*2, innerH=pageH-margin*2;
         const imgData = canvas.toDataURL("image/png"), imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
