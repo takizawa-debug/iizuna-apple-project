@@ -450,9 +450,14 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   "use strict";
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
 
-  // 設定（config.jsに移行することも可能です）
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbyMsHN1c9KSk3DUfU94Z7Axr18-8TYAEOWuJSGh3_upEFNAAc4Z9PmrA3uXbbRoGACXSg/exec";
-  const VISITOR_COOKIE = "apz_vid_v1", VISITOR_LSKEY = "apz_vid_ls_v1", SESSION_TTL_MS = 30 * 60 * 1000;
+  // --- config.js から設定を読み込む ---
+  const CONF = window.LZ_CONFIG?.ANALYTICS;
+  if (!CONF) return; // 設定がない場合は動かさない安全策
+
+  const ENDPOINT = CONF.ENDPOINT;
+  const VISITOR_COOKIE = CONF.VISITOR_COOKIE;
+  const VISITOR_LSKEY = CONF.VISITOR_LSKEY;
+  const SESSION_TTL_MS = CONF.SESSION_TTL;
   
   const D = document, W = window, N = navigator, S = screen, now = () => Date.now();
   const text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
