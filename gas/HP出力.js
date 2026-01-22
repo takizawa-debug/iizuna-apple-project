@@ -9,7 +9,14 @@ const DATA_START_ROW = 3;  // データは3行目～
 /***** 列名マッピング *****/
 const COL = {
   L1: 'L1', L2: 'L2', L3: 'L3_LABEL', TITLE: 'タイトル', LEAD: 'リード文', BODY: '本文',
-  MAIN: '画像1', SUB1: '画像2', SUB2: '画像3', SUB3: '画像4', SUB4: '画像5', SUB5: '画像6',
+  // 画像
+  MAIN: '画像1', 
+  SUB1: '画像2', 
+  SUB2: '画像3', 
+  SUB3: '画像4', 
+  SUB4: '画像5', 
+  SUB5: '画像6',
+  // リンク
   LINK: 'ホームページ', EC: 'ECサイト',
   REL1_URL: '関連記事1_URL', REL1_TITLE: '関連記事1_タイトル',
   REL2_URL: '関連記事2_URL', REL2_TITLE: '関連記事2_タイトル',
@@ -39,19 +46,20 @@ function _pick(row, idx, key) {
 }
 
 /**
- * ★追加：画像URLを配信に最適な形に変換する
+ * ★画像URL変換ロジック（強化版）
  */
 function _finalizeImageUrl(url) {
   if (!url) return "";
-  let s = String(url).trim();
+  var s = String(url).trim();
   if (!s) return "";
 
-  // 1. ペライチS3ドメインを高速なCDNドメインに置換
-  s = s.replace("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/", "https://cdn.peraichi.com/");
+  // 1. ペライチS3ドメインをCDNドメインに置換 (正規表現で確実に)
+  var s3Pattern = /^https?:\/\/s3-ap-northeast-1\.amazonaws\.com\/s3\.peraichi\.com\//i;
+  s = s.replace(s3Pattern, "https://cdn.peraichi.com/");
 
   // 2. Googleドライブの共有リンクがあれば直リンク形式に変換
   if (s.indexOf("drive.google.com") !== -1) {
-    const match = s.match(/\/d\/([^/]+)/) || s.match(/id=([^&]+)/);
+    var match = s.match(/\/d\/([^/]+)/) || s.match(/id=([^&]+)/);
     if (match) {
       s = "https://drive.google.com/uc?export=download&id=" + match[1];
     }
@@ -106,12 +114,19 @@ function _getRowsByL1L2(l1, l2, limit) {
     if (String(_pick(row, idx, COL.L1)) !== String(l1)) continue;
     if (String(_pick(row, idx, COL.L2)) !== String(l2)) continue;
 
-    // サブ画像の一括変換
+    // --- 画像の変換処理 ---
+    // 画像1（メイン）を変換
+    const mainImage = _finalizeImageUrl(_pick(row, idx, COL.MAIN));
+
+    // 画像2～画像6（サブ）を一括変換
     const subs = [
-      _pick(row, idx, COL.SUB1), _pick(row, idx, COL.SUB2),
-      _pick(row, idx, COL.SUB3), _pick(row, idx, COL.SUB4), _pick(row, idx, COL.SUB5)
+      _pick(row, idx, COL.SUB1), 
+      _pick(row, idx, COL.SUB2),
+      _pick(row, idx, COL.SUB3), 
+      _pick(row, idx, COL.SUB4), 
+      _pick(row, idx, COL.SUB5)
     ].filter(u => u && String(u).trim() !== '')
-     .map(u => _finalizeImageUrl(u)); // ここで一括変換！
+     .map(u => _finalizeImageUrl(u)); 
 
     const bizOpen = _fmtTimeHHMM(_pick(row, idx, COL.BIZ_OPEN));
     const bizClose = _fmtTimeHHMM(_pick(row, idx, COL.BIZ_CLOSE));
@@ -131,8 +146,8 @@ function _getRowsByL1L2(l1, l2, limit) {
       lead:  _pick(row, idx, COL.LEAD),
       body:  _pick(row, idx, COL.BODY),
 
-      // 画像：ここで変換！
-      mainImage: _finalizeImageUrl(_pick(row, idx, COL.MAIN)),
+      // ★ここで変換済みの値をセット
+      mainImage: mainImage,
       subImages: subs,
 
       home: _pick(row, idx, COL.LINK),
