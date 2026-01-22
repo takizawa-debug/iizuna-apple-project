@@ -445,63 +445,192 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', eager); } else { eager(); }
 })();
 
-/* ====== Appletown Analytics ====== */
+/* ====== Appletown Analytics (Optimized) ====== */
 (function () {
   "use strict";
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
+
+  // 設定（config.jsに移行することも可能です）
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbzGii1RlAbx8A0gk0A7Hww0AEi644Nvc0MczI013cjDlnmrBNSdLVbGjowsi-RjPiSj0A/exec";
   const VISITOR_COOKIE = "apz_vid_v1", VISITOR_LSKEY = "apz_vid_ls_v1", SESSION_TTL_MS = 30 * 60 * 1000;
-  const D = document, W = window, N = navigator, S = screen, now = () => Date.now(), text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
-  const GEO_CACHE_KEY = "apz_geo_v1", GEO_TTL_MS = 24 * 60 * 60 * 1000; let GEO = null;
+  
+  const D = document, W = window, N = navigator, S = screen, now = () => Date.now();
+  const text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
+
+  // --- 滞在時間計測の精密化 ---
+  let activeTime = 0, lastVisibleTs = now(), tPage = now();
+  const updateActiveTime = () => {
+    if (D.visibilityState === "visible") {
+      lastVisibleTs = now();
+    } else {
+      activeTime += now() - lastVisibleTs;
+    }
+  };
+  D.addEventListener("visibilitychange", updateActiveTime);
+
+  // --- 地理情報取得 (Geo) ---
+  const GEO_CACHE_KEY = "apz_geo_v1", GEO_TTL_MS = 24 * 60 * 60 * 1000;
+  let GEO = null;
   async function loadGeo(){
-    try{ const cached = localStorage.getItem(GEO_CACHE_KEY); if (cached){ const obj = JSON.parse(cached); if (now() - (obj.t||0) < GEO_TTL_MS){ GEO = obj.d; return GEO; } }
-      const ctrl = new AbortController(), timer = setTimeout(()=> ctrl.abort(), 1500), res = await fetch("https://ipapi.co/json/", { signal:ctrl.signal });
-      clearTimeout(timer); if (!res.ok) throw new Error("geo_fail"); const j = await res.json();
+    try{ 
+      const cached = localStorage.getItem(GEO_CACHE_KEY); 
+      if (cached){ 
+        const obj = JSON.parse(cached); 
+        if (now() - (obj.t||0) < GEO_TTL_MS){ GEO = obj.d; return GEO; } 
+      }
+      const ctrl = new AbortController(), timer = setTimeout(()=> ctrl.abort(), 1500);
+      const res = await fetch("https://ipapi.co/json/", { signal:ctrl.signal });
+      clearTimeout(timer); 
+      if (!res.ok) throw new Error("geo_fail"); 
+      const j = await res.json();
       GEO = { ip: j.ip||"", country: j.country_name||j.country||"", region: j.region||"", city: j.city||"", postal: j.postal||"", lat: j.latitude??null, lon: j.longitude??null };
-      localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ t:now(), d:GEO })); return GEO;
-    }catch(_){ return null; }
+      localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ t:now(), d:GEO })); 
+      return GEO;
+    } catch(_){ return null; }
   }
+
+  // --- ID管理 (Visitor / Session) ---
   const uuid4 = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{ const r = Math.random()*16|0, v = c==="x" ? r : ((r&3)|8); return v.toString(16); });
   const setCookie = (k,v,days)=>{ try{ const d = new Date(); d.setTime(d.getTime() + days*864e5); D.cookie = `${k}=${encodeURIComponent(v)}; path=/; SameSite=Lax; expires=${d.toUTCString()}`; }catch(_){} };
   const getCookie = k => { try{ const m = D.cookie.match(new RegExp("(?:^|; )"+k.replace(/([.*+?^${}()|[\]\\])/g,"\\$&")+"=([^;]*)")); return m ? decodeURIComponent(m[1]) : null; }catch(_){return null;} };
-  function ensureVisitorId(){ let vid = getCookie(VISITOR_COOKIE); if (vid){ localStorage.setItem(VISITOR_LSKEY, vid); return vid; } vid = localStorage.getItem(VISITOR_LSKEY); if (vid){ setCookie(VISITOR_COOKIE, vid, 365*3); return vid; } vid = uuid4(); setCookie(VISITOR_COOKIE, vid, 365*3); localStorage.setItem(VISITOR_LSKEY, vid); return vid; }
-  let visitorId = ensureVisitorId();
-  const S_ID="apz_sid", S_TS="apz_sid_ts";
-  function touchSession(){ let sid = sessionStorage.getItem(S_ID); const t = now(), last = +sessionStorage.getItem(S_TS) || 0; if (!sid || (t-last) > SESSION_TTL_MS) sid = uuid4(); sessionStorage.setItem(S_ID, sid); sessionStorage.setItem(S_TS, t); return sid; }
-  let sessionId = touchSession();
-  const utm = (() => { const p = new URLSearchParams(location.search); return { utm_source: p.get("utm_source")||"", utm_medium: p.get("utm_medium")||"", utm_campaign: p.get("utm_campaign")||"" }; })();
-  function sendEvent(event_name, event_params){
-    try{ sessionId = touchSession();
-      const payload = { visitor_id: visitorId, session_id: sessionId, event_name, event_params: event_params || {}, page_url: location.href, page_title: D.title || "", referrer: D.referrer || "", ...utm, screen_w: S?.width??null, screen_h: S?.height??null, ua: N.userAgent||"" };
-      if (GEO){ payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; }
-      const body = JSON.stringify(payload);
-      if (N.sendBeacon){ if (N.sendBeacon(ENDPOINT, new Blob([body],{type:"text/plain;charset=UTF-8"}))) return; }
-      fetch(ENDPOINT,{ method:"POST", mode:"no-cors", headers:{ "Content-Type":"text/plain;charset=UTF-8" }, body }).catch(()=>{ try{ const img = new Image(); img.src = ENDPOINT + "?d=" + encodeURIComponent(body) + "&t=" + now(); }catch(_){} });
-    }catch(_){}
+  
+  function ensureVisitorId(){ 
+    let vid = getCookie(VISITOR_COOKIE); 
+    if (vid){ localStorage.setItem(VISITOR_LSKEY, vid); return vid; } 
+    vid = localStorage.getItem(VISITOR_LSKEY); 
+    if (vid){ setCookie(VISITOR_COOKIE, vid, 365*3); return vid; } 
+    vid = uuid4(); 
+    setCookie(VISITOR_COOKIE, vid, 365*3); localStorage.setItem(VISITOR_LSKEY, vid); 
+    return vid; 
   }
+  let visitorId = ensureVisitorId();
+
+  const S_ID="apz_sid", S_TS="apz_sid_ts";
+  function touchSession(){ 
+    let sid = sessionStorage.getItem(S_ID); 
+    const t = now(), last = +sessionStorage.getItem(S_TS) || 0; 
+    if (!sid || (t-last) > SESSION_TTL_MS) sid = uuid4(); 
+    sessionStorage.setItem(S_ID, sid); 
+    sessionStorage.setItem(S_TS, t); 
+    return sid; 
+  }
+  let sessionId = touchSession();
+
+  const utm = (() => { const p = new URLSearchParams(location.search); return { utm_source: p.get("utm_source")||"", utm_medium: p.get("utm_medium")||"", utm_campaign: p.get("utm_campaign")||"" }; })();
+
+  // --- イベント送信コア ---
+  function sendEvent(event_name, event_params){
+    try {
+      sessionId = touchSession();
+      const payload = { 
+        visitor_id: visitorId, session_id: sessionId, event_name, 
+        event_params: event_params || {}, page_url: location.href, 
+        page_title: D.title || "", referrer: D.referrer || "", 
+        ...utm, screen_w: S?.width??null, screen_h: S?.height??null, ua: N.userAgent||"" 
+      };
+      if (GEO){ 
+        payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; 
+        payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; 
+      }
+      
+      const body = JSON.stringify(payload);
+      
+      // 1. sendBeacon (離脱時など)
+      if (N.sendBeacon && N.sendBeacon(ENDPOINT, new Blob([body], {type:"text/plain;charset=UTF-8"}))) return;
+      
+      // 2. Fetch (通常時)
+      fetch(ENDPOINT, { method:"POST", mode:"no-cors", body }).catch(() => {
+        // 3. Image Pixel (最終手段)
+        const img = new Image();
+        img.src = `${ENDPOINT}?d=${encodeURIComponent(body)}&t=${now()}`;
+      });
+    } catch(_){}
+  }
+
   W.mzTrack ||= ((name,params)=> sendEvent(name,params));
-  Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,700)) ]).finally(()=> setTimeout(()=>sendEvent("page_view",{}),100) );
+  
+  // 初回計測
+  Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,800)) ]).finally(() => {
+    setTimeout(() => sendEvent("page_view", {}), 100);
+  });
+
+  // --- 自動トラッキング設定 ---
   let lastCard = null;
-  function cardMeta(card){ return card ? { card_id: card.dataset.id||card.id||"", title: card.dataset.title||"", group: card.dataset.group||"", has_main: !!card.dataset.main } : {}; }
-  D.addEventListener("click",e=>{
-    const t=e.target, card = t.closest?.(".lz-card"); if (card){ lastCard=cardMeta(card); sendEvent("card_click",{...lastCard}); return; }
-    const btn = t.closest?.(".lz-btn"); if (btn){ const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn"; sendEvent("modal_action",{ action:kind, label:text(btn), ...(lastCard||{}) }); return; }
-    const sns = t.closest?.(".lz-sns a, .lz-sns-btn"); if (sns){ sendEvent("sns_click",{ platform:sns.dataset.sns||"web", href:sns.href||"", ...(lastCard||{}) }); return; }
-    const th = t.closest?.("#lz-gallery img[data-img-idx]"); if (th){ sendEvent("gallery_thumb_click",{ idx:(+th.dataset.imgIdx||0), ...(lastCard||{}) }); return; }
-    const arrow = t.closest?.(".lz-arrow"); if (arrow){ sendEvent("modal_nav",{ dir:arrow.classList.contains("lz-prev")?"prev":"next", ...(lastCard||{}) }); return; }
-    const ext = t.closest?.(".lz-info a[href], .lz-related a[href]"); if (ext){ sendEvent("external_link",{ href:ext.href||"", label:text(ext), ...(lastCard||{}) }); return; }
-    const nav = t.closest?.(".lz-nav a[data-target]"); if (nav){ sendEvent("nav_click",{ target_id:nav.dataset.target||"", label:text(nav) }); return; }
-  },{capture:true, passive:true});
+  const cardMeta = card => card ? { card_id: card.dataset.id||card.id||"", title: card.dataset.title||"", group: card.dataset.group||"", has_main: !!card.dataset.main } : {};
+
+  D.addEventListener("click", e => {
+    const t = e.target;
+    // カードクリック
+    const card = t.closest?.(".lz-card"); 
+    if (card){ lastCard = cardMeta(card); sendEvent("card_click", {...lastCard}); return; }
+    
+    // ボタンアクション
+    const btn = t.closest?.(".lz-btn");
+    if (btn){
+      const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn";
+      sendEvent("modal_action", { action:kind, label:text(btn), ...(lastCard||{}) });
+      return;
+    }
+    
+    // SNS / 外部リンク / ギャラリー
+    const sns = t.closest?.(".lz-sns a, .lz-sns-btn");
+    if (sns){ sendEvent("sns_click", { platform:sns.dataset.sns||"web", href:sns.href||"", ...(lastCard||{}) }); return; }
+    
+    const th = t.closest?.("#lz-gallery img[data-img-idx]");
+    if (th){ sendEvent("gallery_thumb_click", { idx:(+th.dataset.imgIdx||0), ...(lastCard||{}) }); return; }
+    
+    const ext = t.closest?.(".lz-info a[href], .lz-related a[href]");
+    if (ext){ sendEvent("external_link", { href:ext.href||"", label:text(ext), ...(lastCard||{}) }); return; }
+  }, {capture:true, passive:true});
+
+  // モーダル監視 (MutationObserver)
   (function(){
-    function patchOpen(){ if (typeof W.lzOpen!=="function") return false; const _lzOpen=W.lzOpen; W.lzOpen=function(){ const t0=now(); const ret=_lzOpen.apply(this,arguments); queueMicrotask(()=>{ const modal=D.querySelector(".lz-modal"), title=modal?.querySelector(".lz-mt")?.textContent?.trim()||"modal"; sendEvent("modal_open",{ modal_name:title, ...(lastCard||{}), t_open_ms:now()-t0 }); }); return ret; }; return true; }
-    function patchClose(){ if (typeof W.lzClose!=="function") return false; const _lzClose=W.lzClose; W.lzClose=function(){ const title=D.querySelector(".lz-modal .lz-mt")?.textContent?.trim()||"modal"; sendEvent("modal_close",{ modal_name:title, ...(lastCard||{}) }); return _lzClose.apply(this,arguments); }; return true; }
-    let tried=0; const timer=setInterval(()=>{ const ok=patchOpen() & patchClose(); if (ok || ++tried>40){ clearInterval(timer); if (!ok){
-      const mo=new MutationObserver(muts=>{ for(const m of muts){ for(const n of m.addedNodes){ if(n.nodeType===1 && (n.matches?.(".lz-modal")||n.querySelector?.(".lz-modal"))){ const title=D.querySelector(".lz-modal .lz-mt")?.textContent?.trim()||"modal"; sendEvent("modal_open",{ modal_name:title, ...(lastCard||{}) }); return; } } } }); mo.observe(D.documentElement,{childList:true,subtree:true});
-      const mo2=new MutationObserver(()=>{ if(!D.querySelector(".lz-backdrop.open")){ sendEvent("modal_close",{ modal_name:"", ...(lastCard||{}) }); } }); mo2.observe(D.documentElement,{attributes:true,subtree:true,attributeFilter:["class"]});
-    } } },120);
+    const observeModal = () => {
+      const mo = new MutationObserver(muts => {
+        for(const m of muts) {
+          for(const n of m.addedNodes) {
+            if(n.nodeType === 1 && (n.matches?.(".lz-modal") || n.querySelector?.(".lz-modal"))) {
+              const title = D.querySelector(".lz-modal .lz-mt")?.textContent?.trim() || "modal";
+              sendEvent("modal_open", { modal_name: title, ...(lastCard || {}) });
+            }
+          }
+        }
+      });
+      mo.observe(D.documentElement, {childList:true, subtree:true});
+
+      const mo2 = new MutationObserver(() => {
+        if(!D.querySelector(".lz-backdrop.open") && !D.querySelector(".lz-modal.is-open")){
+          // 以前のセッションでモーダルが開いていたかチェックする等のロジックは必要に応じて
+        }
+      });
+      mo2.observe(D.documentElement, {attributes:true, subtree:true, attributeFilter:["class"]});
+    };
+    observeModal();
   })();
-  const tPage = now(); let closedSent = false;
-  function flushClose(reason){ if (closedSent) return; closedSent = true; sendEvent("page_close",{ engaged_ms:now()-tPage, reason:String(reason||"") }); }
-  W.addEventListener("pagehide", e=>{ flushClose(e.persisted ? "pagehide_bfcache" : "pagehide_unload"); }, { capture:true, once:true });
-  D.addEventListener("visibilitychange", ()=>{ if (D.visibilityState==="hidden"){ setTimeout(()=> flushClose("visibility_hidden"),0); } },{capture:true});
+
+  // --- 離脱計測の堅牢化 ---
+  let closedSent = false;
+  function flushClose(reason){
+    if (closedSent) return;
+    closedSent = true; // 即座にフラグを立てる (重要)
+    
+    // 最終的なアクティブ時間を算出
+    const finalActiveTime = D.visibilityState === "visible" 
+      ? activeTime + (now() - lastVisibleTs) 
+      : activeTime;
+
+    sendEvent("page_close", { 
+      total_engaged_ms: now() - tPage, 
+      active_engaged_ms: finalActiveTime,
+      reason: String(reason || "") 
+    });
+  }
+
+  W.addEventListener("pagehide", e => flushClose(e.persisted ? "bfcache" : "unload"), {capture:true});
+  D.addEventListener("visibilitychange", () => {
+    if (D.visibilityState === "hidden") {
+      // モバイルブラウザ向けに、非表示になった瞬間に一度予備送信
+      setTimeout(() => flushClose("visibility_hidden"), 0);
+    }
+  }, {capture:true});
 })();
