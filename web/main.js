@@ -247,7 +247,7 @@ function cardHTML(it, pad, groupKey){
       data-dl="${esc(dataAttrs.dl)}"
       data-group="${esc(groupKey)}">
       <div class="lz-media ${hasMain ? "" : "is-empty"}" style="--ratio:${pad}">
-    ${hasMain ? `<img loading="lazy" decoding="async" crossorigin="anonymous"
+    ${hasMain ? `<img loading="lazy" decoding="async"
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
         alt="${esc(title)}"
@@ -310,9 +310,9 @@ function showModalFromCard(card){
   const t=card.dataset.title, lead=card.dataset.lead, body=card.dataset.body;
   const main=card.dataset.main;
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
-const gallery=[main, ...subs].filter(Boolean);
-const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}"></div>` : '';
-  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="">`).join("")}</div>` : '';
+  const gallery=[main, ...subs].filter(Boolean);
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}"></div>` : '';
+  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="">`).join("")}</div>` : '';
   const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
   const dlUrl = card.dataset.dl || "";
   const dlBtn = dlUrl ? `<a class="lz-btn lz-dl" href="${esc(dlUrl)}" target="_blank" rel="noopener" aria-label="DL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span class="lz-label">DL</span></a>` : "";
@@ -332,7 +332,7 @@ const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" cro
       mainImg.addEventListener("transitionend", function h(){ mainImg.removeEventListener("transitionend", h); mainImg.src = nextSrc; if(mainImg.complete){ requestAnimationFrame(()=> mainImg.classList.remove("lz-fadeout")); } else{ mainImg.addEventListener("load", ()=> mainImg.classList.remove("lz-fadeout"), {once:true}); } }, {once:true});
       setActive(i);
     };
-    document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-img-idx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
+    document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-imgIdx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
   }
   MODAL.querySelector(".lz-share")?.addEventListener("click", async ()=>{
     const url = shareUrlFromCard(card);
