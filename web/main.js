@@ -51,7 +51,7 @@ const LZ_NET = (function(){
 })();
 
 /* ====== 設定 ====== */
-const LZ_ENDPOINT = "https://script.google.com/macros/s/AKfycbwqYo2uMrlPWXw99BBldUrEXGuZYGkaRjphpH8FgVF5FTSRWMMKZM77EAva0hZdR8TReg/exec";
+const LZ_ENDPOINT = window.LZ_CONFIG.ENDPOINT;
 if (!window.CSS || !CSS.escape) { window.CSS = window.CSS || {}; CSS.escape = s => String(s).replace(/[^a-zA-Z0-9_\-]/g,"\\$&"); }
 const PDF_FOOTER = { dtPt:8, dtBottomMm:7, jpPt:16, jpBaselineGapMm:1.8, qrSizeMm:18 };
 
