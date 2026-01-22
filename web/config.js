@@ -1,9 +1,17 @@
 /* --- config.js --- */
 window.LZ_CONFIG = {
-  // GASのデプロイURL（ここを書き換えるだけで全機能が更新されます）
+  // メインコンテンツ用GAS
   ENDPOINT: "https://script.google.com/macros/s/AKfycbwqYo2uMrlPWXw99BBldUrEXGuZYGkaRjphpH8FgVF5FTSRWMMKZM77EAva0hZdR8TReg/exec",
-  
-  // その他共通設定
+
+  // アナリティクス用設定
+  ANALYTICS: {
+    ENDPOINT: "https://script.google.com/macros/s/AKfycbyMsHN1c9KSk3DUfU94Z7Axr18-8TYAEOWuJSGh3_upEFNAAc4Z9PmrA3uXbbRoGACXSg/exec",
+    VISITOR_COOKIE: "apz_vid_v1",
+    VISITOR_LSKEY: "apz_vid_ls_v1",
+    SESSION_TTL: 30 * 60 * 1000 // 30分
+  },
+
+  // メニュー設定
   MENU_ORDER: ["知る","味わう","体験する","働く・住む","販売・発信する"],
   MENU_URL: {
     "知る":"https://appletown-iizuna.com/learn",
