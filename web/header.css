@@ -275,8 +275,8 @@
 .lz-lang__menu a {
   display: block;
   padding: 10px 12px;
-  color: #222;
-  text-decoration: none;
+  color: #222 !important;
+  text-decoration: none !important;
   border-radius: 8px;
   white-space: nowrap;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
@@ -310,6 +310,12 @@
   align-items: center;
   gap: 6px;
   cursor: pointer;
+}
+
+@media (min-width: 769px) {
+  .lz-hamb {
+    display: none;
+  }
 }
 
 .lz-hamb__bar {
