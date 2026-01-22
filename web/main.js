@@ -451,7 +451,7 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
 
   // 設定（config.jsに移行することも可能です）
-  const ENDPOINT = "https://script.google.com/macros/s/AKfycbxfPjm3IS9lEOpY0hjd8D_Q0BMW3d29r8CcNgXL7J65cPAyqgOYnFxXMmcMKLUmedDnpw/exec";
+  const ENDPOINT = "https://script.google.com/macros/s/AKfycbw-yjVPRQi10WWTBja0jrhgodXYPSWPaStjDQjEC32i9OHa-AiYZmP7GJZgLrbVDjdOmg/exec";
   const VISITOR_COOKIE = "apz_vid_v1", VISITOR_LSKEY = "apz_vid_ls_v1", SESSION_TTL_MS = 30 * 60 * 1000;
   
   const D = document, W = window, N = navigator, S = screen, now = () => Date.now();
