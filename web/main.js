@@ -251,7 +251,7 @@ function cardHTML(it, pad, groupKey){
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
         alt="${esc(title)}"
-        onerror="this.remove(); this.parentElement.classList.add('is-empty');">` : ""}
+        onerror="console.error('Image load failed:', this.src); this.parentElement.classList.add('is-empty');">` : ""}
       </div>
       <div class="lz-body">
         <h3 class="lz-title-sm">${esc(title)}</h3>
@@ -332,7 +332,7 @@ function showModalFromCard(card){
       mainImg.addEventListener("transitionend", function h(){ mainImg.removeEventListener("transitionend", h); mainImg.src = nextSrc; if(mainImg.complete){ requestAnimationFrame(()=> mainImg.classList.remove("lz-fadeout")); } else{ mainImg.addEventListener("load", ()=> mainImg.classList.remove("lz-fadeout"), {once:true}); } }, {once:true});
       setActive(i);
     };
-    document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-imgIdx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
+    document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-img-idx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
   }
   MODAL.querySelector(".lz-share")?.addEventListener("click", async ()=>{
     const url = shareUrlFromCard(card);
