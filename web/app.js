@@ -10,7 +10,8 @@
     { type: 'js',  url: base + "main.js" },
     { type: 'js',  url: base + "header.js" },
     { type: 'js',  url: base + "search.js" },
-    { type: 'js',  url: base + "footer.js" }
+    { type: 'js',  url: base + "footer.js" },
+    { type: 'js',  url: base + "slideshow.js" }
   ];
 
   files.forEach(file => {
