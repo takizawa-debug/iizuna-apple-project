@@ -185,3 +185,24 @@
 
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
+    const json = await res.json();
+    if(json.ok) {
+      const map = new Map();
+      json.items.forEach(it => { if(!map.has(it.l1)) map.set(it.l1, []); if(!map.get(it.l1).includes(it.l2)) map.get(it.l1).push(it.l2); });
+      MENU_ORDER.forEach((l1, i) => {
+        const l2s = map.get(l1) || [], links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
+        const panels = document.querySelectorAll('.lz-hnav__panel');
+        if(panels[i]) panels[i].innerHTML = links || '<div class="lz-nav-loading">（記事なし）</div>';
+        const dwGroups = document.querySelectorAll('.lz-dw-group');
+        if(dwGroups[i]) {
+          const area = dwGroups[i].querySelector('.lz-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-dw-arrow'), link = dwGroups[i].querySelector('.lz-dw-l1a');
+          if(l2s.length > 0) {
+            area.innerHTML = links;
+            const t = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); };
+            arrow.onclick = t; link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) t(e); else closeDrawer(); };
+          } else { area.remove(); arrow.style.display='none'; link.onclick=closeDrawer; }
+        }
+      });
+    }
+  } catch(e) { console.error(e); }
+})();
