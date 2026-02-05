@@ -70,6 +70,7 @@ async function ensurePdfLibs(){
 
 /* ====== ユーティリティ ====== */
 const esc = s => String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+
 const ratio = r => ({"16:9":"56.25%","4:3":"75%","1:1":"100%","3:2":"66.67%"}[r]||"56.25%");
 const RED_APPLE="\u{1F34E}\uFE0F", GREEN_APPLE="\u{1F34F}\uFE0F";
 const pt2mm = pt => pt * 0.3528, pt2px = pt => pt * (96/72);
@@ -106,8 +107,11 @@ function setupAutoPlay(track, { interval=4000, stepCards=1 } = {}){
   io.observe(track);
   track.addEventListener("pointerenter", stop, { passive:true });
   track.addEventListener("pointerleave", start, { passive:true });
+  track.addEventListener("touchstart",  stop, { passive:true });
+  track.addEventListener("wheel",        stop, { passive:true });
 }
 
+/* --- アイコン定義 --- */
 const ICON = {
   web:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
   ec:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20 8H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>`,
@@ -127,7 +131,7 @@ function toast(msg="コピーしました"){
 
 let HOST=null, SHELL=null, MODAL=null;
 let CARDS=[], IDX=0;
-let originalTitle = document.title; // 【SEO】
+let originalTitle = document.title; // 【SEO】元のページタイトルを記憶
 
 function ensureModal(){
   if(HOST) return;
@@ -140,12 +144,17 @@ function ensureModal(){
 }
 
 function lzOpen(html){
-  ensureModal(); MODAL.innerHTML = html;
-  SHELL.querySelectorAll(".lz-prev, .lz-next").forEach(b=>b.remove());
-  if (CARDS.length > 1){
-    const prev = document.createElement("button"); prev.className = "lz-arrow lz-prev";
+  ensureModal();
+  MODAL.innerHTML = html;
+  SHELL.querySelector(".lz-prev")?.remove();
+  SHELL.querySelector(".lz-next")?.remove();
+  const needArrows = CARDS.length > 1;
+  if (needArrows){
+    const prev = document.createElement("button");
+    prev.className = "lz-arrow lz-prev";
     prev.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
-    const next = document.createElement("button"); next.className = "lz-arrow lz-next";
+    const next = document.createElement("button");
+    next.className = "lz-arrow lz-next";
     next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
     prev.addEventListener("click", ()=> showModal(IDX-1));
     next.addEventListener("click", ()=> showModal(IDX+1));
@@ -155,8 +164,9 @@ function lzOpen(html){
 }
 
 function lzClose(){
-  if(!HOST) return; HOST.classList.remove("open");
-  document.title = originalTitle; 
+  if(!HOST) return;
+  HOST.classList.remove("open");
+  document.title = originalTitle; // 【SEO】タイトルを元に戻す
   try{ 
     const url = new URL(window.location.href);
     url.searchParams.delete('id');
@@ -176,7 +186,7 @@ function renderFooterImagePx(text, px=16, color="#000"){
   const canvas = document.createElement("canvas"); canvas.width=w*scale; canvas.height=h*scale;
   const ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
   ctx.fillStyle="#fff"; ctx.fillRect(0,0,w,h);
-  ctx.fillStyle=color; ctx.font = `${px}px "Noto Sans JP",sans-serif`; ctx.textBaseline="middle";
+  ctx.fillStyle=color; ctx.font = `${px}px "Noto Sans JP","Yu Gothic",sans-serif`; ctx.textBaseline="middle";
   ctx.fillText(text, 2, h/2);
   return { data: canvas.toDataURL("image/png"), ar: h/w };
 }
@@ -186,219 +196,452 @@ function get(obj, keys){ for(const k of keys){ if(obj && obj[k]!=null && obj[k]!
 /* --- HTML Building --- */
 function cardHTML(it, pad, groupKey){
   const title = (it.title || "(無題)");
-  return `<article class="lz-card" id="${esc(title)}" data-id="${esc(title)}" data-title="${esc(title)}" data-lead="${esc(it.lead||"")}" data-body='${esc(it.body||"")}' data-main="${esc(it.mainImage||"")}" data-sub='${esc(JSON.stringify(it.subImages||[]))}' data-sns='${esc(JSON.stringify(it.sns||{}))}' data-related='${esc(JSON.stringify(it.relatedArticles||[]))}' data-address="${esc(it.address||"")}" data-form="${esc(it.form||"")}" data-email="${esc(it.email||"")}" data-tel="${esc(it.tel||"")}" data-home="${esc(it.home||"")}" data-ec="${esc(it.ec||"")}" data-hours-combined="${esc(it.hoursCombined)}" data-event-date="${esc(it.eventDate)}" data-event-time="${esc(it.eventTime)}" data-biz-days="${esc(it.bizDays)}" data-holiday="${esc(it.holiday)}" data-biz-note="${esc(it.bizNote)}" data-fee="${esc(it.fee)}" data-bring="${esc(it.bring)}" data-target="${esc(it.target||"")}" data-apply="${esc(it.apply||"")}" data-org="${esc(it.organizer||"")}" data-org-tel="${esc(it.organizerTel||"")}" data-venue-note="${esc(it.venueNote)}" data-note="${esc(it.note)}" data-dl="${esc(it.downloadUrl)}" data-group="${esc(groupKey)}">
-    <div class="lz-media ${it.mainImage ? "" : "is-empty"}" style="--ratio:${pad}">${it.mainImage ? `<img loading="lazy" crossorigin="anonymous" src="${esc(it.mainImage)}" alt="${esc(title)}の画像">` : ""}</div>
-    <div class="lz-body"><h3 class="lz-title-sm">${esc(title)}</h3><div class="lz-lead">${esc(it.lead||"")}</div></div>
-  </article>`;
+  const id    = title;
+  const subs  = (it.subImages||[]).slice(0,5);
+  const sns   = it.sns || {};
+  const related = it.relatedArticles || [];
+  const dataAttrs = {
+    hoursCombined: get(it, ["hoursCombined"]),
+    eventDate:     get(it, ["eventDate"]),
+    eventTime:     get(it, ["eventTime"]),
+    bizDays:   get(it, ["bizDays","営業曜日"]),
+    bizOpen:   get(it, ["bizOpen","営業開始時刻"]),
+    bizClose:  get(it, ["bizClose","営業終了時刻"]),
+    holiday:   get(it, ["holiday","定休日"]),
+    bizNote:   get(it, ["bizNote","営業に関する注意事項"]),
+    startDate: get(it, ["startDate","開始日"]),
+    endDate:   get(it, ["endDate","終了日"]),
+    startTime: get(it, ["startTime","開始時刻"]),
+    endTime:   get(it, ["endTime","終了時刻"]),
+    fee:       get(it, ["fee","参加費"]),
+    bring:     get(it, ["bring","もちもの"]),
+    venueNote: get(it, ["venueNote","会場に関する注意事項"]),
+    note:      get(it, ["note","備考"]),
+    dl:        get(it, ["downloadUrl","ダウンロードURL"])
+  };
+  const hasMain = !!(it.mainImage);
+  return `
+    <article class="lz-card" id="${esc(id)}"
+      data-id="${esc(id)}" data-title="${esc(title)}" data-lead="${esc(it.lead||"")}"
+      data-body='${esc(it.body||"")}'
+      data-main="${esc(it.mainImage||"")}"
+      data-sub='${esc(JSON.stringify(subs))}'
+      data-sns='${esc(JSON.stringify(sns))}'
+      data-related='${esc(JSON.stringify(related))}'
+      data-address="${esc(it.address||"")}" data-hours="${esc(it.hours||"")}"
+      data-form="${esc(it.form||"")}" data-email="${esc(it.email||"")}" data-tel="${esc(it.tel||"")}"
+      data-home="${esc(it.home||"")}" data-ec="${esc(it.ec||"")}"
+      data-hours-combined="${esc(dataAttrs.hoursCombined)}"
+      data-event-date="${esc(dataAttrs.eventDate)}"
+      data-event-time="${esc(dataAttrs.eventTime)}"
+      data-biz-days="${esc(dataAttrs.bizDays)}"
+      data-biz-open="${esc(dataAttrs.bizOpen)}"
+      data-biz-close="${esc(dataAttrs.bizClose)}"
+      data-holiday="${esc(dataAttrs.holiday)}"
+      data-biz-note="${esc(dataAttrs.bizNote)}"
+      data-start-date="${esc(dataAttrs.startDate)}"
+      data-end-date="${esc(dataAttrs.endDate)}"
+      data-start-time="${esc(dataAttrs.startTime)}"
+      data-end-time="${esc(dataAttrs.endTime)}"
+      data-fee="${esc(dataAttrs.fee)}"
+      data-bring="${esc(dataAttrs.bring)}"
+      data-target="${esc(it.target||"")}"
+      data-apply="${esc(it.apply||"")}"
+      data-org="${esc(it.organizer||"")}"
+      data-org-tel="${esc(it.organizerTel||"")}"
+      data-venue-note="${esc(dataAttrs.venueNote)}"
+      data-note="${esc(dataAttrs.note)}"
+      data-dl="${esc(dataAttrs.dl)}"
+      data-group="${esc(groupKey)}">
+      <div class="lz-media ${hasMain ? "" : "is-empty"}" style="--ratio:${pad}">
+    ${hasMain ? `<img loading="lazy" decoding="async" crossorigin="anonymous"
+        referrerpolicy="no-referrer-when-downgrade"
+        src="${esc(it.mainImage)}"
+        alt="${esc(title)}の画像"
+        onerror="this.closest('.lz-media')?.classList.add('is-empty');">` : ""}
+      </div>
+      <div class="lz-body">
+        <h3 class="lz-title-sm">${esc(title)}</h3>
+        <div class="lz-lead">${esc(it.lead||"")}</div>
+      </div>
+    </article>`;
 }
 
 function buildInfoTableHTML(card){
   const rows = [];
-  const fields = [ {k:"address", l:"住所"}, {k:"biz-days", l:"営業曜日"}, {k:"holiday", l:"定休日"}, {k:"hours-combined", l:"営業時間"}, {k:"biz-note", l:"営業注意事項"}, {k:"event-date", l:"開催日"}, {k:"event-time", l:"開催時間"}, {k:"fee", l:"参加費"}, {k:"bring", l:"もちもの"}, {k:"target", l:"対象"}, {k:"apply", l:"申し込み方法"}, {k:"org", l:"主催者名"}, {k:"org-tel", l:"連絡先"}, {k:"venue-note", l:"会場注意事項"}, {k:"note", l:"備考"} ];
-  fields.forEach(f=>{ if(card.dataset[f.k]) rows.push(`<tr><th>${f.l}</th><td>${esc(card.dataset[f.k])}</td></tr>`); });
+  const addr = card.dataset.address;
+  const form = card.dataset.form, email = card.dataset.email, tel = card.dataset.tel;
+  if (addr) rows.push(`<tr><th>住所</th><td>${esc(addr)}</td></tr>`);
+  if (card.dataset.bizDays) rows.push(`<tr><th>営業曜日</th><td>${esc(card.dataset.bizDays)}</td></tr>`);
+  if (card.dataset.holiday) rows.push(`<tr><th>定休日</th><td>${esc(card.dataset.holiday)}</td></tr>`);
+  const hoursCombined = card.dataset.hoursCombined;
+  const bizOpen = card.dataset.bizOpen, bizClose = card.dataset.bizClose;
+  if (hoursCombined) { rows.push(`<tr><th>営業時間</th><td>${esc(hoursCombined)}</td></tr>`); }
+  else if (bizOpen && bizClose) { rows.push(`<tr><th>営業時間</th><td>${esc(bizOpen)}〜${esc(bizClose)}</td></tr>`); }
+  else { if (bizOpen) rows.push(`<tr><th>営業開始時刻</th><td>${esc(bizOpen)}</td></tr>`); if (bizClose) rows.push(`<tr><th>営業終了時刻</th><td>${esc(bizClose)}</td></tr>`); }
+  if (card.dataset.bizNote) rows.push(`<tr><th>営業に関する注意事項</th><td>${esc(card.dataset.bizNote)}</td></tr>`);
+  const eventDate = card.dataset.eventDate, startDate = card.dataset.startDate, endDate = card.dataset.endDate;
+  if (eventDate) { rows.push(`<tr><th>開催日</th><td>${esc(eventDate)}</td></tr>`); }
+  else { if (startDate) rows.push(`<tr><th>開始日</th><td>${esc(startDate)}</td></tr>`); if (endDate) rows.push(`<tr><th>終了日</th><td>${esc(endDate)}</td></tr>`); }
+  const eventTime = card.dataset.eventTime, startTime = card.dataset.startTime, endTime = card.dataset.endTime;
+  if (eventTime) { rows.push(`<tr><th>開催時間</th><td>${esc(eventTime)}</td></tr>`); }
+  else if (startTime && endTime) { rows.push(`<tr><th>開催時間</th><td>${esc(startTime)}〜${esc(endTime)}</td></tr>`); }
+  else { if (startTime) rows.push(`<tr><th>開始時刻</th><td>${esc(startTime)}</td></tr>`); if (endTime) rows.push(`<tr><th>終了時刻</th><td>${esc(endTime)}</td></tr>`); }
+  if (card.dataset.fee) rows.push(`<tr><th>参加費</th><td>${esc(card.dataset.fee)}</td></tr>`);
+  if (card.dataset.bring) rows.push(`<tr><th>もちもの</th><td>${esc(card.dataset.bring)}</td></tr>`);
+  if (card.dataset.target) rows.push(`<tr><th>対象</th><td>${esc(card.dataset.target)}</td></tr>`);
+  if (card.dataset.apply) rows.push(`<tr><th>申し込み方法</th><td>${esc(card.dataset.apply)}</td></tr>`);
+  if (card.dataset.org) rows.push(`<tr><th>主催者名</th><td>${esc(card.dataset.org)}</td></tr>`);
+  if (card.dataset.orgTel) rows.push(`<tr><th>主催者連絡先</th><td>${esc(card.dataset.orgTel)}</td></tr>`);
+  if (card.dataset.venueNote) rows.push(`<tr><th>会場に関する注意事項</th><td>${esc(card.dataset.venueNote)}</td></tr>`);
+  if (card.dataset.note) rows.push(`<tr><th>備考</th><td>${esc(card.dataset.note)}</td></tr>`);
   const links = [];
-  if(card.dataset.form) links.push(`<a href="${esc(card.dataset.form)}" target="_blank">フォーム</a>`);
-  if(card.dataset.email) links.push(`<a href="mailto:${esc(card.dataset.email)}">${esc(card.dataset.email)}</a>`);
-  if(card.dataset.tel) links.push(`<a href="tel:${esc(card.dataset.tel)}">${esc(card.dataset.tel)}</a>`);
-  if(links.length) rows.push(`<tr><th>問い合わせ</th><td>${links.join(' / ')}</td></tr>`);
+  if (form) links.push(`<a href="${esc(form)}" target="_blank" rel="noopener">フォーム</a>`);
+  if (email) links.push(`<a href="mailto:${esc(email)}">${esc(email)}</a>`);
+  if (tel) links.push(`<a href="tel:${esc(tel)}">${esc(tel)}</a>`);
+  if (links.length) rows.push(`<tr><th>問い合わせ</th><td>${links.join(' / ')}</td></tr>`);
   return rows.length ? `<table class="lz-info"><tbody>${rows.join("")}</tbody></table>` : "";
 }
 
 function buildSNSIconsHTML(card){
   let sns={}; try{ sns = JSON.parse(card.dataset.sns||"{}"); }catch{}
-  const btn = (url, key, label) => url ? `<a class="lz-sns-btn" data-sns="${key}" href="${esc(url)}" target="_blank" aria-label="${label}">${ICON[key]}</a>` : "";
-  return `<div class="lz-sns">${[btn(card.dataset.home,"web","HP"), btn(card.dataset.ec,"ec","EC"), btn(sns.instagram,"ig","IG"), btn(sns.facebook,"fb","FB"), btn(sns.x,"x","X"), btn(sns.line,"line","Line"), btn(sns.tiktok,"tt","TT")].filter(Boolean).join("")}</div>`;
+  const home = card.dataset.home || "", ec = card.dataset.ec || "";
+  const btn = (url, key, label) => url ? `<a class="lz-sns-btn" data-sns="${key}" href="${esc(url)}" target="_blank" rel="noopener" aria-label="${label}">${ICON[key]}</a>` : "";
+  const html = [ btn(home, "web", "HP"), btn(ec, "ec", "EC"), btn(sns.instagram, "ig", "IG"), btn(sns.facebook, "fb", "FB"), btn(sns.x, "x", "X"), btn(sns.line, "line","Line"), btn(sns.tiktok, "tt", "TT") ].filter(Boolean).join("");
+  return html ? `<div class="lz-sns">${html}</div>` : "";
 }
 
-/* ====== モーダル表示（PDFエラー詳細レポート搭載） ====== */
 function showModalFromCard(card){
   if(!card) return;
   const t = card.dataset.title;
   document.title = `${t} | ${originalTitle}`;
+
   try{ history.replaceState(null, "", shareUrlFromCard(card)); }catch(e){}
-
+  const lead=card.dataset.lead, body=card.dataset.body, main=card.dataset.main;
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
-  const gallery=[card.dataset.main, ...subs].filter(Boolean);
-  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" crossorigin="anonymous" src="${esc(gallery[0])}" alt="${esc(t)}のメイン画像"></div>` : '';
-  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img crossorigin="anonymous" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="">`).join("")}</div>` : '';
+  const gallery=[main, ...subs].filter(Boolean);
 
-  lzOpen(`<div class="lz-mh"><h2 class="lz-mt">${esc(t)}</h2><div class="lz-actions"><button class="lz-btn lz-share">共有</button>${card.dataset.dl ? `<a class="lz-btn lz-dl" href="${esc(card.dataset.dl)}" target="_blank">DL</a>` : ""}${window.innerWidth >= 769 ? `<button class="lz-btn lz-pdf">印刷</button>` : ""}<button class="lz-btn lz-x" onclick="lzClose()">閉じる</button></div></div>${imageBlock}<div class="lz-lead-strong">${esc(card.dataset.lead)}</div><div class="lz-txt">${esc(card.dataset.body)}</div>${galleryBlock}${buildInfoTableHTML(card)}${buildSNSIconsHTML(card)}`);
-
-  const mainImgEl = document.getElementById("lz-mainimg");
-  if (gallery.length>1 && mainImgEl){
-    document.getElementById("lz-gallery").onclick = e => {
-      const img = e.target.closest("img[data-img-idx]");
-      if(img) { mainImgEl.src = img.src; [...document.querySelectorAll("#lz-gallery img")].forEach((el,idx)=> el.classList.toggle("is-active", idx==img.dataset.imgIdx)); }
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="「${esc(t)}」のメイン画像"></div>` : '';
+  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="「${esc(t)}」のギャラリー画像 ${i+1}">`).join("")}</div>` : '';
+  const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
+  const dlUrl = card.dataset.dl || "";
+  const dlBtn = dlUrl ? `<a class="lz-btn lz-dl" href="${esc(dlUrl)}" target="_blank" rel="noopener" aria-label="DL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span class="lz-label">DL</span></a>` : "";
+  const pdfBtn = (window.innerWidth >= 769) ? `<button class="lz-btn lz-pdf" type="button" aria-label="印刷"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span class="lz-label">印刷</span></button>` : "";
+  const closeBtn = `<button class="lz-btn lz-x" type="button" onclick="lzClose()" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span class="lz-label">閉じる</span></button>`;
+  const infoTable = buildInfoTableHTML(card), snsIcons = buildSNSIconsHTML(card);
+  let relatedBlock = "";
+  try{ const rel = JSON.parse(card.dataset.related || "[]").filter(x => x && (x.title || x.url)); if (rel.length){ relatedBlock = `<div class="lz-related" style="padding:0 12px 12px;">${rel.map(a => { const url = a.url ? esc(a.url) : "#"; const lbl = a.title ? esc(a.title) : esc(a.url || "関連"); return `<div><a href="${url}" target="_blank" rel="noopener">${lbl}</a></div>`; }).join("")}</div>`; } }catch(_){}
+  lzOpen(`<div class="lz-mh"><h2 class="lz-mt">${esc(t)}</h2><div class="lz-actions">${shareBtn}${dlBtn}${pdfBtn}${closeBtn}</div></div>${imageBlock}${lead ? `<div class="lz-lead-strong">${esc(lead)}</div>` : ""}${body ? `<div class="lz-txt">${esc(body)}</div>` : ""}${galleryBlock}${infoTable}${snsIcons}${relatedBlock}`);
+  const mainImg = document.getElementById("lz-mainimg");
+  if (gallery.length>1 && mainImg){
+    const thumbs=[...document.querySelectorAll("#lz-gallery img")];
+    const setActive = i => thumbs.forEach((el,idx)=>el.classList.toggle("is-active", idx===i));
+    const swap = i => {
+      const nextSrc = gallery[i]; if(!nextSrc || !mainImg || mainImg.src===nextSrc) return;
+      mainImg.classList.add("lz-fadeout");
+      mainImg.addEventListener("transitionend", function h(){ mainImg.removeEventListener("transitionend", h); mainImg.src = nextSrc; if(mainImg.complete){ requestAnimationFrame(()=> mainImg.classList.remove("lz-fadeout")); } else{ mainImg.addEventListener("load", ()=> mainImg.classList.remove("lz-fadeout"), {once:true}); } }, {once:true});
+      setActive(i);
     };
-  }
-  MODAL.querySelector(".lz-share").onclick = async ()=>{
-    const payload = `${RED_APPLE}${t}${GREEN_APPLE}\n詳しくはこちら\n${shareUrlFromCard(card)}`;
-    try{ await navigator.share({ text: payload }); }catch(e){ navigator.clipboard.writeText(payload); toast("コピーしました"); }
-  };
 
-  /* ====== PDF生成（詳細エラー特定機能搭載） ====== */
-  if(MODAL.querySelector(".lz-pdf")){
-    MODAL.querySelector(".lz-pdf").onclick = async ()=>{
-      if(!confirm("PDFを生成します。よろしいですか？")) return;
-      try {
-        await ensurePdfLibs();
-        const url = shareUrlFromCard(card);
-        const clone = MODAL.cloneNode(true);
-        clone.querySelector(".lz-actions")?.remove();
-        clone.style.width="800px"; clone.style.maxHeight="none"; clone.style.height="auto";
+    document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-img-idx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
+  }
+  MODAL.querySelector(".lz-share")?.addEventListener("click", async ()=>{
+    const url = shareUrlFromCard(card);
+    const payload = `${RED_APPLE}${card.dataset.title}${GREEN_APPLE}\n${(card.dataset.lead||"") ? card.dataset.lead + "\n" : ""}ーーー\n詳しくはこちら\n${url}\n\n#いいづなりんご #飯綱町`;
+    try{ if(navigator.share){ await navigator.share({ text: payload }); } else if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(payload); toast("共有テキストをコピーしました"); } else{ const ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); toast("共有テキストをコピーしました"); } }catch(e){}
+  });
+  if(window.innerWidth >= 769){
+    MODAL.querySelector(".lz-pdf")?.addEventListener("click", async ()=>{
+      if(!confirm("PDFを新しいタブで開きます。よろしいですか？")) return;
+      try{
+        await ensurePdfLibs(); const url = shareUrlFromCard(card);
+        const clone = MODAL.cloneNode(true); clone.querySelector(".lz-actions")?.remove(); clone.style.maxHeight="none"; clone.style.height="auto"; clone.style.width="800px";
         
-        const images = Array.from(clone.querySelectorAll("img"));
-        images.forEach(img => {
+        const cloneImgs = Array.from(clone.querySelectorAll("img"));
+        cloneImgs.forEach(img=>{ 
           let src = img.src;
           // 【突破口】ペライチCDNからAWS S3直URLへ逆変換
           const cdnPattern = /^https:\/\/cdn\.peraichi\.com\//i;
           if (cdnPattern.test(src)) {
             src = src.replace(cdnPattern, "https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/");
           }
+          img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); 
           img.crossOrigin = "anonymous";
-          // ブラウザのキャッシュを避けて確実にCORS許可画像を取得
+          // キャッシュの影響を排除するためにタイムスタンプを付与
           img.src = src + (src.indexOf('?') === -1 ? '?' : '&') + "pdf_v=" + Date.now();
-          // エラー画像はPDFから除外（Canvas汚染防止）
-          img.onerror = () => { console.warn("Image Load Failed:", img.src); img.style.display = 'none'; };
         });
-
         document.body.appendChild(clone);
         
-        // 全画像の読み込み完了を待機（allSettledで一部エラーでも続行）
-        await Promise.allSettled(images.map(img => {
+        await Promise.all(cloneImgs.map(img => {
           if (img.complete) return Promise.resolve();
-          return new Promise(res => { img.onload=res; img.onerror=res; });
+          return new Promise(res => { img.onload = res; img.onerror = res; });
         }));
 
-        // html2canvas 実行
-        const canvas = await html2canvas(clone, {
-          scale: 2,
-          useCORS: true,
-          allowTaint: false,
-          backgroundColor: "#ffffff",
-          logging: true // ブラウザのコンソールに詳細ログを出す
-        }).catch(err => { throw new Error("html2canvas内部エラー: " + err.message); });
-        
+        const canvas = await html2canvas(clone,{
+          scale:2, 
+          backgroundColor:"#ffffff", 
+          useCORS:true, 
+          allowTaint:false,
+          logging: false
+        }); 
         document.body.removeChild(clone);
-
-        // Canvasから画像データを取り出せるか最終チェック
-        let imgData;
-        try {
-          imgData = canvas.toDataURL("image/png");
-        } catch (taintErr) {
-          throw new Error("セキュリティ制限(CORS)により画像データを吸い出せませんでした。特定の画像が許可されていません。");
-        }
-
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF("p","mm","a4");
-        const margin=12, pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight();
-        const innerW=pageW-margin*2, innerH=pageH-margin*2;
-        const imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
         
-        // ページ分割
-        let heightLeft = imgHmm, position = margin;
+        const { jsPDF } = window.jspdf; const pdf = new jsPDF("p","mm","a4");
+        const margin=12, pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight(), innerW=pageW-margin*2, innerH=pageH-margin*2;
+        const imgData = canvas.toDataURL("image/png"), imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
+        const totalPages = Math.max(1, Math.ceil(imgHmm / innerH)); let heightLeft = imgHmm, position = margin, pageCount = 1;
+        const yBaseDT = pageH - PDF_FOOTER.dtBottomMm; pdf.setFontSize(PDF_FOOTER.dtPt);
+        const jpPx = Math.round(pt2px(PDF_FOOTER.jpPt)), jpImg = renderFooterImagePx("本PDF データは飯綱町産りんごPR事業の一環で作成されました。", jpPx, "#000"), imgH = pt2mm(PDF_FOOTER.jpPt), imgW = imgH/jpImg.ar, xJP = margin, yJP = yBaseDT - imgH + PDF_FOOTER.jpBaselineGapMm;
         while(heightLeft > 0){
-          pdf.addImage(imgData, "PNG", margin, position, imgWmm, imgHmm);
-          heightLeft -= innerH;
-          if(heightLeft > 0){ pdf.addPage(); position = margin - (imgHmm - heightLeft); }
+          pdf.addImage(imgData,"PNG", margin, position, imgWmm, imgHmm);
+          const qrSize = PDF_FOOTER.qrSizeMm;
+          // QRコードが必要な場合はここに QRCode 生成ロジックを追加
+          pdf.addImage(jpImg.data, "PNG", xJP, yJP, imgW, imgH);
+          const now = new Date(), ts = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")} ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+          pdf.text(`${ts} / ${pageCount}/${totalPages}`, pageW - margin, yBaseDT, {align:"right"});
+          heightLeft -= innerH; if(heightLeft > 0){ pdf.addPage(); position = margin - (imgHmm - heightLeft); pageCount++; }
         }
-
         window.open(pdf.output("bloburl"), "_blank");
-      } catch (e) {
-        console.error("PDF生成詳細エラー:", e);
-        alert("PDF生成に失敗しました。\n原因: " + e.message + "\n\n※画像読み込みの制限が解決できていないようです。");
-      }
-    };
+      }catch(e){ console.error(e); alert("PDF生成失敗"); }
+    });
   }
 }
 
 function showModal(i){ if(i<0) i=CARDS.length-1; if(i>=CARDS.length) i=0; IDX=i; showModalFromCard(CARDS[i]); }
 
+/* --- Core Rendering --- */
 async function renderSection(root){
-  const { l1="", l2="", cardWidth="33.33%", cardWidthSm="80%", imageRatio="16:9" } = root.dataset;
-  root.style.setProperty("--cw", window.innerWidth > 768 ? cardWidth : cardWidthSm);
-  root.style.setProperty("--ratio", ratio(imageRatio));
-  root.innerHTML = `<div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">${esc(l2)}</h2></div></div><div class="lz-groupwrap"><div class="lz-loading">読み込み中...</div></div>`;
-  try{
-    const json = await LZ_NET.json(`${LZ_ENDPOINT}?l1=${encodeURIComponent(l1)}&l2=${encodeURIComponent(l2)}`);
-    const wrap = root.querySelector(".lz-groupwrap");
-    if(!json.ok || !json.items.length) { wrap.innerHTML="データがありません"; return; }
-    const groups = new Map();
-    json.items.forEach(it => { const k = it.l3||""; if(!groups.has(k)) groups.set(k,[]); groups.get(k).push(it); });
-    let html = "";
-    groups.forEach((items, key)=>{
-      if(key) html += `<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">${esc(key)}</h3></div>`;
-      html += `<div class="lz-track">${items.map(it => cardHTML(it, ratio(imageRatio), key)).join("")}</div>`;
-    });
-    wrap.innerHTML = html; root.classList.add("lz-ready");
-    wrap.onclick = e => {
-      const card = e.target.closest(".lz-card"); if(!card) return;
-      const track = card.closest(".lz-track"); CARDS = [...track.querySelectorAll(".lz-card")]; IDX = CARDS.indexOf(card); showModal(IDX);
-    };
-  } catch(e) { console.error(e); }
+  const { l1="", l2="", heading="", cardWidth="33.33%", cardWidthSm="50%", imageRatio="16:9", autoplay="false", autoplayInterval="", autoplayStep="" } = root.dataset;
+  if(!LZ_ENDPOINT || !l2){ root.innerHTML=`<div style="padding:12px;color:#b91c1c;">設定エラー</div>`; return; }
+  const mql=window.matchMedia("(max-width:768px)"); root.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth); root.style.setProperty("--ratio", ratio(imageRatio));
+  root.innerHTML = `<div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">${esc(heading || l2)}</h2></div></div><div class="lz-groupwrap"><div class="lz-loading" role="status" aria-live="polite"><div class="lz-loading-inner"><svg class="lz-logo" viewBox="-60 -60 720 720" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="overflow:visible"><path class="lz-logo-path" pathLength="1000" d="M287.04,32.3c.29.17,1.01.63,1.46,1.55.57,1.19.29,2.29.2,2.57-7.08,18.09-14.18,36.17-21.26,54.26,5.96-.91,14.77-2.45,25.28-5.06,17.98-4.45,22.46-7.44,33.44-9.85,18.59-4.08,33.88-1.67,44.51,0,21.1,3.32,37.42,10.74,47.91,16.6-4.08,8.59-11.1,20.05-23.06,29.99-18.47,15.35-38.46,18.54-52.07,20.7-7.55,1.21-21.61,3.32-39.12.24-13.71-2.41-11-4.76-30.72-9.36-6.73-1.56-12.82-2.64-17.98-7.87-3.73-3.77-4.92-7.63-6.74-7.3-2.44.43-1.84,7.58-4.5,16.85-.98,3.46-5.56,19.45-14.05,21.35-5.5,1.23-9.85-4.07-17.02-9.79-17.52-13.96-36.26-17.94-45.91-19.99-7.62-1.62-25.33-5.16-45.19,1.36-6.6,2.17-19.57,7.82-35.2,23.74-48.04,48.93-49.39,127.17-49.69,143.97-.08,5-.47,48.18,16.56,90.06,6.63,16.3,14.21,28.27,24.85,38.3,4.2,3.97,12.19,11.37,24.85,16.56,13.72,5.63,26.8,6.15,31.06,6.21,8.06.12,9.06-1.03,14.49,0,10.22,1.95,13.47,7.33,22.77,12.42,10.16,5.56,19.45,6.3,30.02,7.25,8.15.73,18.56,1.67,31.15-1.99,9.83-2.85,16.44-7.18,25.24-12.93,2.47-1.61,9.94-6.61,20.55-16.18,12.76-11.51,21.35-21.79,25.53-26.87,26.39-32.12,39.71-48.12,50.73-71.43,12.87-27.23,17.2-49.56,18.63-57.97,3.23-18.95,5.82-35.27,0-54.87-2.24-7.54-6.98-23.94-21.74-37.27-5.26-4.76-12.9-11.66-24.85-13.46-17.04-2.58-30.24,7.19-33.13,9.32-9.71,7.17-13.91,16.56-21.93,35.04-1.81,4.19-8.26,19.38-14.31,43.63-2.82,11.32-6.43,25.97-8.28,45.55-1.47,15.61-3.27,34.6,1.04,59.01,4.92,27.9,15.01,47.01,17.6,51.76,5.58,10.26,12.02,21.83,24.85,33.13,6.45,5.69,17.55,15.24,35.2,19.77,19.17,4.92,34.7.98,38.3,0,14.29-3.9,24.02-11.27,28.99-15.63"/></svg><div class="lz-loading-label">記事読み込み中…</div></div></div></div>`;
+  const wrap = root.querySelector(".lz-groupwrap"); root.classList.add("lz-ready");
+  const _svg = root.querySelector('.lz-loading .lz-logo'); if(_svg) lzCenterLogoSVG(_svg);
+  let json; try{ json = await LZ_NET.json(`${LZ_ENDPOINT}?l1=${encodeURIComponent(l1)}&l2=${encodeURIComponent(l2)}`); }catch{ wrap.innerHTML = `<div style="padding:12px;color:#b91c1c;">読み込み失敗</div>`; return; }
+  if(!json || !json.ok){ wrap.innerHTML = `<div style="padding:12px;color:#b91c1c;">データなし</div>`; return; }
+  const items = json.items || [], groups = new Map();
+  for(const it of items){ const key = (it.l3 || it.L3 || it.L3_LABEL || "").trim(); if(!groups.has(key)) groups.set(key, []); groups.get(key).push(it); }
+  const pad = ratio(imageRatio); let html = "";
+  const none = groups.get("") || []; if(none.length){ html += `<div class="lz-track" data-group="">${none.map(it => cardHTML(it, pad, "")).join("")}</div>`; groups.delete(""); }
+  for(const [key, arr] of groups){ const safe = esc(key); html += `<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">${safe}</h3></div><div class="lz-track" data-group="${safe}">${arr.map(it => cardHTML(it, pad, key)).join("")}</div>`; }
+  wrap.innerHTML = html;
+  if (String(autoplay).toLowerCase() === "true") {
+    const iv = parseInt(autoplayInterval, 10), stp = parseInt(autoplayStep, 10);
+    const opt = { interval: Number.isFinite(iv) && iv > 0 ? iv : 4000, stepCards: Number.isFinite(stp) && stp > 0 ? stp : 1 };
+    wrap.querySelectorAll(".lz-track").forEach(track => setupAutoPlay(track, opt));
+  }
+  wrap.addEventListener("click", e=>{ const card = e.target.closest(".lz-card"); if(!card) return; const track = card.closest(".lz-track"); CARDS = [...track.querySelectorAll(".lz-card")]; IDX = CARDS.indexOf(card); showModal(IDX); }, {passive:true});
 }
 
-function buildNav(){
-  const sections = document.querySelectorAll(".lz-section[data-l2]");
-  const navs = document.querySelectorAll(".lz-nav");
-  if(!sections.length || !navs.length) return;
-  const html = `<div class="lz-nav-inner">${[...sections].map(s=> { if(!s.id) s.id = s.dataset.l2; return `<a href="?section=${esc(s.id)}" data-target="${esc(s.id)}">${esc(s.dataset.l2)}</a>`; }).join("")}</div>`;
-  navs.forEach(n => {
-    n.innerHTML = html;
-    n.onclick = e => {
-      const a = e.target.closest("a"); if(!a) return; e.preventDefault();
-      const id = a.dataset.target, el = document.getElementById(id);
-      if(el) window.scrollTo({ top: el.offsetTop - 80, behavior: "smooth" });
-      const url = new URL(location.href); url.searchParams.set("section", id); history.replaceState(null, "", url.pathname + url.search);
-    };
-  });
+function buildNav(options={}){
+  const sections = Array.from(document.querySelectorAll(".lz-section[data-l2]")); if(!sections.length) return;
+  sections.forEach((s,i)=>{ if(!s.id){ const base = (s.dataset.l2||`l2-${i+1}`); let id=base,c=1; while(document.getElementById(id)) id=`${base}-${++c}`; s.id=id; }});
+  const navs=document.querySelectorAll(".lz-nav"); if(!navs.length) return;
+  const html=`<div class="lz-nav-inner">${sections.map(s=>`<a href="?section=${s.id}" data-target="${s.id}">${esc(s.dataset.l2)}</a>`).join("")}</div>`;
+  navs.forEach(n=>n.innerHTML=html);
+  const links=[...document.querySelectorAll(".lz-nav a")], byId=Object.fromEntries(links.map(a=>[a.dataset.target,a])), offset=parseInt(navs[0].dataset.offset||options.offset||0,10)||0;
+  document.addEventListener("click",e=>{
+    const a=e.target.closest(".lz-nav a[data-target]"); if(!a) return; e.preventDefault();
+    const id=a.dataset.target, el=document.getElementById(id); if(!el) return;
+    const y=el.getBoundingClientRect().top + window.pageYOffset - offset; window.scrollTo({top:y,behavior:"smooth"});
+    if(HOST?.classList.contains("open")) lzClose();
+    const url = new URL(location.href);
+    url.searchParams.set("section", id);
+    url.searchParams.delete("id");
+    history.replaceState(null, "", url.pathname + url.search);
+  },{passive:false});
+  if("IntersectionObserver" in window){
+    const io=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting){ links.forEach(x=>x.classList.remove("is-active")); const a=byId[en.target.id]; if(a) a.classList.add("is-active"); } }); },{rootMargin:"-40% 0px -55% 0px"});
+    sections.forEach(s=>io.observe(s));
+  }
+}
+
+function openFromQueryWithRetry(){
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if(!id) return;
+  
+  const openIfReady=()=>{ 
+    const card=document.getElementById(id); 
+    if(card){ 
+      const track = card.closest(".lz-track"); 
+      CARDS = [...track.querySelectorAll(".lz-card")]; 
+      IDX = CARDS.indexOf(card); 
+      showModal(IDX); 
+      return true; 
+    } 
+    return false; 
+  };
+  if(openIfReady()) return; 
+  const mo=new MutationObserver(()=>{ if(openIfReady()){ mo.disconnect(); clearTimeout(timer); }});
+  mo.observe(document.documentElement,{childList:true,subtree:true}); 
+  const timer=setTimeout(()=>mo.disconnect(),8000);
 }
 
 function boot(){
-  buildNav(); document.querySelectorAll(".lz-section").forEach(s => renderSection(s));
-  const params = new URLSearchParams(location.search);
-  if(params.get('id')) {
-    const openWhenReady = () => { const el = document.getElementById(params.get('id')); if(el){ el.click(); return true; } return false; };
-    if(!openWhenReady()){ const mo = new MutationObserver(()=>{ if(openWhenReady()) mo.disconnect(); }); mo.observe(document.documentElement, {childList:true,subtree:true}); setTimeout(()=>mo.disconnect(), 8000); }
-  }
-  if(params.get('section')) setTimeout(()=>{ const el=document.getElementById(params.get('section')); if(el) window.scrollTo({top:el.offsetTop-80}); }, 1000);
-}
-document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
+  const sections=document.querySelectorAll(".lz-section[data-l2]"); if(!sections.length) return;
+  const offset = document.querySelector(".pera1-header")?.offsetHeight||0;
+  buildNav({offset});
 
-/* ====== Appletown Analytics ====== */
+  const handleUrlParams = (isInitialLoad = false) => {
+    const params = new URLSearchParams(window.location.search);
+    const modalId = params.get('id');
+    const sectionId = params.get('section');
+
+    if (modalId) {
+      openFromQueryWithRetry();
+    } else if (sectionId) {
+      const scrollTo = () => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top: y, behavior: isInitialLoad ? 'auto' : 'smooth' });
+          return true;
+        }
+        return false;
+      };
+      if (scrollTo()) return;
+      const mo = new MutationObserver(() => { if (scrollTo()) mo.disconnect(); });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+      setTimeout(() => mo.disconnect(), 8000);
+    }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('id') || params.has('section')) {
+    sections.forEach(s => renderSection(s));
+    handleUrlParams(true);
+  } else {
+    const mql=window.matchMedia("(max-width:768px)");
+    const applyWidth=()=>sections.forEach(s=>{ const {cardWidth="33.33%", cardWidthSm="80%"} = s.dataset; s.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth); });
+    applyWidth(); mql.addEventListener?.("change", applyWidth);
+    const io=("IntersectionObserver" in window) ? new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting){ io.unobserve(e.target); renderSection(e.target); } }); },{rootMargin:"200px 0px"}) : null;
+    sections.forEach(s=>{ if(io) io.observe(s); else renderSection(s); });
+  }
+
+  window.addEventListener("popstate", () => handleUrlParams(false), {passive:true});
+}
+if(document.readyState==="loading") { document.addEventListener("DOMContentLoaded", boot); } else { boot(); }
+
+/* ====== Eager Load Patch ====== */
+(function forceEagerLoadForLZ(){
+  var _origRenderSection = window.renderSection; if (typeof _origRenderSection !== 'function') return;
+  function guardedRenderSection(el){ if (!el || el.classList?.contains('lz-ready') || el.dataset.lzDone === '1') return; el.dataset.lzDone = '1'; return _origRenderSection(el); }
+  window.renderSection = guardedRenderSection;
+  function eager(){ var sections = document.querySelectorAll('.lz-section[data-l2]'); sections.forEach(function(s){ guardedRenderSection(s); }); if (typeof window.openFromQueryWithRetry === 'function'){ window.openFromQueryWithRetry(); } }
+  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', eager); } else { eager(); }
+})();
+
+/* ====== Appletown Analytics (Optimized) ====== */
 (function () {
   "use strict";
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
+
   const CONF = window.LZ_CONFIG?.ANALYTICS;
   if (!CONF) return; 
-  const ENDPOINT = CONF.ENDPOINT, VISITOR_COOKIE = CONF.VISITOR_COOKIE, VISITOR_LSKEY = CONF.VISITOR_LSKEY, SESSION_TTL_MS = CONF.SESSION_TTL;
+
+  const ENDPOINT = CONF.ENDPOINT;
+  const VISITOR_COOKIE = CONF.VISITOR_COOKIE;
+  const VISITOR_LSKEY = CONF.VISITOR_LSKEY;
+  const SESSION_TTL_MS = CONF.SESSION_TTL;
+  
   const D = document, W = window, N = navigator, S = screen, now = () => Date.now();
   const text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
+
   let activeTime = 0, lastVisibleTs = now(), tPage = now();
-  const updateActiveTime = () => { if (D.visibilityState === "visible") { lastVisibleTs = now(); } else { activeTime += now() - lastVisibleTs; } };
+  const updateActiveTime = () => {
+    if (D.visibilityState === "visible") { lastVisibleTs = now(); } else { activeTime += now() - lastVisibleTs; }
+  };
   D.addEventListener("visibilitychange", updateActiveTime);
+
   const GEO_CACHE_KEY = "apz_geo_v1", GEO_TTL_MS = 24 * 60 * 60 * 1000;
   let GEO = null;
-  async function loadGeo(){ try{ const cached = localStorage.getItem(GEO_CACHE_KEY); if (cached){ const obj = JSON.parse(cached); if (now() - (obj.t||0) < GEO_TTL_MS){ GEO = obj.d; return GEO; } } const ctrl = new AbortController(), timer = setTimeout(()=> ctrl.abort(), 1500); const res = await fetch("https://ipapi.co/json/", { signal:ctrl.signal }); clearTimeout(timer); if (!res.ok) throw new Error("geo_fail"); const j = await res.json(); GEO = { ip: j.ip||"", country: j.country_name||j.country||"", region: j.region||"", city: j.city||"", postal: j.postal||"", lat: j.latitude??null, lon: j.longitude??null }; localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ t:now(), d:GEO })); return GEO; } catch(_){ return null; } }
+  async function loadGeo(){
+    try{ 
+      const cached = localStorage.getItem(GEO_CACHE_KEY); 
+      if (cached){ 
+        const obj = JSON.parse(cached); 
+        if (now() - (obj.t||0) < GEO_TTL_MS){ GEO = obj.d; return GEO; } 
+      }
+      const ctrl = new AbortController(), timer = setTimeout(()=> ctrl.abort(), 1500);
+      const res = await fetch("https://ipapi.co/json/", { signal:ctrl.signal });
+      clearTimeout(timer); 
+      if (!res.ok) throw new Error("geo_fail"); 
+      const j = await res.json();
+      GEO = { ip: j.ip||"", country: j.country_name||j.country||"", region: j.region||"", city: j.city||"", postal: j.postal||"", lat: j.latitude??null, lon: j.longitude??null };
+      localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ t:now(), d:GEO })); 
+      return GEO;
+    } catch(_){ return null; }
+  }
+
   const uuid4 = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{ const r = Math.random()*16|0, v = c==="x" ? r : ((r&3)|8); return v.toString(16); });
   const setCookie = (k,v,days)=>{ try{ const d = new Date(); d.setTime(d.getTime() + days*864e5); D.cookie = `${k}=${encodeURIComponent(v)}; path=/; SameSite=Lax; expires=${d.toUTCString()}`; }catch(_){} };
   const getCookie = k => { try{ const m = D.cookie.match(new RegExp("(?:^| )"+k.replace(/([.*+?^${}()|[\]\\])/g,"\\$&")+"=([^;]*)")); return m ? decodeURIComponent(m[1]) : null; }catch(_){return null;} };
-  function ensureVisitorId(){ let vid = getCookie(VISITOR_COOKIE); if (vid){ localStorage.setItem(VISITOR_LSKEY, vid); return vid; } vid = localStorage.getItem(VISITOR_LSKEY); if (vid){ setCookie(VISITOR_COOKIE, vid, 365*3); return vid; } vid = uuid4(); setCookie(VISITOR_COOKIE, vid, 365*3); localStorage.setItem(VISITOR_LSKEY, vid); return vid; }
+  
+  function ensureVisitorId(){ 
+    let vid = getCookie(VISITOR_COOKIE); 
+    if (vid){ localStorage.setItem(VISITOR_LSKEY, vid); return vid; } 
+    vid = localStorage.getItem(VISITOR_LSKEY); 
+    if (vid){ setCookie(VISITOR_COOKIE, vid, 365*3); return vid; } 
+    vid = uuid4(); 
+    setCookie(VISITOR_COOKIE, vid, 365*3); localStorage.setItem(VISITOR_LSKEY, vid); 
+    return vid; 
+  }
   let visitorId = ensureVisitorId();
+
   const S_ID="apz_sid", S_TS="apz_sid_ts";
-  function touchSession(){ let sid = sessionStorage.getItem(S_ID); const t = now(), last = +sessionStorage.getItem(S_TS) || 0; if (!sid || (t-last) > SESSION_TTL_MS) sid = uuid4(); sessionStorage.setItem(S_ID, sid); sessionStorage.setItem(S_TS, t); return sid; }
+  function touchSession(){ 
+    let sid = sessionStorage.getItem(S_ID); 
+    const t = now(), last = +sessionStorage.getItem(S_TS) || 0; 
+    if (!sid || (t-last) > SESSION_TTL_MS) sid = uuid4(); 
+    sessionStorage.setItem(S_ID, sid); 
+    sessionStorage.setItem(S_TS, t); 
+    return sid; 
+  }
   let sessionId = touchSession();
+
   const utm = (() => { const p = new URLSearchParams(location.search); return { utm_source: p.get("utm_source")||"", utm_medium: p.get("utm_medium")||"", utm_campaign: p.get("utm_campaign")||"" }; })();
-  function sendEvent(event_name, event_params){ try { sessionId = touchSession(); const payload = { visitor_id: visitorId, session_id: sessionId, event_name, event_params: event_params || {}, page_url: location.href, page_title: D.title || "", referrer: D.referrer || "", ...utm, screen_w: S?.width??null, screen_h: S?.height??null, ua: N.userAgent||"" }; if (GEO){ payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; } const body = JSON.stringify(payload); if (N.sendBeacon && N.sendBeacon(ENDPOINT, new Blob([body], {type:"text/plain;charset=UTF-8"}))) return; fetch(ENDPOINT, { method:"POST", mode:"no-cors", body }).catch(() => { const img = new Image(); img.src = `${ENDPOINT}?d=${encodeURIComponent(body)}&t=${now()}`; }); } catch(_){} }
+
+  function sendEvent(event_name, event_params){
+    try {
+      sessionId = touchSession();
+      const payload = { 
+        visitor_id: visitorId, session_id: sessionId, event_name, 
+        event_params: event_params || {}, page_url: location.href, 
+        page_title: D.title || "", referrer: D.referrer || "", 
+        ...utm, screen_w: S?.width??null, screen_h: S?.height??null, ua: N.userAgent||"" 
+      };
+      if (GEO){ 
+        payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; 
+        payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; 
+      }
+      const body = JSON.stringify(payload);
+      if (N.sendBeacon && N.sendBeacon(ENDPOINT, new Blob([body], {type:"text/plain;charset=UTF-8"}))) return;
+      fetch(ENDPOINT, { method:"POST", mode:"no-cors", body }).catch(() => {
+        const img = new Image();
+        img.src = `${ENDPOINT}?d=${encodeURIComponent(body)}&t=${now()}`;
+      });
+    } catch(_){}
+  }
+
   W.mzTrack ||= ((name,params)=> sendEvent(name,params));
-  Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,800)) ]).finally(() => { setTimeout(() => sendEvent("page_view", {}), 100); });
+  Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,800)) ]).finally(() => {
+    setTimeout(() => sendEvent("page_view", {}), 100);
+  });
+
   let lastCard = null;
   const cardMeta = card => card ? { card_id: card.dataset.id||card.id||"", title: card.dataset.title||"", group: card.dataset.group||"", has_main: !!card.dataset.main } : {};
+
   D.addEventListener("click", e => {
-    const t = e.target, card = t.closest?.(".lz-card"); 
+    const t = e.target;
+    const card = t.closest?.(".lz-card"); 
     if (card){ lastCard = cardMeta(card); sendEvent("card_click", {...lastCard}); return; }
     const btn = t.closest?.(".lz-btn");
-    if (btn){ const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn"; sendEvent("modal_action", { action:kind, label:text(btn), ...(lastCard||{}) }); return; }
+    if (btn){
+      const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn";
+      sendEvent("modal_action", { action:kind, label:text(btn), ...(lastCard||{}) });
+      return;
+    }
     const sns = t.closest?.(".lz-sns a, .lz-sns-btn");
     if (sns){ sendEvent("sns_click", { platform:sns.dataset.sns||"web", href:sns.href||"", ...(lastCard||{}) }); return; }
     const th = t.closest?.("#lz-gallery img[data-img-idx]");
@@ -406,17 +649,34 @@ document.readyState === "loading" ? document.addEventListener("DOMContentLoaded"
     const ext = t.closest?.(".lz-info a[href], .lz-related a[href]");
     if (ext){ sendEvent("external_link", { href:ext.href||"", label:text(ext), ...(lastCard||{}) }); return; }
   }, {capture:true, passive:true});
+
   (function(){
     const observeModal = () => {
       const mo = new MutationObserver(muts => {
-        for(const m of muts) { for(const n of m.addedNodes) { if(n.nodeType === 1 && (n.matches?.(".lz-modal") || n.querySelector?.(".lz-modal"))) { const title = D.querySelector(".lz-modal .lz-mt")?.textContent?.trim() || "modal"; sendEvent("modal_open", { modal_name: title, ...(lastCard || {}) }); } } }
+        for(const m of muts) {
+          for(const n of m.addedNodes) {
+            if(n.nodeType === 1 && (n.matches?.(".lz-modal") || n.querySelector?.(".lz-modal"))) {
+              const title = D.querySelector(".lz-modal .lz-mt")?.textContent?.trim() || "modal";
+              sendEvent("modal_open", { modal_name: title, ...(lastCard || {}) });
+            }
+          }
+        }
       });
       mo.observe(D.documentElement, {childList:true, subtree:true});
     };
     observeModal();
   })();
+
   let closedSent = false;
-  function flushClose(reason){ if (closedSent) return; closedSent = true; const finalActiveTime = D.visibilityState === "visible" ? activeTime + (now() - lastVisibleTs) : activeTime; sendEvent("page_close", { total_engaged_ms: now() - tPage, active_engaged_ms: finalActiveTime, reason: String(reason || "") }); }
+  function flushClose(reason){
+    if (closedSent) return;
+    closedSent = true; 
+    const finalActiveTime = D.visibilityState === "visible" ? activeTime + (now() - lastVisibleTs) : activeTime;
+    sendEvent("page_close", { total_engaged_ms: now() - tPage, active_engaged_ms: finalActiveTime, reason: String(reason || "") });
+  }
+
   W.addEventListener("pagehide", e => flushClose(e.persisted ? "bfcache" : "unload"), {capture:true});
-  D.addEventListener("visibilitychange", () => { if (D.visibilityState === "hidden") setTimeout(() => flushClose("visibility_hidden"), 0); }, {capture:true});
+  D.addEventListener("visibilitychange", () => {
+    if (D.visibilityState === "hidden") setTimeout(() => flushClose("visibility_hidden"), 0);
+  }, {capture:true});
 })();
