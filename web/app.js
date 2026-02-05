@@ -2,7 +2,7 @@
 (function() {
   // ここでバージョンを一括管理！ 
   // 更新した時はこの日付部分を書き換えるだけで全ページに反映されます
-  const v = "20260205_2201"; 
+  const v = "20260205_2202"; 
   const base = "https://cdn.jsdelivr.net/gh/takizawa-debug/iizuna-apple-project@main/web/";
   
   const files = [
