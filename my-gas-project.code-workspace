@@ -1,7 +1,8 @@
 {
 	"folders": [
 		{
-			"path": "my-gas-project"
+			"path": "."
 		}
-	]
+	],
+	"settings": {}
 }

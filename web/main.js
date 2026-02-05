@@ -163,7 +163,6 @@ function lzOpen(html){
   HOST.classList.add("open");
 }
 
-/* 【修正】モーダルを閉じた時にタイトルを復元し、パラメータを削除 */
 function lzClose(){
   if(!HOST) return;
   HOST.classList.remove("open");
@@ -176,7 +175,6 @@ function lzClose(){
 }
 window.lzClose = lzClose;
 
-/* 【修正】URLの生成を ?id=〇〇 に変更 */
 function shareUrlFromCard(card){
   const url = new URL(window.location.origin + window.location.pathname);
   url.searchParams.set('id', card.dataset.id);
@@ -313,38 +311,27 @@ function buildSNSIconsHTML(card){
   return html ? `<div class="lz-sns">${html}</div>` : "";
 }
 
-/* 【SEO適正化済】モーダル表示関数 */
 function showModalFromCard(card){
   if(!card) return;
   const t = card.dataset.title;
-
-  // 【SEO強化】ページタイトルを「記事名 | 元のタイトル」に更新
   document.title = `${t} | ${originalTitle}`;
 
   try{ history.replaceState(null, "", shareUrlFromCard(card)); }catch(e){}
-  
-  const lead=card.dataset.lead, body=card.dataset.body;
-  const main=card.dataset.main;
+  const lead=card.dataset.lead, body=card.dataset.body, main=card.dataset.main;
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
   const gallery=[main, ...subs].filter(Boolean);
 
-  // 【SEO強化】alt属性にタイトルを含める
-  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}のメイン画像"></div>` : '';
-  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="${esc(t)}のギャラリー画像 ${i+1}">`).join("")}</div>` : '';
-  
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="「${esc(t)}」のメイン画像"></div>` : '';
+  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="「${esc(t)}」のギャラリー画像 ${i+1}">`).join("")}</div>` : '';
   const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
   const dlUrl = card.dataset.dl || "";
   const dlBtn = dlUrl ? `<a class="lz-btn lz-dl" href="${esc(dlUrl)}" target="_blank" rel="noopener" aria-label="DL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span class="lz-label">DL</span></a>` : "";
   const pdfBtn = (window.innerWidth >= 769) ? `<button class="lz-btn lz-pdf" type="button" aria-label="印刷"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span class="lz-label">印刷</span></button>` : "";
   const closeBtn = `<button class="lz-btn lz-x" type="button" onclick="lzClose()" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span class="lz-label">閉じる</span></button>`;
-  
   const infoTable = buildInfoTableHTML(card), snsIcons = buildSNSIconsHTML(card);
   let relatedBlock = "";
   try{ const rel = JSON.parse(card.dataset.related || "[]").filter(x => x && (x.title || x.url)); if (rel.length){ relatedBlock = `<div class="lz-related" style="padding:0 12px 12px;">${rel.map(a => { const url = a.url ? esc(a.url) : "#"; const lbl = a.title ? esc(a.title) : esc(a.url || "関連"); return `<div><a href="${url}" target="_blank" rel="noopener">${lbl}</a></div>`; }).join("")}</div>`; } }catch(_){}
-
-  // 【SEO強化】見出しを <h3> から <h2> に格上げ
   lzOpen(`<div class="lz-mh"><h2 class="lz-mt">${esc(t)}</h2><div class="lz-actions">${shareBtn}${dlBtn}${pdfBtn}${closeBtn}</div></div>${imageBlock}${lead ? `<div class="lz-lead-strong">${esc(lead)}</div>` : ""}${body ? `<div class="lz-txt">${esc(body)}</div>` : ""}${galleryBlock}${infoTable}${snsIcons}${relatedBlock}`);
-
   const mainImg = document.getElementById("lz-mainimg");
   if (gallery.length>1 && mainImg){
     const thumbs=[...document.querySelectorAll("#lz-gallery img")];
@@ -355,15 +342,14 @@ function showModalFromCard(card){
       mainImg.addEventListener("transitionend", function h(){ mainImg.removeEventListener("transitionend", h); mainImg.src = nextSrc; if(mainImg.complete){ requestAnimationFrame(()=> mainImg.classList.remove("lz-fadeout")); } else{ mainImg.addEventListener("load", ()=> mainImg.classList.remove("lz-fadeout"), {once:true}); } }, {once:true});
       setActive(i);
     };
+
     document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-img-idx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
   }
-
   MODAL.querySelector(".lz-share")?.addEventListener("click", async ()=>{
     const url = shareUrlFromCard(card);
     const payload = `${RED_APPLE}${card.dataset.title}${GREEN_APPLE}\n${(card.dataset.lead||"") ? card.dataset.lead + "\n" : ""}ーーー\n詳しくはこちら\n${url}\n\n#いいづなりんご #飯綱町`;
     try{ if(navigator.share){ await navigator.share({ text: payload }); } else if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(payload); toast("共有テキストをコピーしました"); } else{ const ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); toast("共有テキストをコピーしました"); } }catch(e){}
   });
-
   if(window.innerWidth >= 769){
     MODAL.querySelector(".lz-pdf")?.addEventListener("click", async ()=>{
       if(!confirm("PDFを新しいタブで開きます。よろしいですか？")) return;
@@ -374,7 +360,11 @@ function showModalFromCard(card){
         document.body.appendChild(clone);
         const qrDiv = document.createElement("div"); new QRCode(qrDiv,{ text:url, width:64, height:64, correctLevel: QRCode.CorrectLevel.L });
         const qrCanvas = qrDiv.querySelector("canvas"), qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
-        const canvas = await html2canvas(clone,{scale:2, backgroundColor:"#ffffff", useCORS:false, allowTaint:true}); document.body.removeChild(clone);
+        
+        // 【重要修正】useCORS: true に変更して外部サーバーの画像を許可する
+        const canvas = await html2canvas(clone,{scale:2, backgroundColor:"#ffffff", useCORS:true, allowTaint:false}); 
+        document.body.removeChild(clone);
+        
         const { jsPDF } = window.jspdf; const pdf = new jsPDF("p","mm","a4");
         const margin=12, pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight(), innerW=pageW-margin*2, innerH=pageH-margin*2;
         const imgData = canvas.toDataURL("image/png"), imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
