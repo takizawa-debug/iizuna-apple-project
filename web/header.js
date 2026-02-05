@@ -2,7 +2,7 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (スマホ用シングルボタン対応)
+     1. CSSの注入 (タイトルサイズを以前の大きさに復元)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
@@ -14,40 +14,46 @@
       display: block !important;
     }
 
-    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(10px, 3vw, 20px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 8px; }
-    .lz-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2.5vw, 16px) !important; }
+    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(12px, 4vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 16px; flex-wrap: nowrap !important; }
+    .lz-right { display: flex !important; align-items: center !important; gap: 16px !important; flex: 0 0 auto !important; }
     
-    .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 10px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 10px) !important; }
+    /* ロゴエリアのサイズ・圧縮防止 */
+    .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 12px) !important; flex: 1 1 auto !important; min-width: 0 !important; }
     .lz-logo__img { position: absolute !important; top: calc((var(--hdr-h) - var(--logo-size)) / 2) !important; left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; border-radius: 5px !important; object-fit: cover !important; }
-    .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; font-family: system-ui,sans-serif !important; }
-    .lz-t1 { font-weight: 400 !important; font-size: clamp(0.7rem, 1.8vw, 1.35rem) !important; opacity: .9 !important; }
-    .lz-t2 { font-weight: 800 !important; font-size: clamp(1.05rem, 2.5vw, 2.1rem) !important; margin-top: 2px !important; }
+    
+    .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.05 !important; font-family: system-ui,sans-serif !important; white-space: nowrap !important; }
+    
+    /* タイトルフォントサイズを以前の「大きい設定」に復元 */
+    .lz-t1 { font-weight: 400 !important; font-size: clamp(1.05rem, 1.9vw, 1.35rem) !important; letter-spacing: .01em !important; opacity: .95 !important; }
+    .lz-t2 { font-weight: 800 !important; font-size: clamp(1.55rem, 2.7vw, 2.1rem) !important; letter-spacing: .01em !important; margin-top: 4px !important; }
     
     /* PCナビ */
     .lz-hnav { display: none; }
     @media (min-width: 1024px) { .lz-hnav { display: block !important; } }
-    .lz-hnav__list { display: flex !important; align-items: center !important; gap: clamp(10px, 1.5vw, 22px) !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
+    .lz-hnav__list { display: flex !important; align-items: center !important; gap: 22px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
     .lz-hnav__item { position: relative !important; height: var(--hdr-h); display: flex; align-items: center; }
-    .lz-hnav__l1 { font-weight: 550 !important; font-size: clamp(1rem, 1.8vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 8px 10px !important; border-radius: 8px !important; }
+    .lz-hnav__l1 { font-weight: 550 !important; font-size: clamp(1.22rem, 2.3vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 10px 12px !important; border-radius: 8px !important; }
     .lz-hnav__panel { position: absolute !important; right: 0 !important; top: 100% !important; background: #fff !important; color: #222 !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgba(0,0,0,.18) !important; padding: 10px !important; display: none; min-width: 220px !important; z-index: 10001 !important; }
     .lz-hnav__panel.is-open { display: block !important; }
     .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1.25rem; border-bottom: 1px solid #f0f0f0 !important; }
-    .lz-hnav__panel a:last-child { border-bottom: none !important; }
 
-    /* 言語設定：共通（準備中） */
-    .is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
+    /* 読み込み中ステータス */
+    .lz-nav-loading { padding: 20px !important; text-align: center !important; color: #999 !important; font-size: 1.1rem !important; }
+    .lz-loading-dots::after { content: '...'; animation: lz-dots 1.5s steps(4, end) infinite; }
+    @keyframes lz-dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80% { content: '...'; } }
 
-    /* 言語設定：PC用 */
+    /* 言語設定：PC用（以前のサイズ） */
     .lz-lang-pc { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
-    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 36px !important; padding: 0 12px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer !important; font-weight: 550; font-size: 0.95rem !important; }
-    .lz-lang-pc__btn::after { content: ""; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #fff; transition: transform .3s; }
+    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; font-weight: 550; font-size: 1.1rem !important; }
+    .lz-lang-pc__btn::after { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #fff; transition: transform .3s; }
     .lz-lang-pc__btn.is-active::after { transform: rotate(180deg); }
     .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 5px !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; display: none; min-width: 160px !important; flex-direction: column !important; z-index: 10002; }
     .lz-lang-pc__menu.is-open { display: flex !important; }
-    .lz-lang-pc__menu a { display: block !important; padding: 8px 12px !important; color: #222 !important; text-decoration: none !important; border-radius: 6px !important; font-weight: 550; font-size: 0.9rem; }
+    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1rem; }
+    .is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
 
-    /* ★スマホ用言語選択（シングルボタン）★ */
+    /* スマホ用言語選択（ボタン1つに集約版） */
     .lz-lang-mob { position: relative !important; display: flex !important; }
     @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
     .lz-lang-mob__btn { 
@@ -61,27 +67,24 @@
       padding: 6px !important; display: none; min-width: 140px !important; flex-direction: column !important; z-index: 10003;
     }
     .lz-lang-mob__menu.is-open { display: flex !important; }
-    .lz-lang-mob__menu a { 
-      display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important;
-      font-size: 14px !important; font-weight: 600 !important; border-radius: 6px !important;
-    }
+    .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 6px !important; }
 
     /* ハンバーガー・ドロワー */
-    .lz-hamb { display: flex !important; width: 40px !important; height: 40px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 8px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 5px !important; cursor: pointer; }
+    .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; cursor: pointer; }
     @media (min-width: 1024px) { .lz-hamb { display: none !important; } }
-    .lz-hamb__bar { width: 20px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
+    .lz-hamb__bar { width: 24px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
     
     .lz-dw-backdrop { position: fixed !important; inset: 0 !important; background: rgba(0,0,0,.35) !important; z-index: 19999 !important; display: none; }
     .lz-dw-backdrop.is-open { display: block !important; }
     .lz-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 80vw !important; max-width: 320px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .3s ease !important; overflow-y: auto !important; }
     .lz-drawer.is-open { transform: translateX(0) !important; }
     .lz-dw-group { border-bottom: 1px solid #eee; }
-    .lz-dw-l1a { flex: 1; display: block; padding: 16px 20px; font-weight: bold; font-size: 1.1rem; color: #333 !important; text-decoration: none !important; }
-    .lz-dw-arrow { padding: 16px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; }
+    .lz-dw-l1a { flex: 1; display: block; padding: 18px 20px; font-weight: bold; font-size: 1.15rem; color: #333 !important; text-decoration: none !important; }
+    .lz-dw-arrow { padding: 18px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; }
     .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg); }
     .lz-dw-l2-area { background: #f9f9f9; display: none; padding: 0 0 10px 25px; }
     .lz-dw-group.is-active .lz-dw-l2-area { display: block; }
-    .lz-dw-l2-area a { display: block; padding: 10px 0; color: #666 !important; text-decoration: none !important; font-size: 1rem; }
+    .lz-dw-l2-area a { display: block; padding: 12px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; }
 
     @media (max-width:1023px){ body { padding-top: var(--hdr-h) !important; } }
   `;
@@ -90,7 +93,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入 (En修正 & スマホ言語ボタン)
+     2. HTML構造の注入
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -104,7 +107,6 @@
       </a>
       <div class="lz-right">
         <nav class="lz-hnav"><ul class="lz-hnav__list" id="lzNavList"></ul></nav>
-        
         <div class="lz-lang-mob" id="lzLangMob">
           <button class="lz-lang-mob__btn" type="button">日</button>
           <div class="lz-lang-mob__menu">
@@ -113,7 +115,6 @@
             <a href="#" class="is-disabled">中文（準備中）</a>
           </div>
         </div>
-
         <div class="lz-lang-pc" id="lzLangPc">
           <button class="lz-lang-pc__btn" type="button"><span>日本語</span></button>
           <div class="lz-lang-pc__menu">
@@ -122,7 +123,6 @@
             <a href="#" class="is-disabled">中文（準備中）</a>
           </div>
         </div>
-
         <button class="lz-hamb" id="lzHamb"><span class="lz-hamb__bar"></span><span class="lz-hamb__bar"></span><span class="lz-hamb__bar"></span></button>
       </div>
     </div>
@@ -158,37 +158,19 @@
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.classList.remove('is-open'); };
 
-    // PCメニュー：排他ホバー
     let closeTimer;
     const items = document.querySelectorAll('.lz-hnav__item');
     items.forEach(item => {
       const panel = item.querySelector('.lz-hnav__panel');
-      item.onmouseenter = () => {
-        clearTimeout(closeTimer);
-        items.forEach(other => { if(other !== item) other.querySelector('.lz-hnav__panel').classList.remove('is-open'); });
-        panel.classList.add('is-open');
-      };
+      item.onmouseenter = () => { clearTimeout(closeTimer); items.forEach(o => { if(o !== item) o.querySelector('.lz-hnav__panel').classList.remove('is-open'); }); panel.classList.add('is-open'); };
       item.onmouseleave = () => { closeTimer = setTimeout(() => panel.classList.remove('is-open'), 300); };
     });
 
-    // 言語選択：共通クリック処理（PC/スマホ）
-    const setupLangToggle = (containerId, btnClass, menuClass) => {
-      const container = document.getElementById(containerId);
-      const btn = container?.querySelector('.' + btnClass);
-      const menu = container?.querySelector('.' + menuClass);
-      if(!btn || !menu) return;
-      
-      btn.onclick = (e) => {
-        e.stopPropagation();
-        const isOpen = menu.classList.toggle('is-open');
-        btn.classList.toggle('is-active', isOpen);
-      };
-      document.addEventListener('click', (e) => {
-        if(!container.contains(e.target)) {
-          menu.classList.remove('is-open');
-          btn.classList.remove('is-active');
-        }
-      });
+    const setupLangToggle = (cid, bc, mc) => {
+      const c = document.getElementById(cid), b = c?.querySelector('.'+bc), m = c?.querySelector('.'+mc);
+      if(!b || !m) return;
+      b.onclick = (e) => { e.stopPropagation(); items.forEach(i => i.querySelector('.lz-hnav__panel').classList.remove('is-open')); const open = m.classList.toggle('is-open'); b.classList.toggle('is-active', open); };
+      document.addEventListener('click', (e) => { if(!c.contains(e.target)) { m.classList.remove('is-open'); b.classList.remove('is-active'); } });
     };
 
     setupLangToggle('lzLangPc', 'lz-lang-pc__btn', 'lz-lang-pc__menu');
@@ -201,28 +183,5 @@
 
   renderSkeleton(); setupEvents();
 
-  // APIデータ反映
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
-    const json = await res.json();
-    if(json.ok) {
-      const map = new Map();
-      json.items.forEach(it => { if(!map.has(it.l1)) map.set(it.l1, []); if(!map.get(it.l1).includes(it.l2)) map.get(it.l1).push(it.l2); });
-      MENU_ORDER.forEach((l1, i) => {
-        const l2s = map.get(l1) || [], links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
-        const panels = document.querySelectorAll('.lz-hnav__panel');
-        if(panels[i]) panels[i].innerHTML = links || '<div class="lz-nav-loading">（記事なし）</div>';
-        const dwGroups = document.querySelectorAll('.lz-dw-group');
-        if(dwGroups[i]) {
-          const area = dwGroups[i].querySelector('.lz-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-dw-arrow'), link = dwGroups[i].querySelector('.lz-dw-l1a');
-          if(l2s.length > 0) {
-            area.innerHTML = links;
-            const toggle = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); };
-            arrow.onclick = toggle;
-            link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) toggle(e); else closeDrawer(); };
-          } else { area.remove(); arrow.style.display='none'; link.onclick=closeDrawer; }
-        }
-      });
-    }
-  } catch(e) { console.error(e); }
-})();
