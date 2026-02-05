@@ -19,7 +19,7 @@
   --border: #e7d3c8;
   --radius: 14px;
   --font-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
-  --font-article: "筑須A丸ゴシック Std M", "Tsukushi A Maru Gothic Std", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --font-article: "筑紫A丸ゴシック Std M", "Tsukushi A Maru Gothic Std", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
   --ig: #E4405F;
   --fb: #1877F2;
   --x: #000000;
@@ -36,6 +36,7 @@
   --loading-h: clamp(220px, 38vh, 360px);
 }
 
+
 /* --- Base Styles --- */
 .lz-section, .lz-nav, .lz-backdrop, .lz-modal {
   font-family: var(--font-base);
@@ -43,6 +44,7 @@
   font-size: var(--fz-body);
   color: var(--ink-dark);
 }
+
 .lz-lead, .lz-lead-strong, .lz-txt {
   font-family: var(--font-article);
 }
@@ -140,18 +142,23 @@
 
 .lz-lead-strong { padding: 12px 12px 0; font-weight: var(--fw-card-title); font-size: var(--fz-body); color: var(--ink-dark); line-height: 1.7; }
 .lz-txt { padding: 12px; font-weight: var(--fw-body); font-size: var(--fz-body); color: var(--ink-light); line-height: 1.75; white-space: pre-wrap; }
-
-/* --- Gallery (修正版) --- */
 .lz-g { padding: 0 12px 12px; display: grid; gap: 8px; grid-template-columns: repeat(5, 1fr); }
-.lz-g-item {
-  position: relative; width: 100%; background: #f6f7f9; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease;
+
+/* 【修正箇所】サブ画像の高さを auto にし、比率を維持して枠内に収める */
+.lz-g img { 
+  width: 100%; 
+  height: auto; 
+  aspect-ratio: 16/9; 
+  object-fit: contain; 
+  background: #f6f7f9; 
+  border-radius: 8px; 
+  border: 1px solid var(--border); 
+  cursor: pointer; 
+  transition: transform .12s ease, box-shadow .12s ease; 
 }
-.lz-g-item::before { content: ""; display: block; padding-top: 56.25%; } /* 16:9の枠を作る */
-.lz-g-item img {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; /* 枠の中で比率を維持して長い方を合わせる */
-}
-.lz-g-item:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
-.lz-g-item img.is-active { outline: 2px solid var(--apple-red); outline-offset: -2px; }
+
+.lz-g img:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
+.lz-g img.is-active { outline: 2px solid var(--apple-red); outline-offset: 2px; }
 
 /* --- Navigation & Toast --- */
 .lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .92); border: 1px solid var(--apple-red); border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10000; box-shadow: 0 2px 10px rgba(0, 0, 0, .08); }
