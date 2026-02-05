@@ -2,7 +2,7 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (タイトルサイズを以前の大きさに復元)
+     1. CSSの注入 (スマホボタンを正円に調整)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
@@ -17,13 +17,9 @@
     .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(12px, 4vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 16px; flex-wrap: nowrap !important; }
     .lz-right { display: flex !important; align-items: center !important; gap: 16px !important; flex: 0 0 auto !important; }
     
-    /* ロゴエリアのサイズ・圧縮防止 */
     .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 12px) !important; flex: 1 1 auto !important; min-width: 0 !important; }
     .lz-logo__img { position: absolute !important; top: calc((var(--hdr-h) - var(--logo-size)) / 2) !important; left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; border-radius: 5px !important; object-fit: cover !important; }
-    
     .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.05 !important; font-family: system-ui,sans-serif !important; white-space: nowrap !important; }
-    
-    /* タイトルフォントサイズを以前の「大きい設定」に復元 */
     .lz-t1 { font-weight: 400 !important; font-size: clamp(1.05rem, 1.9vw, 1.35rem) !important; letter-spacing: .01em !important; opacity: .95 !important; }
     .lz-t2 { font-weight: 800 !important; font-size: clamp(1.55rem, 2.7vw, 2.1rem) !important; letter-spacing: .01em !important; margin-top: 4px !important; }
     
@@ -36,13 +32,13 @@
     .lz-hnav__panel { position: absolute !important; right: 0 !important; top: 100% !important; background: #fff !important; color: #222 !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgba(0,0,0,.18) !important; padding: 10px !important; display: none; min-width: 220px !important; z-index: 10001 !important; }
     .lz-hnav__panel.is-open { display: block !important; }
     .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1.25rem; border-bottom: 1px solid #f0f0f0 !important; }
+    .lz-hnav__panel a:last-child { border-bottom: none !important; }
 
-    /* 読み込み中ステータス */
     .lz-nav-loading { padding: 20px !important; text-align: center !important; color: #999 !important; font-size: 1.1rem !important; }
     .lz-loading-dots::after { content: '...'; animation: lz-dots 1.5s steps(4, end) infinite; }
     @keyframes lz-dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80% { content: '...'; } }
 
-    /* 言語設定：PC用（以前のサイズ） */
+    /* 言語設定：PC用 */
     .lz-lang-pc { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
     .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; font-weight: 550; font-size: 1.1rem !important; }
@@ -53,18 +49,20 @@
     .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1rem; }
     .is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
 
-    /* スマホ用言語選択（ボタン1つに集約版） */
+    /* ★スマホ用言語選択（正円ボタン）★ */
     .lz-lang-mob { position: relative !important; display: flex !important; }
     @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
     .lz-lang-mob__btn { 
       width: 40px !important; height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important;
-      border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 8px !important; color: #fff !important;
-      font-size: 14px !important; font-weight: 700 !important; background: transparent !important; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 50% !important; /* 正円に変更 */
+      color: #fff !important; font-size: 14px !important; font-weight: 700 !important; 
+      background: transparent !important; cursor: pointer; transition: all 0.2s;
     }
+    .lz-lang-mob__btn.is-active { background: rgba(255,255,255,0.2) !important; }
     .lz-lang-mob__menu { 
       position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important;
       background: #fff !important; border-radius: 10px !important; box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
-      padding: 6px !important; display: none; min-width: 140px !important; flex-direction: column !important; z-index: 10003;
+      padding: 6px !important; display: none; min-width: 160px !important; flex-direction: column !important; z-index: 10003;
     }
     .lz-lang-mob__menu.is-open { display: flex !important; }
     .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 6px !important; }
@@ -84,7 +82,7 @@
     .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg); }
     .lz-dw-l2-area { background: #f9f9f9; display: none; padding: 0 0 10px 25px; }
     .lz-dw-group.is-active .lz-dw-l2-area { display: block; }
-    .lz-dw-l2-area a { display: block; padding: 12px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; }
+    .lz-dw-l2-area a { display: block; padding: 10px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; }
 
     @media (max-width:1023px){ body { padding-top: var(--hdr-h) !important; } }
   `;
@@ -93,7 +91,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入
+     2. HTML構造の注入 (プルダウン表記をPCと統一)
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -107,22 +105,25 @@
       </a>
       <div class="lz-right">
         <nav class="lz-hnav"><ul class="lz-hnav__list" id="lzNavList"></ul></nav>
+        
         <div class="lz-lang-mob" id="lzLangMob">
           <button class="lz-lang-mob__btn" type="button">日</button>
           <div class="lz-lang-mob__menu">
             <a href="#">日本語</a>
-            <a href="#" class="is-disabled">En（準備中）</a>
+            <a href="#" class="is-disabled">English（準備中）</a>
             <a href="#" class="is-disabled">中文（準備中）</a>
           </div>
         </div>
+
         <div class="lz-lang-pc" id="lzLangPc">
           <button class="lz-lang-pc__btn" type="button"><span>日本語</span></button>
           <div class="lz-lang-pc__menu">
             <a href="#">日本語</a>
-            <a href="#" class="is-disabled">En（準備中）</a>
+            <a href="#" class="is-disabled">English（準備中）</a>
             <a href="#" class="is-disabled">中文（準備中）</a>
           </div>
         </div>
+
         <button class="lz-hamb" id="lzHamb"><span class="lz-hamb__bar"></span><span class="lz-hamb__bar"></span><span class="lz-hamb__bar"></span></button>
       </div>
     </div>
@@ -130,7 +131,7 @@
   <div class="lz-dw-backdrop" id="lzDwBackdrop"></div>
   <aside class="lz-drawer" id="lzDrawer">
     <div class="lz-dw-head" style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-      <div style="font-weight:bold; font-size:1.1rem; color:#333;">メニュー</div>
+      <div style="font-weight:bold; font-size:1.15rem; color:#333;">メニュー</div>
       <button id="lzDwClose" style="border:none; background:none; font-size:28px; color:#999; cursor:pointer;">&times;</button>
     </div>
     <nav class="lz-dw-nav" id="lzDwNav"></nav>
