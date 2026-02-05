@@ -1,6 +1,6 @@
 /* web/app.js (即戦力・機能特化版) */
 (function() {
-  const v = "20260205_2359"; 
+  const v = "20260205_2400"; 
   const base = "https://cdn.jsdelivr.net/gh/takizawa-debug/iizuna-apple-project@main/web/";
   
   const files = [
