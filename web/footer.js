@@ -1,4 +1,4 @@
-/* web/footer.js - 最下部固定・最適化版 */
+/* web/footer.js - 監視機能付き・完全最下部固定版 */
 (async function lzFooterBoot() {
   "use strict";
 
@@ -17,15 +17,13 @@
      ========================================== */
   const style = document.createElement('style');
   style.textContent = `
-    /* フッター全体のコンテナ：他の要素に被らせない */
     .lz-footer-anchor { 
       clear: both !important; 
       display: block !important; 
       width: 100% !important; 
-      margin-top: 60px !important;
+      margin-top: 80px !important;
     }
-    /* ジャーニーナビ */
-    .lz-journey { background:#f9f5f4; padding:28px 16px; overflow:hidden; }
+    .lz-journey { background:#f9f5f4; padding:36px 16px; overflow:hidden; }
     .lz-steps { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
     .lz-step {
       font-family: system-ui,-apple-system,sans-serif;
@@ -36,35 +34,28 @@
     .lz-step:hover { background:#cf3a3a; color:#fff; }
     .lz-step.is-current { background:#e5e7eb; border-color:#e5e7eb; color:#9ca3af; cursor:default; pointer-events:none; }
 
-    /* フッター本体 */
-    .lz-footer { background:#cf3a3a; color:#fff; padding:30px 20px; }
-    .lz-fwrap { max-width:1100px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; }
+    .lz-footer { background:#cf3a3a; color:#fff; padding:40px 20px; }
+    .lz-fwrap { max-width:1100px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:20px; text-align:center; }
     .lz-fnav { display:flex; flex-wrap:wrap; gap:18px 28px; justify-content:center; }
-    .lz-fnav__link { color:#fff; text-decoration:none; font-family: system-ui,-apple-system,sans-serif; font-weight:550; font-size:1.25rem; transition:color .2s ease; }
-    .lz-fnav__link:hover { color:#ffe6e6; }
-    .lz-fcopy { font-size:1.1rem; opacity:0.85; font-family: system-ui,-apple-system,sans-serif; margin-top:10px; }
+    .lz-fnav__link { color:#fff; text-decoration:none; font-weight:550; font-size:1.25rem; }
+    .lz-fcopy { font-size:1.1rem; opacity:0.85; margin-top:15px; }
   `;
   document.head.appendChild(style);
 
   /* ==========================================
-     2. HTML構造の生成（Config連動）
+     2. HTML構造の生成
      ========================================== */
-  const journeyLinks = MENU_ORDER.map(label => {
-    return `<a href="${MENU_URL[label]}" data-step="${label}" class="lz-step">${label}</a>`;
-  }).join('');
-
-  const footerLinks = FOOTER_LINKS.map(item => {
-    return `<a href="${item.url}" class="lz-fnav__link">${item.label}</a>`;
-  }).join('');
+  const journeyLinks = MENU_ORDER.map(label => `<a href="${MENU_URL[label]}" class="lz-step">${label}</a>`).join('');
+  const footerLinks = FOOTER_LINKS.map(item => `<a href="${item.url}" class="lz-fnav__link">${item.label}</a>`).join('');
 
   const footerHTML = `
     <div class="lz-footer-anchor" id="lzFooterMain">
       <div class="lz-journey">
-        <div class="lz-steps" id="lzSteps">${journeyLinks}</div>
+        <div class="lz-steps">${journeyLinks}</div>
       </div>
       <footer class="lz-footer">
         <div class="lz-fwrap">
-          <nav class="lz-fnav" aria-label="フッターメニュー">${footerLinks}</nav>
+          <nav class="lz-fnav">${footerLinks}</nav>
           <div class="lz-fcopy">${COPYRIGHT}</div>
         </div>
       </footer>
@@ -72,33 +63,37 @@
   `;
 
   /* ==========================================
-     3. 注入タイミングの制御（ここが重要）
+     3. 注入 ＆ 最下部監視ロジック
      ========================================== */
   const injectFooter = () => {
-    // すでに存在する場合は二重に作らない
-    if (document.getElementById('lzFooterMain')) return;
+    let footer = document.getElementById('lzFooterMain');
+    
+    if (!footer) {
+      document.body.insertAdjacentHTML('beforeend', footerHTML);
+      footer = document.getElementById('lzFooterMain');
+      // 現在地ハイライト
+      const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+      footer.querySelectorAll('.lz-step').forEach(a => {
+        const path = new URL(a.getAttribute('href'), window.location.origin).pathname.replace(/\/+$/, '') || '/';
+        if (path === currentPath) a.classList.add('is-current');
+      });
+    }
 
-    // bodyの「最後（beforeend）」に差し込む
-    document.body.insertAdjacentHTML('beforeend', footerHTML);
-
-    // 現在地ハイライトの実行
-    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-    document.querySelectorAll('.lz-steps .lz-step').forEach(a => {
-      let path = '';
-      try {
-        path = new URL(a.getAttribute('href'), window.location.origin).pathname.replace(/\/+$/, '') || '/';
-      } catch(e) {
-        path = a.getAttribute('href').replace(/[?#].*$/, '').replace(/\/+$/, '') || '/';
-      }
-      if (path === currentPath) {
-        a.classList.add('is-current');
-        a.setAttribute('aria-current', 'page');
-        a.onclick = (e) => e.preventDefault();
-      }
-    });
+    // もし自分の後ろに要素があるなら、自分を一番下に移動させる
+    if (footer.nextElementSibling) {
+      document.body.appendChild(footer);
+    }
   };
 
-  // ページが完全に準備できてから（画像や他のブロックが並んだ後）実行する
+  // --- 監視開始 ---
+  // ペライチが後からブロックを追加しても、それを検知してフッターを下に移動する
+  const observer = new MutationObserver(() => {
+    injectFooter();
+  });
+
+  observer.observe(document.body, { childList: true });
+
+  // 初回実行
   if (document.readyState === 'complete') {
     injectFooter();
   } else {
