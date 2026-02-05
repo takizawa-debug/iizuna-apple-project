@@ -1,16 +1,15 @@
-/* web/app.js (司令塔JS) */
+/* web/app.js (順番制御・強化版) */
 (function() {
-  // ここでバージョンを一括管理！ 
-  // 更新した時はこの日付部分を書き換えるだけで全ページに反映されます
-  const v = "20260205_2308"; 
+  const v = "20260205_2330"; 
   const base = "https://cdn.jsdelivr.net/gh/takizawa-debug/iizuna-apple-project@main/web/";
   
+  // 【重要】ここに書いた順番通りに実行されます
   const files = [
-    { type: 'css', url: base + "style.css" },
-    { type: 'js',  url: base + "main.js" },
-    { type: 'js',  url: base + "header.js" },
-    { type: 'js',  url: base + "search.js" },
-    { type: 'js',  url: base + "footer.js" }
+    { type: 'css', url: base + "style.css" },   // 1. まず見た目
+    { type: 'js',  url: base + "header.js" },  // 2. 次にヘッダー
+    { type: 'js',  url: base + "search.js" },  // 3. 検索
+    { type: 'js',  url: base + "main.js" },    // 4. 重たいメイン処理
+    { type: 'js',  url: base + "footer.js" }   // 5. 最後にフッター（しんがり）
   ];
 
   files.forEach(file => {
@@ -23,9 +22,11 @@
     } else {
       const script = document.createElement('script');
       script.src = url; 
+      // 【ここが秘訣】asyncをfalseにすると、配列の順番通りに実行するようブラウザに強制します
+      script.async = false; 
       script.defer = true;
       document.head.appendChild(script);
     }
   });
-  console.log("Appletown System: Loaded v" + v);
+  console.log("Appletown System: Loaded in order v" + v);
 })();
