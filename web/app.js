@@ -1,21 +1,14 @@
 /* web/app.js (順序最適化版) */
 (function() {
-  const v = "20260205_2302"; // 更新時はここを書き換え
+  const v = "20260205_2303"; // 更新時はここを書き換え
   const base = "https://cdn.jsdelivr.net/gh/takizawa-debug/iizuna-apple-project@main/web/";
   
   const files = [
-    // 1. まずはベースの見た目(CSS)
+
     { type: 'css', url: base + "style.css" },
-    
-    // 2. 次にメインビジュアル（ここを最優先！）
-    { type: 'js',  url: base + "slideshow.js" },
-    
-    // 3. 共通パーツ
     { type: 'js',  url: base + "header.js" },
     { type: 'js',  url: base + "search.js" },
     { type: 'js',  url: base + "footer.js" },
-    
-    // 4. 重たいメインロジックは一番最後
     { type: 'js',  url: base + "main.js" }
   ];
 
