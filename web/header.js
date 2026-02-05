@@ -2,7 +2,7 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (スマホレイアウトを最優先復元)
+     1. CSSの注入
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
@@ -39,52 +39,47 @@
     .lz-hnav__panel.is-open { display: block !important; }
     .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550 !important; font-size: 1.25rem !important; border-bottom: 1px solid #f0f0f0 !important; }
     .lz-hnav__panel a:hover { background: #f5f5f5 !important; }
+    .lz-hnav__panel a:last-child { border-bottom: none !important; }
 
     /* 読み込み中アニメーション */
     .lz-nav-loading { padding: 20px !important; text-align: center !important; color: #999 !important; font-size: 1.1rem !important; }
     .lz-loading-dots::after { content: '...'; animation: lz-dots 1.5s steps(4, end) infinite; }
     @keyframes lz-dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80% { content: '...'; } }
 
-    /* 言語プルダウン */
+    /* 言語プルダウン (クリック式) */
     .lz-lang { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
     @media (min-width: 769px) { .lz-lang { display: flex !important; } }
     .lz-lang__btn { display: inline-flex !important; align-items: center !important; gap: 8px !important; height: 40px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; font-weight: 550 !important; }
     .lz-lang__btn::after { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #fff; transition: transform .3s; }
     .lz-lang__btn.is-active::after { transform: rotate(180deg); }
-    .lz-lang__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 5px !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; display: none; min-width: 170px !important; flex-direction: column !important; z-index: 10002; }
+    
+    .lz-lang__menu { 
+      position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 5px !important;
+      background: #fff !important; border-radius: 12px !important; 
+      box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; 
+      display: none; min-width: 170px !important; flex-direction: column !important; z-index: 10002; 
+    }
     .lz-lang__menu.is-open { display: flex !important; }
-    .lz-lang__menu::before { content: ""; position: absolute; top: -15px; left: 0; right: 0; height: 15px; background: transparent; }
     .lz-lang__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1rem; }
     .lz-lang__menu a:hover:not(.is-disabled) { background: #f5f5f5; }
     .lz-lang__menu a.is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; }
 
-    /* ★スマホドロワー復元セクション★ */
+    /* スマホドロワー */
     .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; cursor: pointer; }
     @media (min-width: 769px) { .lz-hamb { display: none !important; } }
     .lz-hamb__bar { width: 24px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
-    
     .lz-dw-backdrop { position: fixed !important; inset: 0 !important; background: rgba(0,0,0,.35) !important; z-index: 19999 !important; display: none; }
     .lz-dw-backdrop.is-open { display: block !important; }
-    
-    .lz-drawer { 
-      position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; 
-      width: 80vw !important; max-width: 360px !important;
-      background: #fff !important; z-index: 20001 !important; 
-      transform: translateX(100%) !important; transition: transform .3s ease !important;
-      display: flex !important; flex-direction: column !important;
-      overflow-y: auto !important; 
-    }
+    .lz-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 80vw !important; max-width: 360px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .3s ease !important; overflow-y: auto !important; }
     .lz-drawer.is-open { transform: translateX(0) !important; }
-    
     .lz-dw-group { border-bottom: 1px solid #eee; }
     .lz-dw-l1-row { display: flex !important; align-items: center; justify-content: space-between; width: 100%; }
     .lz-dw-l1a { flex: 1; display: block; padding: 18px 20px; font-weight: bold; font-size: 1.15rem; color: #333 !important; text-decoration: none !important; }
     .lz-dw-arrow { padding: 18px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; font-size: 1.2rem; display: flex; align-items: center; }
     .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg); }
-    
     .lz-dw-l2-area { background: #f9f9f9; display: none; padding: 5px 0 15px 30px; }
     .lz-dw-group.is-active .lz-dw-l2-area { display: block; }
-    .lz-dw-l2-area a { display: block; padding: 12px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; border-bottom: none !important; }
+    .lz-dw-l2-area a { display: block; padding: 12px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; }
 
     @media (max-width:768px){ body { padding-top: var(--hdr-h) !important; } }
   `;
@@ -142,33 +137,62 @@
   function renderSkeleton(){
     const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
     const loadingHTML = '<div class="lz-nav-loading"><span class="lz-loading-dots">読み込み中</span></div>';
-    
     if(ul) ul.innerHTML = MENU_ORDER.map(l1 => `<li class="lz-hnav__item"><a href="${MENU_URL[l1]}" class="lz-hnav__l1">${l1}</a><div class="lz-hnav__panel">${loadingHTML}</div></li>`).join('');
-    
-    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `
-      <div class="lz-dw-group" data-l1="${l1}">
-        <div class="lz-dw-l1-row">
-          <a class="lz-dw-l1a" href="${MENU_URL[l1]}">${l1}</a>
-          <div class="lz-dw-arrow">▼</div>
-        </div>
-        <div class="lz-dw-l2-area">${loadingHTML}</div>
-      </div>`).join('');
+    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `<div class="lz-dw-group" data-l1="${l1}"><div class="lz-dw-l1-row"><a class="lz-dw-l1a" href="${MENU_URL[l1]}">${l1}</a><div class="lz-dw-arrow">▼</div></div><div class="lz-dw-l2-area">${loadingHTML}</div></div>`).join('');
   }
 
   function setupEvents(){
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.classList.remove('is-open'); };
 
-    const setupHover = (trigger, target, activeClass = 'is-open', btnElement = null) => {
-      let timer;
-      trigger.onmouseenter = () => { clearTimeout(timer); target.classList.add(activeClass); if(btnElement) btnElement.classList.add('is-active'); };
-      trigger.onmouseleave = () => { timer = setTimeout(() => { target.classList.remove(activeClass); if(btnElement) btnElement.classList.remove('is-active'); }, 200); };
-    };
+    // PCメニュー：排他的ホバー制御
+    let closeTimer;
+    const items = document.querySelectorAll('.lz-hnav__item');
+    
+    items.forEach(item => {
+      const panel = item.querySelector('.lz-hnav__panel');
+      
+      item.onmouseenter = () => {
+        clearTimeout(closeTimer);
+        // 他のすべてのパネルを即座に閉じる
+        items.forEach(other => {
+          if (other !== item) other.querySelector('.lz-hnav__panel').classList.remove('is-open');
+        });
+        // 自分のパネルを開く
+        panel.classList.add('is-open');
+      };
 
-    document.querySelectorAll('.lz-hnav__item').forEach(item => { setupHover(item, item.querySelector('.lz-hnav__panel')); });
+      item.onmouseleave = () => {
+        // マウスが外れたら少し待ってから閉じる（ただし他へ移動したら即キャンセルされる）
+        closeTimer = setTimeout(() => {
+          panel.classList.remove('is-open');
+        }, 300);
+      };
+    });
 
-    const langWrap = document.getElementById('lzLang'), langBtn = langWrap?.querySelector('.lz-lang__btn'), langMenu = langWrap?.querySelector('.lz-lang__menu');
-    if(langWrap && langMenu) { setupHover(langWrap, langMenu, 'is-open', langBtn); }
+    // 言語プルダウン：完全クリック式
+    const langWrap = document.getElementById('lzLang');
+    const langBtn = langWrap?.querySelector('.lz-lang__btn');
+    const langMenu = langWrap?.querySelector('.lz-lang__menu');
+    
+    if(langBtn && langMenu) {
+      langBtn.onclick = (e) => {
+        e.stopPropagation();
+        // 他のメニューパネルを閉じる
+        items.forEach(other => other.querySelector('.lz-hnav__panel').classList.remove('is-open'));
+        
+        const isOpen = langMenu.classList.toggle('is-open');
+        langBtn.classList.toggle('is-active', isOpen);
+      };
+
+      // 外側クリックで閉じる
+      document.addEventListener('click', (e) => {
+        if (!langWrap.contains(e.target)) {
+          langMenu.classList.remove('is-open');
+          langBtn.classList.remove('is-active');
+        }
+      });
+    }
 
     const hamb = document.getElementById('lzHamb'), close = document.getElementById('lzDwClose');
     hamb.onclick = () => { drawer.classList.add('is-open'); backdrop.classList.add('is-open'); };
@@ -183,30 +207,21 @@
     if(json.ok) {
       const map = new Map();
       json.items.forEach(it => { if(!map.has(it.l1)) map.set(it.l1, []); if(!map.get(it.l1).includes(it.l2)) map.get(it.l1).push(it.l2); });
-      
       MENU_ORDER.forEach((l1, i) => {
         const l2s = map.get(l1) || [];
         const links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
-        
-        // PC反映
         const panels = document.querySelectorAll('.lz-hnav__panel');
         if(panels[i]) panels[i].innerHTML = links || '<div class="lz-nav-loading">（記事なし）</div>';
-        
-        // スマホ反映
         const dwGroups = document.querySelectorAll('.lz-dw-group');
         if(dwGroups[i]) {
-          const dwArea = dwGroups[i].querySelector('.lz-dw-l2-area');
-          const dwArrow = dwGroups[i].querySelector('.lz-dw-arrow');
-          const dwLink = dwGroups[i].querySelector('.lz-dw-l1a');
-          
+          const dwArea = dwGroups[i].querySelector('.lz-dw-l2-area'), dwArrow = dwGroups[i].querySelector('.lz-dw-arrow'), dwLink = dwGroups[i].querySelector('.lz-dw-l1a');
           if(l2s.length > 0) {
             dwArea.innerHTML = links;
             const toggle = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); };
             dwArrow.onclick = toggle;
             dwLink.onclick = (e) => { if (!dwGroups[i].classList.contains('is-active')) toggle(e); else closeDrawer(); };
           } else {
-            dwArea.remove();
-            dwArrow.style.display = 'none';
+            dwArea.remove(); dwArrow.style.display = 'none';
             dwLink.onclick = () => { closeDrawer(); };
           }
         }
