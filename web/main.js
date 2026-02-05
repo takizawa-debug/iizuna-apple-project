@@ -93,10 +93,11 @@ function setupAutoPlay(track, { interval=4000, stepCards=1 } = {}){
     const first = track.querySelector(".lz-card");
     return first ? first.getBoundingClientRect().width + 12 : track.clientWidth * 0.9;
   };
+  const maxLeft = () => track.scrollWidth - track.clientWidth;
   function tick(){
     const step = Math.max(1, stepCards) * cardW();
     let next = track.scrollLeft + step;
-    if (next >= (track.scrollWidth - track.clientWidth) - 2) next = 0;
+    if (next >= maxLeft() - 2) next = 0;
     track.scrollTo({ left: next, behavior: "smooth" });
   }
   function start(){ if (!timer) timer = setInterval(tick, interval); }
@@ -107,7 +108,6 @@ function setupAutoPlay(track, { interval=4000, stepCards=1 } = {}){
   track.addEventListener("pointerleave", start, { passive:true });
 }
 
-/* --- アイコン定義 --- */
 const ICON = {
   web:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
   ec:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20 8H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>`,
@@ -125,8 +125,9 @@ function toast(msg="コピーしました"){
   TOAST.textContent=msg; TOAST.classList.add("show"); setTimeout(()=>TOAST.classList.remove("show"), 1400);
 }
 
-let HOST=null, SHELL=null, MODAL=null, CARDS=[], IDX=0;
-let originalTitle = document.title; // 【SEO】元のタイトル
+let HOST=null, SHELL=null, MODAL=null;
+let CARDS=[], IDX=0;
+let originalTitle = document.title; // 【SEO】
 
 function ensureModal(){
   if(HOST) return;
@@ -143,10 +144,11 @@ function lzOpen(html){
   SHELL.querySelectorAll(".lz-prev, .lz-next").forEach(b=>b.remove());
   if (CARDS.length > 1){
     const prev = document.createElement("button"); prev.className = "lz-arrow lz-prev";
-    prev.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
+    prev.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
     const next = document.createElement("button"); next.className = "lz-arrow lz-next";
-    next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
-    prev.onclick = ()=> showModal(IDX-1); next.onclick = ()=> showModal(IDX+1);
+    next.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+    prev.addEventListener("click", ()=> showModal(IDX-1));
+    next.addEventListener("click", ()=> showModal(IDX+1));
     SHELL.appendChild(prev); SHELL.appendChild(next);
   }
   HOST.classList.add("open");
@@ -208,6 +210,7 @@ function buildSNSIconsHTML(card){
   return `<div class="lz-sns">${[btn(card.dataset.home,"web","HP"), btn(card.dataset.ec,"ec","EC"), btn(sns.instagram,"ig","IG"), btn(sns.facebook,"fb","FB"), btn(sns.x,"x","X"), btn(sns.line,"line","Line"), btn(sns.tiktok,"tt","TT")].filter(Boolean).join("")}</div>`;
 }
 
+/* ====== モーダル表示（PDFエラー詳細レポート搭載） ====== */
 function showModalFromCard(card){
   if(!card) return;
   const t = card.dataset.title;
@@ -233,50 +236,77 @@ function showModalFromCard(card){
     try{ await navigator.share({ text: payload }); }catch(e){ navigator.clipboard.writeText(payload); toast("コピーしました"); }
   };
 
-  /* ====== PDF生成（詳細デバッグ機能 & S3逆変換） ====== */
+  /* ====== PDF生成（詳細エラー特定機能搭載） ====== */
   if(MODAL.querySelector(".lz-pdf")){
     MODAL.querySelector(".lz-pdf").onclick = async ()=>{
       if(!confirm("PDFを生成します。よろしいですか？")) return;
-      try{
+      try {
         await ensurePdfLibs();
+        const url = shareUrlFromCard(card);
         const clone = MODAL.cloneNode(true);
         clone.querySelector(".lz-actions")?.remove();
         clone.style.width="800px"; clone.style.maxHeight="none"; clone.style.height="auto";
         
-        const images = clone.querySelectorAll("img");
+        const images = Array.from(clone.querySelectorAll("img"));
         images.forEach(img => {
           let src = img.src;
+          // 【突破口】ペライチCDNからAWS S3直URLへ逆変換
           const cdnPattern = /^https:\/\/cdn\.peraichi\.com\//i;
           if (cdnPattern.test(src)) {
             src = src.replace(cdnPattern, "https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/");
           }
           img.crossOrigin = "anonymous";
-          img.src = src + (src.indexOf('?') === -1 ? '?' : '&') + "pdf_retry=" + Date.now();
+          // ブラウザのキャッシュを避けて確実にCORS許可画像を取得
+          img.src = src + (src.indexOf('?') === -1 ? '?' : '&') + "pdf_v=" + Date.now();
+          // エラー画像はPDFから除外（Canvas汚染防止）
+          img.onerror = () => { console.warn("Image Load Failed:", img.src); img.style.display = 'none'; };
         });
 
         document.body.appendChild(clone);
         
-        // 画像ロードの待機（失敗してもスキップして継続）
-        await Promise.allSettled([...images].map(img => {
-           if (img.complete) return Promise.resolve();
-           return new Promise(res => { img.onload=res; img.onerror=res; });
+        // 全画像の読み込み完了を待機（allSettledで一部エラーでも続行）
+        await Promise.allSettled(images.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(res => { img.onload=res; img.onerror=res; });
         }));
 
-        const canvas = await html2canvas(clone,{
-          scale:2, useCORS:true, allowTaint:false, backgroundColor:"#ffffff", logging:true 
-        }).catch(err => { throw new Error("html2canvasエラー: " + err.message); });
+        // html2canvas 実行
+        const canvas = await html2canvas(clone, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          backgroundColor: "#ffffff",
+          logging: true // ブラウザのコンソールに詳細ログを出す
+        }).catch(err => { throw new Error("html2canvas内部エラー: " + err.message); });
         
         document.body.removeChild(clone);
 
-        const pdf = new jspdf.jsPDF("p","mm","a4");
-        const imgData = canvas.toDataURL("image/png");
-        const imgW = 190, imgH = canvas.height * imgW / canvas.width;
-        pdf.addImage(imgData, "PNG", 10, 10, imgW, imgH);
+        // Canvasから画像データを取り出せるか最終チェック
+        let imgData;
+        try {
+          imgData = canvas.toDataURL("image/png");
+        } catch (taintErr) {
+          throw new Error("セキュリティ制限(CORS)により画像データを吸い出せませんでした。特定の画像が許可されていません。");
+        }
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF("p","mm","a4");
+        const margin=12, pageW=pdf.internal.pageSize.getWidth(), pageH=pdf.internal.pageSize.getHeight();
+        const innerW=pageW-margin*2, innerH=pageH-margin*2;
+        const imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
         
+        // ページ分割
+        let heightLeft = imgHmm, position = margin;
+        while(heightLeft > 0){
+          pdf.addImage(imgData, "PNG", margin, position, imgWmm, imgHmm);
+          heightLeft -= innerH;
+          if(heightLeft > 0){ pdf.addPage(); position = margin - (imgHmm - heightLeft); }
+        }
+
         window.open(pdf.output("bloburl"), "_blank");
-      }catch(e){
-        console.error("PDFデバッグログ:", e);
-        alert("PDF生成に失敗しました。\n理由: " + e.message + "\n\n※画像読み込みのセキュリティ(CORS)制限が原因である可能性が高いです。");
+      } catch (e) {
+        console.error("PDF生成詳細エラー:", e);
+        alert("PDF生成に失敗しました。\n原因: " + e.message + "\n\n※画像読み込みの制限が解決できていないようです。");
       }
     };
   }
@@ -335,16 +365,7 @@ function boot(){
 }
 document.readyState === "loading" ? document.addEventListener("DOMContentLoaded", boot) : boot();
 
-/* ====== Eager Load Patch ====== */
-(function forceEagerLoadForLZ(){
-  var _origRenderSection = window.renderSection; if (typeof _origRenderSection !== 'function') return;
-  function guardedRenderSection(el){ if (!el || el.classList?.contains('lz-ready') || el.dataset.lzDone === '1') return; el.dataset.lzDone = '1'; return _origRenderSection(el); }
-  window.renderSection = guardedRenderSection;
-  function eager(){ var sections = document.querySelectorAll('.lz-section[data-l2]'); sections.forEach(function(s){ guardedRenderSection(s); }); }
-  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', eager); } else { eager(); }
-})();
-
-/* ====== Appletown Analytics (Optimized) ====== */
+/* ====== Appletown Analytics ====== */
 (function () {
   "use strict";
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
