@@ -19,7 +19,7 @@
   --border: #e7d3c8;
   --radius: 14px;
   --font-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
-  --font-article: "筑須A丸ゴシック Std M", "Tsukushi A Maru Gothic Std", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
+  --font-article: "筑紫A丸ゴシック Std M", "Tsukushi A Maru Gothic Std", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
   --ig: #E4405F;
   --fb: #1877F2;
   --x: #000000;
@@ -143,7 +143,20 @@
 .lz-lead-strong { padding: 12px 12px 0; font-weight: var(--fw-card-title); font-size: var(--fz-body); color: var(--ink-dark); line-height: 1.7; }
 .lz-txt { padding: 12px; font-weight: var(--fw-body); font-size: var(--fz-body); color: var(--ink-light); line-height: 1.75; white-space: pre-wrap; }
 .lz-g { padding: 0 12px 12px; display: grid; gap: 8px; grid-template-columns: repeat(5, 1fr); }
-.lz-g img { width: 100%; height: auto; aspect-ratio: 16/9; object-fit: contain; background: #f6f7f9; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+
+/* 【修正箇所】サブ画像の高さを auto にし、比率を維持して枠内に収める */
+.lz-g img { 
+  width: 100%; 
+  height: auto; 
+  aspect-ratio: 16/9; 
+  object-fit: contain; 
+  background: #f6f7f9; 
+  border-radius: 8px; 
+  border: 1px solid var(--border); 
+  cursor: pointer; 
+  transition: transform .12s ease, box-shadow .12s ease; 
+}
+
 .lz-g img:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0, 0, 0, .12); }
 .lz-g img.is-active { outline: 2px solid var(--apple-red); outline-offset: 2px; }
 
