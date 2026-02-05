@@ -2,17 +2,16 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (最優先実行)
+     1. CSSの注入 (スマホレイアウトを最優先復元)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
     
-    /* 1. 赤いバーを即座に表示するための固定設定 */
     .lz-hdr { 
       position: fixed !important; inset: 0 0 auto 0 !important; height: var(--hdr-h) !important; 
       background: var(--apple-red) !important; z-index: 9000 !important; color: #fff !important; 
       box-shadow: 0 4px 18px rgba(0,0,0,.12) !important;
-      display: block !important; /* モーションを排除して即座に表示 */
+      display: block !important;
     }
 
     .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(12px, 4vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 16px; }
@@ -23,6 +22,7 @@
     .lz-t1 { font-weight: 400 !important; font-size: clamp(1.05rem, 1.9vw, 1.35rem) !important; opacity: .95 !important; }
     .lz-t2 { font-weight: 800 !important; font-size: clamp(1.55rem, 2.7vw, 2.1rem) !important; margin-top: 4px !important; }
     
+    /* PCナビ */
     .lz-hnav { display: none; }
     @media (min-width: 769px) { .lz-hnav { display: block !important; } }
     .lz-hnav__list { display: flex !important; align-items: center !important; gap: 22px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
@@ -39,33 +39,53 @@
     .lz-hnav__panel.is-open { display: block !important; }
     .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550 !important; font-size: 1.25rem !important; border-bottom: 1px solid #f0f0f0 !important; }
     .lz-hnav__panel a:hover { background: #f5f5f5 !important; }
-    .lz-hnav__panel a:last-child { border-bottom: none !important; }
 
-    /* 読み込み中ステータス */
+    /* 読み込み中アニメーション */
     .lz-nav-loading { padding: 20px !important; text-align: center !important; color: #999 !important; font-size: 1.1rem !important; }
     .lz-loading-dots::after { content: '...'; animation: lz-dots 1.5s steps(4, end) infinite; }
     @keyframes lz-dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80% { content: '...'; } }
 
     /* 言語プルダウン */
-    .lz-lang { position: relative !important; display: none; }
-    @media (min-width: 769px) { .lz-lang { display: block !important; } }
+    .lz-lang { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
+    @media (min-width: 769px) { .lz-lang { display: flex !important; } }
     .lz-lang__btn { display: inline-flex !important; align-items: center !important; gap: 8px !important; height: 40px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; font-weight: 550 !important; }
     .lz-lang__btn::after { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #fff; transition: transform .3s; }
     .lz-lang__btn.is-active::after { transform: rotate(180deg); }
-    .lz-lang__menu { position: absolute !important; right: 0 !important; top: calc(100% + 8px) !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; display: none; min-width: 170px !important; flex-direction: column !important; }
+    .lz-lang__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 5px !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; display: none; min-width: 170px !important; flex-direction: column !important; z-index: 10002; }
     .lz-lang__menu.is-open { display: flex !important; }
+    .lz-lang__menu::before { content: ""; position: absolute; top: -15px; left: 0; right: 0; height: 15px; background: transparent; }
     .lz-lang__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1rem; }
     .lz-lang__menu a:hover:not(.is-disabled) { background: #f5f5f5; }
     .lz-lang__menu a.is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; }
 
-    /* スマホ・共通 */
-    .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; }
+    /* ★スマホドロワー復元セクション★ */
+    .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; cursor: pointer; }
     @media (min-width: 769px) { .lz-hamb { display: none !important; } }
     .lz-hamb__bar { width: 24px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
+    
     .lz-dw-backdrop { position: fixed !important; inset: 0 !important; background: rgba(0,0,0,.35) !important; z-index: 19999 !important; display: none; }
     .lz-dw-backdrop.is-open { display: block !important; }
-    .lz-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 80vw !important; max-width: 360px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .3s ease !important; overflow-y: auto !important; }
+    
+    .lz-drawer { 
+      position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; 
+      width: 80vw !important; max-width: 360px !important;
+      background: #fff !important; z-index: 20001 !important; 
+      transform: translateX(100%) !important; transition: transform .3s ease !important;
+      display: flex !important; flex-direction: column !important;
+      overflow-y: auto !important; 
+    }
     .lz-drawer.is-open { transform: translateX(0) !important; }
+    
+    .lz-dw-group { border-bottom: 1px solid #eee; }
+    .lz-dw-l1-row { display: flex !important; align-items: center; justify-content: space-between; width: 100%; }
+    .lz-dw-l1a { flex: 1; display: block; padding: 18px 20px; font-weight: bold; font-size: 1.15rem; color: #333 !important; text-decoration: none !important; }
+    .lz-dw-arrow { padding: 18px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; font-size: 1.2rem; display: flex; align-items: center; }
+    .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg); }
+    
+    .lz-dw-l2-area { background: #f9f9f9; display: none; padding: 5px 0 15px 30px; }
+    .lz-dw-group.is-active .lz-dw-l2-area { display: block; }
+    .lz-dw-l2-area a { display: block; padding: 12px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; border-bottom: none !important; }
+
     @media (max-width:768px){ body { padding-top: var(--hdr-h) !important; } }
   `;
   const styleTag = document.createElement('style');
@@ -73,7 +93,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入 (赤いバーを即座に生成)
+     2. HTML構造の注入
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -102,8 +122,8 @@
   <div class="lz-dw-backdrop" id="lzDwBackdrop"></div>
   <aside class="lz-drawer" id="lzDrawer">
     <div class="lz-dw-head" style="padding:15px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-      <div style="font-weight:bold; font-size:1.2rem;">メニュー</div>
-      <button id="lzDwClose" style="border:none; background:none; font-size:32px; color:#999;">&times;</button>
+      <div style="font-weight:bold; font-size:1.2rem; color:#333;">メニュー</div>
+      <button id="lzDwClose" style="border:none; background:none; font-size:32px; color:#999; cursor:pointer;">&times;</button>
     </div>
     <nav class="lz-dw-nav" id="lzDwNav"></nav>
   </aside>`;
@@ -111,7 +131,7 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     3. 制御ロジック (Config待機はここから)
+     3. 制御ロジック
      ========================================== */
   const config = await new Promise(resolve => {
     const check = () => window.LZ_CONFIG ? resolve(window.LZ_CONFIG) : setTimeout(check, 50);
@@ -119,16 +139,11 @@
   });
   const { ENDPOINT, MENU_ORDER, MENU_URL } = config;
 
-  // 読み込み中表示付きのスケルトン
   function renderSkeleton(){
     const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
     const loadingHTML = '<div class="lz-nav-loading"><span class="lz-loading-dots">読み込み中</span></div>';
     
-    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => `
-      <li class="lz-hnav__item">
-        <a href="${MENU_URL[l1]}" class="lz-hnav__l1">${l1}</a>
-        <div class="lz-hnav__panel">${loadingHTML}</div>
-      </li>`).join('');
+    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => `<li class="lz-hnav__item"><a href="${MENU_URL[l1]}" class="lz-hnav__l1">${l1}</a><div class="lz-hnav__panel">${loadingHTML}</div></li>`).join('');
     
     if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `
       <div class="lz-dw-group" data-l1="${l1}">
@@ -144,38 +159,24 @@
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.classList.remove('is-open'); };
 
-    // PCメニューの開閉
-    document.querySelectorAll('.lz-hnav__item').forEach(item => {
-      item.onmouseenter = () => item.querySelector('.lz-hnav__panel').classList.add('is-open');
-      item.onmouseleave = () => item.querySelector('.lz-hnav__panel').classList.remove('is-open');
-    });
+    const setupHover = (trigger, target, activeClass = 'is-open', btnElement = null) => {
+      let timer;
+      trigger.onmouseenter = () => { clearTimeout(timer); target.classList.add(activeClass); if(btnElement) btnElement.classList.add('is-active'); };
+      trigger.onmouseleave = () => { timer = setTimeout(() => { target.classList.remove(activeClass); if(btnElement) btnElement.classList.remove('is-active'); }, 200); };
+    };
 
-    // 言語プルダウン (マウスアウトで閉じる)
+    document.querySelectorAll('.lz-hnav__item').forEach(item => { setupHover(item, item.querySelector('.lz-hnav__panel')); });
+
     const langWrap = document.getElementById('lzLang'), langBtn = langWrap?.querySelector('.lz-lang__btn'), langMenu = langWrap?.querySelector('.lz-lang__menu');
-    if(langBtn) {
-      langBtn.onclick = (e) => { 
-        e.stopPropagation(); 
-        const isOpen = langMenu.classList.toggle('is-open');
-        langBtn.classList.toggle('is-active', isOpen);
-      };
-    }
-    // 言語エリアからマウスが外れたら即座に閉じる
-    if(langWrap) {
-      langWrap.onmouseleave = () => {
-        langMenu?.classList.remove('is-open');
-        langBtn?.classList.remove('is-active');
-      };
-    }
+    if(langWrap && langMenu) { setupHover(langWrap, langMenu, 'is-open', langBtn); }
 
     const hamb = document.getElementById('lzHamb'), close = document.getElementById('lzDwClose');
     hamb.onclick = () => { drawer.classList.add('is-open'); backdrop.classList.add('is-open'); };
     [backdrop, close].forEach(el => { if(el) el.onclick = closeDrawer; });
   }
 
-  renderSkeleton(); 
-  setupEvents();
+  renderSkeleton(); setupEvents();
 
-  // APIから中身を取得して差し替える
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
     const json = await res.json();
@@ -187,25 +188,26 @@
         const l2s = map.get(l1) || [];
         const links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
         
-        // 読み込み中表示を実際のリンクに差し替え
+        // PC反映
         const panels = document.querySelectorAll('.lz-hnav__panel');
         if(panels[i]) panels[i].innerHTML = links || '<div class="lz-nav-loading">（記事なし）</div>';
         
+        // スマホ反映
         const dwGroups = document.querySelectorAll('.lz-dw-group');
-        const dwArea = dwGroups[i]?.querySelector('.lz-dw-l2-area');
-        const dwArrow = dwGroups[i]?.querySelector('.lz-dw-arrow');
-        
-        if(dwArea) {
+        if(dwGroups[i]) {
+          const dwArea = dwGroups[i].querySelector('.lz-dw-l2-area');
+          const dwArrow = dwGroups[i].querySelector('.lz-dw-arrow');
+          const dwLink = dwGroups[i].querySelector('.lz-dw-l1a');
+          
           if(l2s.length > 0) {
             dwArea.innerHTML = links;
-            // スマホアコーディオンイベント付与
-            const link = dwGroups[i].querySelector('.lz-dw-l1a');
             const toggle = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); };
             dwArrow.onclick = toggle;
-            link.onclick = (e) => { if (!dwGroups[i].classList.contains('is-active')) toggle(e); };
+            dwLink.onclick = (e) => { if (!dwGroups[i].classList.contains('is-active')) toggle(e); else closeDrawer(); };
           } else {
             dwArea.remove();
             dwArrow.style.display = 'none';
+            dwLink.onclick = () => { closeDrawer(); };
           }
         }
       });
