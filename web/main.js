@@ -202,8 +202,8 @@ function cardHTML(it, pad, groupKey){
   const related = it.relatedArticles || [];
   const dataAttrs = {
     hoursCombined: get(it, ["hoursCombined"]),
-    eventDate:      get(it, ["eventDate"]),
-    eventTime:      get(it, ["eventTime"]),
+    eventDate:     get(it, ["eventDate"]),
+    eventTime:     get(it, ["eventTime"]),
     bizDays:   get(it, ["bizDays","営業曜日"]),
     bizOpen:   get(it, ["bizOpen","営業開始時刻"]),
     bizClose:  get(it, ["bizClose","営業終了時刻"]),
@@ -313,7 +313,6 @@ function buildSNSIconsHTML(card){
 
 function showModalFromCard(card){
   if(!card) return;
-  /* 【修正】URLの反映 */
   try{ history.replaceState(null, "", shareUrlFromCard(card)); }catch(e){}
   const t=card.dataset.title, lead=card.dataset.lead, body=card.dataset.body;
   const main=card.dataset.main;
@@ -340,6 +339,7 @@ function showModalFromCard(card){
       mainImg.addEventListener("transitionend", function h(){ mainImg.removeEventListener("transitionend", h); mainImg.src = nextSrc; if(mainImg.complete){ requestAnimationFrame(()=> mainImg.classList.remove("lz-fadeout")); } else{ mainImg.addEventListener("load", ()=> mainImg.classList.remove("lz-fadeout"), {once:true}); } }, {once:true});
       setActive(i);
     };
+
     document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-img-idx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
   }
   MODAL.querySelector(".lz-share")?.addEventListener("click", async ()=>{
@@ -409,13 +409,18 @@ function buildNav(options={}){
   const sections = Array.from(document.querySelectorAll(".lz-section[data-l2]")); if(!sections.length) return;
   sections.forEach((s,i)=>{ if(!s.id){ const base = (s.dataset.l2||`l2-${i+1}`); let id=base,c=1; while(document.getElementById(id)) id=`${base}-${++c}`; s.id=id; }});
   const navs=document.querySelectorAll(".lz-nav"); if(!navs.length) return;
-  const html=`<div class="lz-nav-inner">${sections.map(s=>`<a href="#${s.id}" data-target="${s.id}">${esc(s.dataset.l2)}</a>`).join("")}</div>`;
+  const html=`<div class="lz-nav-inner">${sections.map(s=>`<a href="?section=${s.id}" data-target="${s.id}">${esc(s.dataset.l2)}</a>`).join("")}</div>`;
   navs.forEach(n=>n.innerHTML=html);
   const links=[...document.querySelectorAll(".lz-nav a")], byId=Object.fromEntries(links.map(a=>[a.dataset.target,a])), offset=parseInt(navs[0].dataset.offset||options.offset||0,10)||0;
   document.addEventListener("click",e=>{
-    const a=e.target.closest(".lz-nav a[href^='#']"); if(!a) return; e.preventDefault();
-    const id=a.getAttribute("href").slice(1), el=document.getElementById(id); if(!el) return;
-    const y=el.getBoundingClientRect().top + window.pageYOffset - offset; window.scrollTo({top:y,behavior:"smooth"}); history.replaceState(null,"",`#${id}`);
+    const a=e.target.closest(".lz-nav a[data-target]"); if(!a) return; e.preventDefault();
+    const id=a.dataset.target, el=document.getElementById(id); if(!el) return;
+    const y=el.getBoundingClientRect().top + window.pageYOffset - offset; window.scrollTo({top:y,behavior:"smooth"});
+    if(HOST?.classList.contains("open")) lzClose();
+    const url = new URL(location.href);
+    url.searchParams.set("section", id);
+    url.searchParams.delete("id");
+    history.replaceState(null,"",url.pathname + url.search);
   },{passive:false});
   if("IntersectionObserver" in window){
     const io=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting){ links.forEach(x=>x.classList.remove("is-active")); const a=byId[en.target.id]; if(a) a.classList.add("is-active"); } }); },{rootMargin:"-40% 0px -55% 0px"});
@@ -423,7 +428,6 @@ function buildNav(options={}){
   }
 }
 
-/* 【修正】クエリパラメータ（?id=...）からIDを取得してモーダルを開くロジック */
 function openFromQueryWithRetry(){
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
@@ -446,17 +450,39 @@ function openFromQueryWithRetry(){
   const timer=setTimeout(()=>mo.disconnect(),8000);
 }
 
-/* 【修正】起動時の判定をハッシュからクエリパラメータに変更 */
 function boot(){
   const sections=document.querySelectorAll(".lz-section[data-l2]"); if(!sections.length) return;
-  buildNav({offset:(document.querySelector(".pera1-header")?.offsetHeight||0)});
-  
-  const params = new URLSearchParams(window.location.search);
-  const hasId = params.has('id');
+  const offset = document.querySelector(".pera1-header")?.offsetHeight||0;
+  buildNav({offset});
 
-  if(hasId){ 
-    sections.forEach(s=>renderSection(s)); 
-    openFromQueryWithRetry(); 
+  const handleUrlParams = (isInitialLoad = false) => {
+    const params = new URLSearchParams(window.location.search);
+    const modalId = params.get('id');
+    const sectionId = params.get('section');
+
+    if (modalId) {
+      openFromQueryWithRetry();
+    } else if (sectionId) {
+      const scrollTo = () => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
+          window.scrollTo({ top: y, behavior: isInitialLoad ? 'auto' : 'smooth' });
+          return true;
+        }
+        return false;
+      };
+      if (scrollTo()) return;
+      const mo = new MutationObserver(() => { if (scrollTo()) mo.disconnect(); });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+      setTimeout(() => mo.disconnect(), 8000);
+    }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('id') || params.has('section')) {
+    sections.forEach(s => renderSection(s));
+    handleUrlParams(true);
   } else {
     const mql=window.matchMedia("(max-width:768px)");
     const applyWidth=()=>sections.forEach(s=>{ const {cardWidth="33.33%", cardWidthSm="80%"} = s.dataset; s.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth); });
@@ -464,11 +490,9 @@ function boot(){
     const io=("IntersectionObserver" in window) ? new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting){ io.unobserve(e.target); renderSection(e.target); } }); },{rootMargin:"200px 0px"}) : null;
     sections.forEach(s=>{ if(io) io.observe(s); else renderSection(s); });
   }
-  
-  // ブラウザの戻る・進むボタンに対応
-  window.addEventListener("popstate", openFromQueryWithRetry, {passive:true});
-}
 
+  window.addEventListener("popstate", () => handleUrlParams(false), {passive:true});
+}
 if(document.readyState==="loading") { document.addEventListener("DOMContentLoaded", boot); } else { boot(); }
 
 /* ====== Eager Load Patch ====== */
@@ -476,11 +500,9 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   var _origRenderSection = window.renderSection; if (typeof _origRenderSection !== 'function') return;
   function guardedRenderSection(el){ if (!el || el.classList?.contains('lz-ready') || el.dataset.lzDone === '1') return; el.dataset.lzDone = '1'; return _origRenderSection(el); }
   window.renderSection = guardedRenderSection;
-  /* 【修正】ここもクエリパラメータ版の関数を呼ぶように修正 */
   function eager(){ var sections = document.querySelectorAll('.lz-section[data-l2]'); sections.forEach(function(s){ guardedRenderSection(s); }); if (typeof window.openFromQueryWithRetry === 'function'){ window.openFromQueryWithRetry(); } }
   if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', eager); } else { eager(); }
 })();
-
 
 /* ====== Appletown Analytics (Optimized) ====== */
 (function () {
