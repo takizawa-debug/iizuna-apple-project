@@ -131,6 +131,7 @@ function toast(msg="コピーしました"){
 
 let HOST=null, SHELL=null, MODAL=null;
 let CARDS=[], IDX=0;
+let originalTitle = document.title; // 【SEO】元のページタイトルを記憶
 
 function ensureModal(){
   if(HOST) return;
@@ -162,10 +163,11 @@ function lzOpen(html){
   HOST.classList.add("open");
 }
 
-/* 【修正】モーダルを閉じた時にクエリパラメータを削除 */
+/* 【修正】モーダルを閉じた時にタイトルを復元し、パラメータを削除 */
 function lzClose(){
   if(!HOST) return;
   HOST.classList.remove("open");
+  document.title = originalTitle; // 【SEO】タイトルを元に戻す
   try{ 
     const url = new URL(window.location.href);
     url.searchParams.delete('id');
@@ -257,7 +259,7 @@ function cardHTML(it, pad, groupKey){
     ${hasMain ? `<img loading="lazy" decoding="async"
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
-        alt="${esc(title)}"
+        alt="${esc(title)}のメイン画像"
         onerror="this.closest('.lz-media')?.classList.add('is-empty');">` : ""}
       </div>
       <div class="lz-body">
@@ -311,24 +313,38 @@ function buildSNSIconsHTML(card){
   return html ? `<div class="lz-sns">${html}</div>` : "";
 }
 
+/* 【SEO適正化済】モーダル表示関数 */
 function showModalFromCard(card){
   if(!card) return;
+  const t = card.dataset.title;
+
+  // 【SEO強化】ページタイトルを「記事名 | 元のタイトル」に更新
+  document.title = `${t} | ${originalTitle}`;
+
   try{ history.replaceState(null, "", shareUrlFromCard(card)); }catch(e){}
-  const t=card.dataset.title, lead=card.dataset.lead, body=card.dataset.body;
+  
+  const lead=card.dataset.lead, body=card.dataset.body;
   const main=card.dataset.main;
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
   const gallery=[main, ...subs].filter(Boolean);
-  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}"></div>` : '';
-  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="">`).join("")}</div>` : '';
+
+  // 【SEO強化】alt属性にタイトルを含める
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}のメイン画像"></div>` : '';
+  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="${esc(t)}のギャラリー画像 ${i+1}">`).join("")}</div>` : '';
+  
   const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
   const dlUrl = card.dataset.dl || "";
   const dlBtn = dlUrl ? `<a class="lz-btn lz-dl" href="${esc(dlUrl)}" target="_blank" rel="noopener" aria-label="DL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span class="lz-label">DL</span></a>` : "";
   const pdfBtn = (window.innerWidth >= 769) ? `<button class="lz-btn lz-pdf" type="button" aria-label="印刷"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span class="lz-label">印刷</span></button>` : "";
   const closeBtn = `<button class="lz-btn lz-x" type="button" onclick="lzClose()" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span class="lz-label">閉じる</span></button>`;
+  
   const infoTable = buildInfoTableHTML(card), snsIcons = buildSNSIconsHTML(card);
   let relatedBlock = "";
   try{ const rel = JSON.parse(card.dataset.related || "[]").filter(x => x && (x.title || x.url)); if (rel.length){ relatedBlock = `<div class="lz-related" style="padding:0 12px 12px;">${rel.map(a => { const url = a.url ? esc(a.url) : "#"; const lbl = a.title ? esc(a.title) : esc(a.url || "関連"); return `<div><a href="${url}" target="_blank" rel="noopener">${lbl}</a></div>`; }).join("")}</div>`; } }catch(_){}
-  lzOpen(`<div class="lz-mh"><h3 class="lz-mt">${esc(t)}</h3><div class="lz-actions">${shareBtn}${dlBtn}${pdfBtn}${closeBtn}</div></div>${imageBlock}${lead ? `<div class="lz-lead-strong">${esc(lead)}</div>` : ""}${body ? `<div class="lz-txt">${esc(body)}</div>` : ""}${galleryBlock}${infoTable}${snsIcons}${relatedBlock}`);
+
+  // 【SEO強化】見出しを <h3> から <h2> に格上げ
+  lzOpen(`<div class="lz-mh"><h2 class="lz-mt">${esc(t)}</h2><div class="lz-actions">${shareBtn}${dlBtn}${pdfBtn}${closeBtn}</div></div>${imageBlock}${lead ? `<div class="lz-lead-strong">${esc(lead)}</div>` : ""}${body ? `<div class="lz-txt">${esc(body)}</div>` : ""}${galleryBlock}${infoTable}${snsIcons}${relatedBlock}`);
+
   const mainImg = document.getElementById("lz-mainimg");
   if (gallery.length>1 && mainImg){
     const thumbs=[...document.querySelectorAll("#lz-gallery img")];
@@ -339,14 +355,15 @@ function showModalFromCard(card){
       mainImg.addEventListener("transitionend", function h(){ mainImg.removeEventListener("transitionend", h); mainImg.src = nextSrc; if(mainImg.complete){ requestAnimationFrame(()=> mainImg.classList.remove("lz-fadeout")); } else{ mainImg.addEventListener("load", ()=> mainImg.classList.remove("lz-fadeout"), {once:true}); } }, {once:true});
       setActive(i);
     };
-
     document.getElementById("lz-gallery")?.addEventListener("click", e=>{ const img=e.target.closest("img[data-img-idx]"); if(img) swap(parseInt(img.dataset.imgIdx||"0",10)||0); });
   }
+
   MODAL.querySelector(".lz-share")?.addEventListener("click", async ()=>{
     const url = shareUrlFromCard(card);
     const payload = `${RED_APPLE}${card.dataset.title}${GREEN_APPLE}\n${(card.dataset.lead||"") ? card.dataset.lead + "\n" : ""}ーーー\n詳しくはこちら\n${url}\n\n#いいづなりんご #飯綱町`;
     try{ if(navigator.share){ await navigator.share({ text: payload }); } else if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(payload); toast("共有テキストをコピーしました"); } else{ const ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); toast("共有テキストをコピーしました"); } }catch(e){}
   });
+
   if(window.innerWidth >= 769){
     MODAL.querySelector(".lz-pdf")?.addEventListener("click", async ()=>{
       if(!confirm("PDFを新しいタブで開きます。よろしいですか？")) return;
@@ -409,42 +426,29 @@ function buildNav(options={}){
   const sections = Array.from(document.querySelectorAll(".lz-section[data-l2]")); if(!sections.length) return;
   sections.forEach((s,i)=>{ if(!s.id){ const base = (s.dataset.l2||`l2-${i+1}`); let id=base,c=1; while(document.getElementById(id)) id=`${base}-${++c}`; s.id=id; }});
   const navs=document.querySelectorAll(".lz-nav"); if(!navs.length) return;
-  
-  /* 【修正】リンクを ?section= 形式に変更 */
   const html=`<div class="lz-nav-inner">${sections.map(s=>`<a href="?section=${s.id}" data-target="${s.id}">${esc(s.dataset.l2)}</a>`).join("")}</div>`;
   navs.forEach(n=>n.innerHTML=html);
-  
   const links=[...document.querySelectorAll(".lz-nav a")], byId=Object.fromEntries(links.map(a=>[a.dataset.target,a])), offset=parseInt(navs[0].dataset.offset||options.offset||0,10)||0;
-  
   document.addEventListener("click",e=>{
-    const a=e.target.closest(".lz-nav a[href*='?section=']"); if(!a) return; e.preventDefault();
-    
-    const urlParams = new URLSearchParams(a.search);
-    const id = urlParams.get('section');
-    const el = document.getElementById(id); if(!el) return;
-    
-    // スムーズスクロール
-    const y=el.getBoundingClientRect().top + window.pageYOffset - offset; 
-    window.scrollTo({top:y,behavior:"smooth"}); 
-    
-    // URLの更新 (リロードなし)
-    const url = new URL(window.location.href);
-    url.searchParams.set('section', id);
-    url.searchParams.delete('id'); // セクション移動時はモーダルIDを消す
-    window.history.replaceState(null, "", url.pathname + url.search);
+    const a=e.target.closest(".lz-nav a[data-target]"); if(!a) return; e.preventDefault();
+    const id=a.dataset.target, el=document.getElementById(id); if(!el) return;
+    const y=el.getBoundingClientRect().top + window.pageYOffset - offset; window.scrollTo({top:y,behavior:"smooth"});
+    if(HOST?.classList.contains("open")) lzClose();
+    const url = new URL(location.href);
+    url.searchParams.set("section", id);
+    url.searchParams.delete("id");
+    history.replaceState(null,"",url.pathname + url.search);
   },{passive:false});
-
   if("IntersectionObserver" in window){
     const io=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting){ links.forEach(x=>x.classList.remove("is-active")); const a=byId[en.target.id]; if(a) a.classList.add("is-active"); } }); },{rootMargin:"-40% 0px -55% 0px"});
     sections.forEach(s=>io.observe(s));
   }
 }
 
-/* 【修正】クエリパラメータを見てモーダルを開く関数 */
 function openFromQueryWithRetry(){
   const params = new URLSearchParams(window.location.search);
-  const idRaw = params.get('id'); if(!idRaw) return;
-  const id = decodeURIComponent(idRaw);
+  const id = params.get('id');
+  if(!id) return;
   
   const openIfReady=()=>{ 
     const card=document.getElementById(id); 
@@ -457,7 +461,6 @@ function openFromQueryWithRetry(){
     } 
     return false; 
   };
-  
   if(openIfReady()) return; 
   const mo=new MutationObserver(()=>{ if(openIfReady()){ mo.disconnect(); clearTimeout(timer); }});
   mo.observe(document.documentElement,{childList:true,subtree:true}); 
@@ -466,101 +469,249 @@ function openFromQueryWithRetry(){
 
 function boot(){
   const sections=document.querySelectorAll(".lz-section[data-l2]"); if(!sections.length) return;
-  const offset = (document.querySelector(".pera1-header")?.offsetHeight||0);
-  buildNav({offset: offset});
+  const offset = document.querySelector(".pera1-header")?.offsetHeight||0;
+  buildNav({offset});
 
-  const params = new URLSearchParams(window.location.search);
-  const hasId = params.has('id');
-  const hasSection = params.has('section');
+  const handleUrlParams = (isInitialLoad = false) => {
+    const params = new URLSearchParams(window.location.search);
+    const modalId = params.get('id');
+    const sectionId = params.get('section');
 
-  if(hasId || hasSection){ 
-    // パラメータがある場合は即時レンダリングしてアクション
-    sections.forEach(s=>renderSection(s)); 
-    if(hasId) openFromQueryWithRetry(); 
-    
-    /* 【追加】初期ロード時のセクションスクロール */
-    if(hasSection){
-      const sectionId = params.get('section');
-      const scrollToSection = () => {
+    if (modalId) {
+      openFromQueryWithRetry();
+    } else if (sectionId) {
+      const scrollTo = () => {
         const el = document.getElementById(sectionId);
-        if(el){
+        if (el) {
           const y = el.getBoundingClientRect().top + window.pageYOffset - offset;
-          window.scrollTo({top: y, behavior: "smooth"});
+          window.scrollTo({ top: y, behavior: isInitialLoad ? 'auto' : 'smooth' });
           return true;
         }
         return false;
       };
-      if(!scrollToSection()){
-        const moS = new MutationObserver(()=>{ if(scrollToSection()) moS.disconnect(); });
-        moS.observe(document.documentElement,{childList:true,subtree:true});
-        setTimeout(()=>moS.disconnect(), 5000);
-      }
+      if (scrollTo()) return;
+      const mo = new MutationObserver(() => { if (scrollTo()) mo.disconnect(); });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+      setTimeout(() => mo.disconnect(), 8000);
     }
+  };
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('id') || params.has('section')) {
+    sections.forEach(s => renderSection(s));
+    handleUrlParams(true);
   } else {
-    // パラメータがない場合は交差監視で遅延レンダリング
     const mql=window.matchMedia("(max-width:768px)");
     const applyWidth=()=>sections.forEach(s=>{ const {cardWidth="33.33%", cardWidthSm="80%"} = s.dataset; s.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth); });
     applyWidth(); mql.addEventListener?.("change", applyWidth);
     const io=("IntersectionObserver" in window) ? new IntersectionObserver(entries=>{ entries.forEach(e=>{ if(e.isIntersecting){ io.unobserve(e.target); renderSection(e.target); } }); },{rootMargin:"200px 0px"}) : null;
     sections.forEach(s=>{ if(io) io.observe(s); else renderSection(s); });
   }
-  
-  // ブラウザの戻る・進むボタンに対応
-  window.addEventListener("popstate", openFromQueryWithRetry, {passive:true});
-}
 
+  window.addEventListener("popstate", () => handleUrlParams(false), {passive:true});
+}
 if(document.readyState==="loading") { document.addEventListener("DOMContentLoaded", boot); } else { boot(); }
 
-/* ====== Eager Load Patch (修正版) ====== */
+/* ====== Eager Load Patch ====== */
 (function forceEagerLoadForLZ(){
   var _origRenderSection = window.renderSection; if (typeof _origRenderSection !== 'function') return;
   function guardedRenderSection(el){ if (!el || el.classList?.contains('lz-ready') || el.dataset.lzDone === '1') return; el.dataset.lzDone = '1'; return _origRenderSection(el); }
   window.renderSection = guardedRenderSection;
-  function eager(){ 
-    var sections = document.querySelectorAll('.lz-section[data-l2]'); 
-    sections.forEach(function(s){ guardedRenderSection(s); }); 
-    if (typeof window.openFromQueryWithRetry === 'function'){ window.openFromQueryWithRetry(); } 
-  }
+  function eager(){ var sections = document.querySelectorAll('.lz-section[data-l2]'); sections.forEach(function(s){ guardedRenderSection(s); }); if (typeof window.openFromQueryWithRetry === 'function'){ window.openFromQueryWithRetry(); } }
   if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', eager); } else { eager(); }
 })();
 
 /* ====== Appletown Analytics (Optimized) ====== */
-// (変更なし、既存のロジックを保持)
 (function () {
   "use strict";
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
+
+  // --- config.js から設定を読み込む ---
   const CONF = window.LZ_CONFIG?.ANALYTICS;
-  if (!CONF) return;
+  if (!CONF) return; // 設定がない場合は動かさない安全策
+
   const ENDPOINT = CONF.ENDPOINT;
   const VISITOR_COOKIE = CONF.VISITOR_COOKIE;
   const VISITOR_LSKEY = CONF.VISITOR_LSKEY;
   const SESSION_TTL_MS = CONF.SESSION_TTL;
+  
   const D = document, W = window, N = navigator, S = screen, now = () => Date.now();
   const text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
+
+  // --- 滞在時間計測の精密化 ---
   let activeTime = 0, lastVisibleTs = now(), tPage = now();
-  const updateActiveTime = () => { if (D.visibilityState === "visible") { lastVisibleTs = now(); } else { activeTime += now() - lastVisibleTs; } };
+  const updateActiveTime = () => {
+    if (D.visibilityState === "visible") {
+      lastVisibleTs = now();
+    } else {
+      activeTime += now() - lastVisibleTs;
+    }
+  };
   D.addEventListener("visibilitychange", updateActiveTime);
+
+  // --- 地理情報取得 (Geo) ---
   const GEO_CACHE_KEY = "apz_geo_v1", GEO_TTL_MS = 24 * 60 * 60 * 1000;
   let GEO = null;
-  async function loadGeo(){ try{ const cached = localStorage.getItem(GEO_CACHE_KEY); if (cached){ const obj = JSON.parse(cached); if (now() - (obj.t||0) < GEO_TTL_MS){ GEO = obj.d; return GEO; } } const ctrl = new AbortController(), timer = setTimeout(()=> ctrl.abort(), 1500); const res = await fetch("https://ipapi.co/json/", { signal:ctrl.signal }); clearTimeout(timer); if (!res.ok) throw new Error("geo_fail"); const j = await res.json(); GEO = { ip: j.ip||"", country: j.country_name||j.country||"", region: j.region||"", city: j.city||"", postal: j.postal||"", lat: j.latitude??null, lon: j.longitude??null }; localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ t:now(), d:GEO })); return GEO; } catch(_){ return null; } }
+  async function loadGeo(){
+    try{ 
+      const cached = localStorage.getItem(GEO_CACHE_KEY); 
+      if (cached){ 
+        const obj = JSON.parse(cached); 
+        if (now() - (obj.t||0) < GEO_TTL_MS){ GEO = obj.d; return GEO; } 
+      }
+      const ctrl = new AbortController(), timer = setTimeout(()=> ctrl.abort(), 1500);
+      const res = await fetch("https://ipapi.co/json/", { signal:ctrl.signal });
+      clearTimeout(timer); 
+      if (!res.ok) throw new Error("geo_fail"); 
+      const j = await res.json();
+      GEO = { ip: j.ip||"", country: j.country_name||j.country||"", region: j.region||"", city: j.city||"", postal: j.postal||"", lat: j.latitude??null, lon: j.longitude??null };
+      localStorage.setItem(GEO_CACHE_KEY, JSON.stringify({ t:now(), d:GEO })); 
+      return GEO;
+    } catch(_){ return null; }
+  }
+
+  // --- ID管理 (Visitor / Session) ---
   const uuid4 = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{ const r = Math.random()*16|0, v = c==="x" ? r : ((r&3)|8); return v.toString(16); });
   const setCookie = (k,v,days)=>{ try{ const d = new Date(); d.setTime(d.getTime() + days*864e5); D.cookie = `${k}=${encodeURIComponent(v)}; path=/; SameSite=Lax; expires=${d.toUTCString()}`; }catch(_){} };
   const getCookie = k => { try{ const m = D.cookie.match(new RegExp("(?:^| )"+k.replace(/([.*+?^${}()|[\]\\])/g,"\\$&")+"=([^;]*)")); return m ? decodeURIComponent(m[1]) : null; }catch(_){return null;} };
-  function ensureVisitorId(){ let vid = getCookie(VISITOR_COOKIE); if (vid){ localStorage.setItem(VISITOR_LSKEY, vid); return vid; } vid = localStorage.getItem(VISITOR_LSKEY); if (vid){ setCookie(VISITOR_COOKIE, vid, 365*3); return vid; } vid = uuid4(); setCookie(VISITOR_COOKIE, vid, 365*3); localStorage.setItem(VISITOR_LSKEY, vid); return vid; }
+  
+  function ensureVisitorId(){ 
+    let vid = getCookie(VISITOR_COOKIE); 
+    if (vid){ localStorage.setItem(VISITOR_LSKEY, vid); return vid; } 
+    vid = localStorage.getItem(VISITOR_LSKEY); 
+    if (vid){ setCookie(VISITOR_COOKIE, vid, 365*3); return vid; } 
+    vid = uuid4(); 
+    setCookie(VISITOR_COOKIE, vid, 365*3); localStorage.setItem(VISITOR_LSKEY, vid); 
+    return vid; 
+  }
   let visitorId = ensureVisitorId();
+
   const S_ID="apz_sid", S_TS="apz_sid_ts";
-  function touchSession(){ let sid = sessionStorage.getItem(S_ID); const t = now(), last = +sessionStorage.getItem(S_TS) || 0; if (!sid || (t-last) > SESSION_TTL_MS) sid = uuid4(); sessionStorage.setItem(S_ID, sid); sessionStorage.setItem(S_TS, t); return sid; }
+  function touchSession(){ 
+    let sid = sessionStorage.getItem(S_ID); 
+    const t = now(), last = +sessionStorage.getItem(S_TS) || 0; 
+    if (!sid || (t-last) > SESSION_TTL_MS) sid = uuid4(); 
+    sessionStorage.setItem(S_ID, sid); 
+    sessionStorage.setItem(S_TS, t); 
+    return sid; 
+  }
   let sessionId = touchSession();
+
   const utm = (() => { const p = new URLSearchParams(location.search); return { utm_source: p.get("utm_source")||"", utm_medium: p.get("utm_medium")||"", utm_campaign: p.get("utm_campaign")||"" }; })();
-  function sendEvent(event_name, event_params){ try { sessionId = touchSession(); const payload = { visitor_id: visitorId, session_id: sessionId, event_name, event_params: event_params || {}, page_url: location.href, page_title: D.title || "", referrer: D.referrer || "", ...utm, screen_w: S?.width??null, screen_h: S?.height??null, ua: N.userAgent||"" }; if (GEO){ payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; } const body = JSON.stringify(payload); if (N.sendBeacon && N.sendBeacon(ENDPOINT, new Blob([body], {type:"text/plain;charset=UTF-8"}))) return; fetch(ENDPOINT, { method:"POST", mode:"no-cors", body }).catch(() => { const img = new Image(); img.src = `${ENDPOINT}?d=${encodeURIComponent(body)}&t=${now()}`; }); } catch(_){} }
+
+  // --- イベント送信コア ---
+  function sendEvent(event_name, event_params){
+    try {
+      sessionId = touchSession();
+      const payload = { 
+        visitor_id: visitorId, session_id: sessionId, event_name, 
+        event_params: event_params || {}, page_url: location.href, 
+        page_title: D.title || "", referrer: D.referrer || "", 
+        ...utm, screen_w: S?.width??null, screen_h: S?.height??null, ua: N.userAgent||"" 
+      };
+      if (GEO){ 
+        payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; 
+        payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; 
+      }
+      
+      const body = JSON.stringify(payload);
+      
+      // 1. sendBeacon (離脱時など)
+      if (N.sendBeacon && N.sendBeacon(ENDPOINT, new Blob([body], {type:"text/plain;charset=UTF-8"}))) return;
+      
+      // 2. Fetch (通常時)
+      fetch(ENDPOINT, { method:"POST", mode:"no-cors", body }).catch(() => {
+        // 3. Image Pixel (最終手段)
+        const img = new Image();
+        img.src = `${ENDPOINT}?d=${encodeURIComponent(body)}&t=${now()}`;
+      });
+    } catch(_){}
+  }
+
   W.mzTrack ||= ((name,params)=> sendEvent(name,params));
-  Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,800)) ]).finally(() => { setTimeout(() => sendEvent("page_view", {}), 100); });
+  
+  // 初回計測
+  Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,800)) ]).finally(() => {
+    setTimeout(() => sendEvent("page_view", {}), 100);
+  });
+
+  // --- 自動トラッキング設定 ---
   let lastCard = null;
   const cardMeta = card => card ? { card_id: card.dataset.id||card.id||"", title: card.dataset.title||"", group: card.dataset.group||"", has_main: !!card.dataset.main } : {};
-  D.addEventListener("click", e => { const t = e.target; const card = t.closest?.(".lz-card"); if (card){ lastCard = cardMeta(card); sendEvent("card_click", {...lastCard}); return; } const btn = t.closest?.(".lz-btn"); if (btn){ const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn"; sendEvent("modal_action", { action:kind, label:text(btn), ...(lastCard||{}) }); return; } const sns = t.closest?.(".lz-sns a, .lz-sns-btn"); if (sns){ sendEvent("sns_click", { platform:sns.dataset.sns||"web", href:sns.href||"", ...(lastCard||{}) }); return; } const th = t.closest?.("#lz-gallery img[data-img-idx]"); if (th){ sendEvent("gallery_thumb_click", { idx:(+th.dataset.imgIdx||0), ...(lastCard||{}) }); return; } const ext = t.closest?.(".lz-info a[href], .lz-related a[href]"); if (ext){ sendEvent("external_link", { href:ext.href||"", label:text(ext), ...(lastCard||{}) }); return; } }, {capture:true, passive:true});
-  (function(){ const observeModal = () => { const mo = new MutationObserver(muts => { for(const m of muts) { for(const n of m.addedNodes) { if(n.nodeType === 1 && (n.matches?.(".lz-modal") || n.querySelector?.(".lz-modal"))) { const title = D.querySelector(".lz-modal .lz-mt")?.textContent?.trim() || "modal"; sendEvent("modal_open", { modal_name: title, ...(lastCard || {}) }); } } } }); mo.observe(D.documentElement, {childList:true, subtree:true}); const mo2 = new MutationObserver(() => { if(!D.querySelector(".lz-backdrop.open") && !D.querySelector(".lz-modal.is-open")){ } }); mo2.observe(D.documentElement, {attributes:true, subtree:true, attributeFilter:["class"]}); }; observeModal(); })();
+
+  D.addEventListener("click", e => {
+    const t = e.target;
+    // カードクリック
+    const card = t.closest?.(".lz-card"); 
+    if (card){ lastCard = cardMeta(card); sendEvent("card_click", {...lastCard}); return; }
+    
+    // ボタンアクション
+    const btn = t.closest?.(".lz-btn");
+    if (btn){
+      const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn";
+      sendEvent("modal_action", { action:kind, label:text(btn), ...(lastCard||{}) });
+      return;
+    }
+    
+    // SNS / 外部リンク / ギャラリー
+    const sns = t.closest?.(".lz-sns a, .lz-sns-btn");
+    if (sns){ sendEvent("sns_click", { platform:sns.dataset.sns||"web", href:sns.href||"", ...(lastCard||{}) }); return; }
+    
+    const th = t.closest?.("#lz-gallery img[data-img-idx]");
+    if (th){ sendEvent("gallery_thumb_click", { idx:(+th.dataset.imgIdx||0), ...(lastCard||{}) }); return; }
+    
+    const ext = t.closest?.(".lz-info a[href], .lz-related a[href]");
+    if (ext){ sendEvent("external_link", { href:ext.href||"", label:text(ext), ...(lastCard||{}) }); return; }
+  }, {capture:true, passive:true});
+
+  // モーダル監視 (MutationObserver)
+  (function(){
+    const observeModal = () => {
+      const mo = new MutationObserver(muts => {
+        for(const m of muts) {
+          for(const n of m.addedNodes) {
+            if(n.nodeType === 1 && (n.matches?.(".lz-modal") || n.querySelector?.(".lz-modal"))) {
+              const title = D.querySelector(".lz-modal .lz-mt")?.textContent?.trim() || "modal";
+              sendEvent("modal_open", { modal_name: title, ...(lastCard || {}) });
+            }
+          }
+        }
+      });
+      mo.observe(D.documentElement, {childList:true, subtree:true});
+
+      const mo2 = new MutationObserver(() => {
+        if(!D.querySelector(".lz-backdrop.open") && !D.querySelector(".lz-modal.is-open")){
+          // 以前のセッションでモーダルが開いていたかチェックする等のロジックは必要に応じて
+        }
+      });
+      mo2.observe(D.documentElement, {attributes:true, subtree:true, attributeFilter:["class"]});
+    };
+    observeModal();
+  })();
+
+  // --- 離脱計測の堅牢化 ---
   let closedSent = false;
-  function flushClose(reason){ if (closedSent) return; closedSent = true; const finalActiveTime = D.visibilityState === "visible" ? activeTime + (now() - lastVisibleTs) : activeTime; sendEvent("page_close", { total_engaged_ms: now() - tPage, active_engaged_ms: finalActiveTime, reason: String(reason || "") }); }
+  function flushClose(reason){
+    if (closedSent) return;
+    closedSent = true; // 即座にフラグを立てる (重要)
+    
+    // 最終的なアクティブ時間を算出
+    const finalActiveTime = D.visibilityState === "visible" 
+      ? activeTime + (now() - lastVisibleTs) 
+      : activeTime;
+
+    sendEvent("page_close", { 
+      total_engaged_ms: now() - tPage, 
+      active_engaged_ms: finalActiveTime,
+      reason: String(reason || "") 
+    });
+  }
+
   W.addEventListener("pagehide", e => flushClose(e.persisted ? "bfcache" : "unload"), {capture:true});
-  D.addEventListener("visibilitychange", () => { if (D.visibilityState === "hidden") { setTimeout(() => flushClose("visibility_hidden"), 0); } }, {capture:true});
+  D.addEventListener("visibilitychange", () => {
+    if (D.visibilityState === "hidden") {
+      // モバイルブラウザ向けに、非表示になった瞬間に一度予備送信
+      setTimeout(() => flushClose("visibility_hidden"), 0);
+    }
+  }, {capture:true});
 })();
