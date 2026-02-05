@@ -2,7 +2,7 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの自動注入 (スクロール & アコーディオン対応)
+     1. CSSの自動注入 (プルダウン強化 & グレーアウト対応)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
@@ -12,7 +12,7 @@
     .lz-right { display: flex !important; align-items: center !important; gap: 16px !important; flex: 0 0 auto !important; }
     .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 12px) !important; opacity: 1 !important; pointer-events: auto !important; flex: 1 1 auto !important; min-width: 0 !important; }
     .lz-logo__img { position: absolute !important; top: 0 !important; left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; border-radius: 5px !important; object-fit: cover !important; transform-origin: top left !important; transform: translateY(calc((var(--hdr-h) - var(--logo-size)) / 2)) !important; }
-    .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.05 !important; font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans JP",sans-serif !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
+    .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.05 !important; font-family: system-ui,sans-serif !important; white-space: nowrap !important; overflow: hidden !important; text-overflow: ellipsis !important; }
     .lz-t1 { font-weight: 400 !important; font-size: clamp(1.05rem, 1.9vw, 1.35rem) !important; letter-spacing: .01em !important; opacity: .95 !important; }
     .lz-t2 { font-weight: 800 !important; font-size: clamp(1.55rem, 2.7vw, 2.1rem) !important; letter-spacing: .01em !important; margin-top: 4px !important; }
     
@@ -20,19 +20,48 @@
     @media (min-width: 769px) { .lz-hnav { display: block !important; } }
     .lz-hnav__list { display: flex !important; align-items: center !important; gap: 22px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
     .lz-hnav__item { position: relative !important; }
-    .lz-hnav__l1 { font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue", Arial,"Noto Sans JP",sans-serif !important; font-weight: 550 !important; font-size: clamp(1.22rem, 2.3vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 12px 10px !important; border-radius: 10px !important; }
+    .lz-hnav__l1 { font-family: system-ui,sans-serif !important; font-weight: 550 !important; font-size: clamp(1.22rem, 2.3vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 12px 10px !important; border-radius: 10px !important; }
     .lz-hnav__l1:hover { background: rgba(255, 255, 255, .12) !important; }
+    
     .lz-hnav__panel { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 12px !important; background: #fff !important; color: #222 !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgba(0,0,0,.18) !important; padding: 10px !important; display: none; min-width: 220px !important; max-width: 360px !important; z-index: 10001 !important; }
     .lz-hnav__panel.is-open { display: block !important; }
-    .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; white-space: nowrap !important; font-family: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue", Arial,"Noto Sans JP",sans-serif !important; font-weight: 550 !important; font-size: 1.28rem !important; text-align: left !important; border-bottom: 1px solid #f0f0f0 !important; }
+    .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; white-space: nowrap !important; font-weight: 550 !important; font-size: 1.28rem !important; text-align: left !important; border-bottom: 1px solid #f0f0f0 !important; }
     .lz-hnav__panel a:last-child { border-bottom: none !important; }
 
+    /* 言語プルダウン */
     .lz-lang { position: relative !important; display: none; }
     @media (min-width: 769px) { .lz-lang { display: block !important; } }
-    .lz-lang__btn { display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important; height: 44px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 550 !important; font-size: 1.15rem !important; white-space: nowrap !important; }
-    .lz-lang__menu { position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgba(0,0,0,.18) !important; padding: 8px !important; display: none; min-width: 140px !important; z-index: 10002 !important; flex-direction: column !important; }
+    .lz-lang__btn { 
+      display: inline-flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; 
+      height: 40px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; 
+      background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; 
+      font-weight: 550 !important; font-size: 1.1rem !important; white-space: nowrap !important; transition: all .2s;
+    }
+    .lz-lang__btn:hover { background: rgba(255,255,255,.1); border-color: #fff; }
+    /* 下矢印アイコン */
+    .lz-lang__btn::after { 
+      content: ""; width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; 
+      border-top: 5px solid #fff; margin-top: 2px; transition: transform .3s; 
+    }
+    .lz-lang__btn.is-active::after { transform: rotate(180deg); }
+
+    .lz-lang__menu { 
+      position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; 
+      background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; 
+      padding: 8px !important; display: none; min-width: 170px !important; z-index: 10002 !important; flex-direction: column !important; 
+    }
     .lz-lang__menu.is-open { display: flex !important; }
-    .lz-lang__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550 !important; text-align: left !important; }
+    .lz-lang__menu a { 
+      display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; 
+      border-radius: 8px !important; font-weight: 550 !important; font-size: 1rem !important; text-align: left !important; 
+    }
+    .lz-lang__menu a:hover:not(.is-disabled) { background: #f5f5f5; }
+    
+    /* グレーアウト（準備中）のスタイル */
+    .lz-lang__menu a.is-disabled { 
+      color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; 
+      background: transparent !important; font-size: 0.9rem !important;
+    }
 
     .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; }
     @media (min-width: 769px) { .lz-hamb { display: none !important; } }
@@ -47,16 +76,13 @@
       transform: translateX(100%) !important; transition: transform .3s ease !important;
       display: flex !important; flex-direction: column !important;
       overflow-y: auto !important; 
-      -webkit-overflow-scrolling: touch;
     }
     .lz-drawer.is-open { transform: translateX(0) !important; }
-
     .lz-dw-group { border-bottom: 1px solid #eee; }
     .lz-dw-l1-row { display: flex !important; align-items: center; justify-content: space-between; width: 100%; }
     .lz-dw-l1a { flex: 1; display: block; padding: 18px 20px; font-weight: bold; font-size: 1.15rem; color: #333; text-decoration: none; }
     .lz-dw-arrow { padding: 18px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; font-size: 1.2rem; display: flex; align-items: center; }
     .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg); }
-    
     .lz-dw-l2-area { background: #f9f9f9; display: none; padding: 5px 0 15px 30px; }
     .lz-dw-group.is-active .lz-dw-l2-area { display: block; }
     .lz-dw-l2-area a { display: block; padding: 12px 0; color: #666; text-decoration: none; font-size: 1.05rem; }
@@ -68,7 +94,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の自動注入
+     2. HTML構造の注入 (言語メニューのテキスト変更)
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -84,7 +110,11 @@
         <nav class="lz-hnav"><ul class="lz-hnav__list" id="lzNavList"></ul></nav>
         <div class="lz-lang" id="lzLang">
           <button class="lz-lang__btn" type="button"><span>日本語</span></button>
-          <div class="lz-lang__menu"><a href="#" data-lang="ja">日本語</a><a href="#" data-lang="en">English</a><a href="#" data-lang="zh">中文</a></div>
+          <div class="lz-lang__menu">
+            <a href="#" data-lang="ja">日本語</a>
+            <a href="#" data-lang="en" class="is-disabled">English（準備中）</a>
+            <a href="#" data-lang="zh" class="is-disabled">中文（準備中）</a>
+          </div>
         </div>
         <button class="lz-hamb" id="lzHamb"><span class="lz-hamb__bar"></span><span class="lz-hamb__bar"></span><span class="lz-hamb__bar"></span></button>
       </div>
@@ -102,11 +132,10 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     3. ナビゲーション制御ロジック
+     3. 制御ロジック
      ========================================== */
-  const getConfig = () => window.LZ_CONFIG || null;
   const config = await new Promise(resolve => {
-    const check = () => getConfig() ? resolve(getConfig()) : setTimeout(check, 100);
+    const check = () => window.LZ_CONFIG ? resolve(window.LZ_CONFIG) : setTimeout(check, 100);
     check();
   });
   const { ENDPOINT, MENU_ORDER, MENU_URL } = config;
@@ -133,43 +162,32 @@
       item.onmouseleave = () => item.querySelector('.lz-hnav__panel').classList.remove('is-open');
     });
 
+    // 言語プルダウンイベント
     const langWrap = document.getElementById('lzLang'), langBtn = langWrap?.querySelector('.lz-lang__btn'), langMenu = langWrap?.querySelector('.lz-lang__menu');
-    if(langBtn) langBtn.onclick = (e) => { e.stopPropagation(); langMenu.classList.toggle('is-open'); };
-    document.addEventListener('click', () => langMenu?.classList.remove('is-open'));
+    if(langBtn) {
+      langBtn.onclick = (e) => { 
+        e.stopPropagation(); 
+        const isOpen = langMenu.classList.toggle('is-open');
+        langBtn.classList.toggle('is-active', isOpen);
+      };
+    }
+    document.addEventListener('click', () => {
+      langMenu?.classList.remove('is-open');
+      langBtn?.classList.remove('is-active');
+    });
 
     const hamb = document.getElementById('lzHamb'), close = document.getElementById('lzDwClose');
     hamb.onclick = () => { drawer.classList.add('is-open'); backdrop.classList.add('is-open'); };
     [backdrop, close].forEach(el => { if(el) el.onclick = closeDrawer; });
 
-    // スマホアコーディオン & リンクタップ時のクローズ
     document.querySelectorAll('.lz-dw-group').forEach(group => {
-      const arrow = group.querySelector('.lz-dw-arrow');
-      const link = group.querySelector('.lz-dw-l1a');
-      const l2Area = group.querySelector('.lz-dw-l2-area');
-
-      const toggleAccordion = (e) => {
-        if (l2Area && l2Area.innerHTML.trim() !== "") {
-          e.preventDefault();
-          group.classList.toggle('is-active');
-        }
-      };
+      const arrow = group.querySelector('.lz-dw-arrow'), link = group.querySelector('.lz-dw-l1a'), l2Area = group.querySelector('.lz-dw-l2-area');
+      const toggleAccordion = (e) => { if (l2Area && l2Area.innerHTML.trim() !== "") { e.preventDefault(); group.classList.toggle('is-active'); } };
       arrow.onclick = toggleAccordion;
-      link.onclick = (e) => {
-        if (!group.classList.contains('is-active') && l2Area && l2Area.innerHTML.trim() !== "") {
-          toggleAccordion(e);
-        } else {
-          // すでに開いているかL2がなければクローズ
-          closeDrawer();
-        }
-      };
+      link.onclick = (e) => { if (!group.classList.contains('is-active') && l2Area && l2Area.innerHTML.trim() !== "") toggleAccordion(e); else closeDrawer(); };
     });
     
-    // ★ 2階層目のリンクをタップした時にドロワーを閉じる (イベント委譲)
-    document.getElementById('lzDwNav').onclick = (e) => {
-      if (e.target.tagName === 'A') {
-        closeDrawer();
-      }
-    };
+    document.getElementById('lzDwNav').onclick = (e) => { if (e.target.tagName === 'A') closeDrawer(); };
   }
 
   renderSkeleton(); setupEvents();
@@ -182,19 +200,13 @@
       json.items.forEach(it => { if(!map.has(it.l1)) map.set(it.l1, []); if(!map.get(it.l1).includes(it.l2)) map.get(it.l1).push(it.l2); });
       MENU_ORDER.forEach((l1, i) => {
         const l2s = map.get(l1) || [];
-        // ★ ?section= への変更
         const links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
-        
         const panels = document.querySelectorAll('.lz-hnav__panel');
         if(panels[i]) panels[i].innerHTML = links;
-        
         const dwGroups = document.querySelectorAll('.lz-dw-group');
         const dwArea = dwGroups[i]?.querySelector('.lz-dw-l2-area');
-        if(dwArea && l2s.length > 0) {
-          dwArea.innerHTML = links;
-        } else if (dwGroups[i]) {
-          dwGroups[i].querySelector('.lz-dw-arrow').style.display = 'none';
-        }
+        if(dwArea && l2s.length > 0) dwArea.innerHTML = links;
+        else if (dwGroups[i]) dwGroups[i].querySelector('.lz-dw-arrow').style.display = 'none';
       });
     }
   } catch(e) { console.error(e); }
