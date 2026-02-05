@@ -2,7 +2,7 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (スマホ用言語ボタンを追加)
+     1. CSSの注入 (スマホ用シングルボタン対応)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
@@ -14,16 +14,16 @@
       display: block !important;
     }
 
-    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(10px, 3vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 8px; }
-    .lz-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2vw, 16px) !important; }
+    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(10px, 3vw, 20px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 8px; }
+    .lz-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2.5vw, 16px) !important; }
     
     .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 10px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 10px) !important; }
     .lz-logo__img { position: absolute !important; top: calc((var(--hdr-h) - var(--logo-size)) / 2) !important; left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; border-radius: 5px !important; object-fit: cover !important; }
     .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; font-family: system-ui,sans-serif !important; }
-    .lz-t1 { font-weight: 400 !important; font-size: clamp(0.75rem, 1.8vw, 1.35rem) !important; opacity: .9 !important; }
-    .lz-t2 { font-weight: 800 !important; font-size: clamp(1.1rem, 2.5vw, 2.1rem) !important; margin-top: 2px !important; }
+    .lz-t1 { font-weight: 400 !important; font-size: clamp(0.7rem, 1.8vw, 1.35rem) !important; opacity: .9 !important; }
+    .lz-t2 { font-weight: 800 !important; font-size: clamp(1.05rem, 2.5vw, 2.1rem) !important; margin-top: 2px !important; }
     
-    /* PCナビ・排他制御用 */
+    /* PCナビ */
     .lz-hnav { display: none; }
     @media (min-width: 1024px) { .lz-hnav { display: block !important; } }
     .lz-hnav__list { display: flex !important; align-items: center !important; gap: clamp(10px, 1.5vw, 22px) !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
@@ -34,7 +34,10 @@
     .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1.25rem; border-bottom: 1px solid #f0f0f0 !important; }
     .lz-hnav__panel a:last-child { border-bottom: none !important; }
 
-    /* 言語設定：PC（クリック式） */
+    /* 言語設定：共通（準備中） */
+    .is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
+
+    /* 言語設定：PC用 */
     .lz-lang-pc { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
     .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 36px !important; padding: 0 12px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer !important; font-weight: 550; font-size: 0.95rem !important; }
@@ -43,18 +46,25 @@
     .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 5px !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; display: none; min-width: 160px !important; flex-direction: column !important; z-index: 10002; }
     .lz-lang-pc__menu.is-open { display: flex !important; }
     .lz-lang-pc__menu a { display: block !important; padding: 8px 12px !important; color: #222 !important; text-decoration: none !important; border-radius: 6px !important; font-weight: 550; font-size: 0.9rem; }
-    .lz-lang-pc__menu a.is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; }
 
-    /* ★スマホ専用言語切り替え★ */
-    .lz-lang-mob { display: flex !important; align-items: center !important; gap: 6px !important; }
+    /* ★スマホ用言語選択（シングルボタン）★ */
+    .lz-lang-mob { position: relative !important; display: flex !important; }
     @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
-    .lz-lang-mob__item { 
-      width: 32px !important; height: 32px !important; display: flex !important; align-items: center !important; justify-content: center !important;
-      border: 1px solid rgba(255,255,255,0.5) !important; border-radius: 50% !important; color: #fff !important;
-      font-size: 11px !important; font-weight: 700 !important; text-decoration: none !important; transition: all 0.2s;
+    .lz-lang-mob__btn { 
+      width: 40px !important; height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important;
+      border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 8px !important; color: #fff !important;
+      font-size: 14px !important; font-weight: 700 !important; background: transparent !important; cursor: pointer;
     }
-    .lz-lang-mob__item.is-current { background: #fff !important; color: var(--apple-red) !important; border-color: #fff !important; }
-    .lz-lang-mob__item.is-disabled { opacity: 0.4 !important; pointer-events: none !important; border-style: dashed !important; }
+    .lz-lang-mob__menu { 
+      position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important;
+      background: #fff !important; border-radius: 10px !important; box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important;
+      padding: 6px !important; display: none; min-width: 140px !important; flex-direction: column !important; z-index: 10003;
+    }
+    .lz-lang-mob__menu.is-open { display: flex !important; }
+    .lz-lang-mob__menu a { 
+      display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important;
+      font-size: 14px !important; font-weight: 600 !important; border-radius: 6px !important;
+    }
 
     /* ハンバーガー・ドロワー */
     .lz-hamb { display: flex !important; width: 40px !important; height: 40px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 8px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 5px !important; cursor: pointer; }
@@ -65,7 +75,6 @@
     .lz-dw-backdrop.is-open { display: block !important; }
     .lz-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 80vw !important; max-width: 320px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .3s ease !important; overflow-y: auto !important; }
     .lz-drawer.is-open { transform: translateX(0) !important; }
-    
     .lz-dw-group { border-bottom: 1px solid #eee; }
     .lz-dw-l1a { flex: 1; display: block; padding: 16px 20px; font-weight: bold; font-size: 1.1rem; color: #333 !important; text-decoration: none !important; }
     .lz-dw-arrow { padding: 16px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; }
@@ -81,7 +90,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入 (スマホ用言語切替を追加)
+     2. HTML構造の注入 (En修正 & スマホ言語ボタン)
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -96,17 +105,20 @@
       <div class="lz-right">
         <nav class="lz-hnav"><ul class="lz-hnav__list" id="lzNavList"></ul></nav>
         
-        <div class="lz-lang-mob">
-          <span class="lz-lang-mob__item is-current">日</span>
-          <span class="lz-lang-mob__item is-disabled">en</span>
-          <span class="lz-lang-mob__item is-disabled">中</span>
+        <div class="lz-lang-mob" id="lzLangMob">
+          <button class="lz-lang-mob__btn" type="button">日</button>
+          <div class="lz-lang-mob__menu">
+            <a href="#">日本語</a>
+            <a href="#" class="is-disabled">En（準備中）</a>
+            <a href="#" class="is-disabled">中文（準備中）</a>
+          </div>
         </div>
 
         <div class="lz-lang-pc" id="lzLangPc">
           <button class="lz-lang-pc__btn" type="button"><span>日本語</span></button>
           <div class="lz-lang-pc__menu">
             <a href="#">日本語</a>
-            <a href="#" class="is-disabled">English（準備中）</a>
+            <a href="#" class="is-disabled">En（準備中）</a>
             <a href="#" class="is-disabled">中文（準備中）</a>
           </div>
         </div>
@@ -127,7 +139,7 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     3. 制御ロジック (機能の毀損なし)
+     3. 制御ロジック
      ========================================== */
   const config = await new Promise(resolve => {
     const check = () => window.LZ_CONFIG ? resolve(window.LZ_CONFIG) : setTimeout(check, 50);
@@ -146,7 +158,7 @@
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.classList.remove('is-open'); };
 
-    // PC：排他的ホバー制御
+    // PCメニュー：排他ホバー
     let closeTimer;
     const items = document.querySelectorAll('.lz-hnav__item');
     items.forEach(item => {
@@ -159,17 +171,28 @@
       item.onmouseleave = () => { closeTimer = setTimeout(() => panel.classList.remove('is-open'), 300); };
     });
 
-    // PC言語選択：完全クリック式
-    const langPc = document.getElementById('lzLangPc'), langBtn = langPc?.querySelector('.lz-lang-pc__btn'), langMenu = langPc?.querySelector('.lz-lang-pc__menu');
-    if(langBtn) {
-      langBtn.onclick = (e) => {
+    // 言語選択：共通クリック処理（PC/スマホ）
+    const setupLangToggle = (containerId, btnClass, menuClass) => {
+      const container = document.getElementById(containerId);
+      const btn = container?.querySelector('.' + btnClass);
+      const menu = container?.querySelector('.' + menuClass);
+      if(!btn || !menu) return;
+      
+      btn.onclick = (e) => {
         e.stopPropagation();
-        items.forEach(i => i.querySelector('.lz-hnav__panel').classList.remove('is-open'));
-        const isOpen = langMenu.classList.toggle('is-open');
-        langBtn.classList.toggle('is-active', isOpen);
+        const isOpen = menu.classList.toggle('is-open');
+        btn.classList.toggle('is-active', isOpen);
       };
-      document.addEventListener('click', (e) => { if(!langPc.contains(e.target)){ langMenu.classList.remove('is-open'); langBtn.classList.remove('is-active'); } });
-    }
+      document.addEventListener('click', (e) => {
+        if(!container.contains(e.target)) {
+          menu.classList.remove('is-open');
+          btn.classList.remove('is-active');
+        }
+      });
+    };
+
+    setupLangToggle('lzLangPc', 'lz-lang-pc__btn', 'lz-lang-pc__menu');
+    setupLangToggle('lzLangMob', 'lz-lang-mob__btn', 'lz-lang-mob__menu');
 
     const hamb = document.getElementById('lzHamb'), close = document.getElementById('lzDwClose');
     hamb.onclick = () => { drawer.classList.add('is-open'); backdrop.classList.add('is-open'); };
@@ -178,6 +201,7 @@
 
   renderSkeleton(); setupEvents();
 
+  // APIデータ反映
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
     const json = await res.json();
