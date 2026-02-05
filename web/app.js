@@ -1,6 +1,6 @@
 /* web/app.js (順序最適化版) */
 (function() {
-  const v = "20260205_2301"; // 更新時はここを書き換え
+  const v = "20260205_2302"; // 更新時はここを書き換え
   const base = "https://cdn.jsdelivr.net/gh/takizawa-debug/iizuna-apple-project@main/web/";
   
   const files = [
