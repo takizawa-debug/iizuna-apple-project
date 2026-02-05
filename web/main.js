@@ -131,7 +131,7 @@ function toast(msg="コピーしました"){
 
 let HOST=null, SHELL=null, MODAL=null;
 let CARDS=[], IDX=0;
-let originalTitle = document.title; 
+let originalTitle = document.title; // 【SEO】元のページタイトルを記憶
 
 function ensureModal(){
   if(HOST) return;
@@ -166,7 +166,7 @@ function lzOpen(html){
 function lzClose(){
   if(!HOST) return;
   HOST.classList.remove("open");
-  document.title = originalTitle; 
+  document.title = originalTitle; // 【SEO】タイトルを元に戻す
   try{ 
     const url = new URL(window.location.href);
     url.searchParams.delete('id');
@@ -254,8 +254,7 @@ function cardHTML(it, pad, groupKey){
       data-dl="${esc(dataAttrs.dl)}"
       data-group="${esc(groupKey)}">
       <div class="lz-media ${hasMain ? "" : "is-empty"}" style="--ratio:${pad}">
-    ${hasMain ? `<img loading="lazy" decoding="async"
-        crossorigin="anonymous"
+    ${hasMain ? `<img loading="lazy" decoding="async" crossorigin="anonymous"
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
         alt="${esc(title)}の画像"
@@ -322,8 +321,8 @@ function showModalFromCard(card){
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
   const gallery=[main, ...subs].filter(Boolean);
 
-  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}のメイン画像"></div>` : '';
-  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="${esc(t)}の画像 ${i+1}">`).join("")}</div>` : '';
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="「${esc(t)}」のメイン画像"></div>` : '';
+  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="「${esc(t)}」のギャラリー画像 ${i+1}">`).join("")}</div>` : '';
   const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
   const dlUrl = card.dataset.dl || "";
   const dlBtn = dlUrl ? `<a class="lz-btn lz-dl" href="${esc(dlUrl)}" target="_blank" rel="noopener" aria-label="DL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span class="lz-label">DL</span></a>` : "";
@@ -358,25 +357,24 @@ function showModalFromCard(card){
         await ensurePdfLibs(); const url = shareUrlFromCard(card);
         const clone = MODAL.cloneNode(true); clone.querySelector(".lz-actions")?.remove(); clone.style.maxHeight="none"; clone.style.height="auto"; clone.style.width="800px";
         
-        // 【重要修正】クローン内の画像にも crossorigin を強制セット
-        clone.querySelectorAll("img").forEach(img=>{ 
+        // 【修正】クローン内の画像にも crossorigin を強制セットし、確実に読み込まれた画像をターゲットにする
+        const cloneImgs = Array.from(clone.querySelectorAll("img"));
+        cloneImgs.forEach(img=>{ 
           img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); 
           img.crossOrigin = "anonymous";
         });
         document.body.appendChild(clone);
         
-        // QRコード生成
-        const qrDiv = document.createElement("div"); new QRCode(qrDiv,{ text:url, width:64, height:64, correctLevel: QRCode.CorrectLevel.L });
-        const qrCanvas = qrDiv.querySelector("canvas"), qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
-        
-        // 画像の読み込み完了を待つPromise
-        const imgs = Array.from(clone.querySelectorAll("img"));
-        await Promise.all(imgs.map(img => {
+        // 画像の読み込み完了を待つPromise（重要：これがないと画像化に失敗する）
+        await Promise.all(cloneImgs.map(img => {
           if (img.complete) return Promise.resolve();
           return new Promise(res => { img.onload = res; img.onerror = res; });
         }));
 
-        // 【修正】useCORS: true を確実に有効化
+        const qrDiv = document.createElement("div"); new QRCode(qrDiv,{ text:url, width:64, height:64, correctLevel: QRCode.CorrectLevel.L });
+        const qrCanvas = qrDiv.querySelector("canvas"), qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
+        
+        // 【修正】useCORS: true を確実に有効化し、allowTaint: false にする
         const canvas = await html2canvas(clone,{
           scale:2, 
           backgroundColor:"#ffffff", 
@@ -448,7 +446,7 @@ function buildNav(options={}){
     const url = new URL(location.href);
     url.searchParams.set("section", id);
     url.searchParams.delete("id");
-    history.replaceState(null,"",url.pathname + url.search);
+    history.replaceState(null, "", url.pathname + url.search);
   },{passive:false});
   if("IntersectionObserver" in window){
     const io=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting){ links.forEach(x=>x.classList.remove("is-active")); const a=byId[en.target.id]; if(a) a.classList.add("is-active"); } }); },{rootMargin:"-40% 0px -55% 0px"});
@@ -537,9 +535,8 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   "use strict";
   if (window.__APZ_NS?.bound) return; (window.__APZ_NS ||= {}).bound = true;
 
-  // --- config.js から設定を読み込む ---
   const CONF = window.LZ_CONFIG?.ANALYTICS;
-  if (!CONF) return; // 設定がない場合は動かさない安全策
+  if (!CONF) return; 
 
   const ENDPOINT = CONF.ENDPOINT;
   const VISITOR_COOKIE = CONF.VISITOR_COOKIE;
@@ -549,18 +546,12 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   const D = document, W = window, N = navigator, S = screen, now = () => Date.now();
   const text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
 
-  // --- 滞在時間計測の精密化 ---
   let activeTime = 0, lastVisibleTs = now(), tPage = now();
   const updateActiveTime = () => {
-    if (D.visibilityState === "visible") {
-      lastVisibleTs = now();
-    } else {
-      activeTime += now() - lastVisibleTs;
-    }
+    if (D.visibilityState === "visible") { lastVisibleTs = now(); } else { activeTime += now() - lastVisibleTs; }
   };
   D.addEventListener("visibilitychange", updateActiveTime);
 
-  // --- 地理情報取得 (Geo) ---
   const GEO_CACHE_KEY = "apz_geo_v1", GEO_TTL_MS = 24 * 60 * 60 * 1000;
   let GEO = null;
   async function loadGeo(){
@@ -581,7 +572,6 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
     } catch(_){ return null; }
   }
 
-  // --- ID管理 (Visitor / Session) ---
   const uuid4 = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c=>{ const r = Math.random()*16|0, v = c==="x" ? r : ((r&3)|8); return v.toString(16); });
   const setCookie = (k,v,days)=>{ try{ const d = new Date(); d.setTime(d.getTime() + days*864e5); D.cookie = `${k}=${encodeURIComponent(v)}; path=/; SameSite=Lax; expires=${d.toUTCString()}`; }catch(_){} };
   const getCookie = k => { try{ const m = D.cookie.match(new RegExp("(?:^| )"+k.replace(/([.*+?^${}()|[\]\\])/g,"\\$&")+"=([^;]*)")); return m ? decodeURIComponent(m[1]) : null; }catch(_){return null;} };
@@ -610,7 +600,6 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
 
   const utm = (() => { const p = new URLSearchParams(location.search); return { utm_source: p.get("utm_source")||"", utm_medium: p.get("utm_medium")||"", utm_campaign: p.get("utm_campaign")||"" }; })();
 
-  // --- イベント送信コア ---
   function sendEvent(event_name, event_params){
     try {
       sessionId = touchSession();
@@ -624,15 +613,9 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
         payload.geo_ip=GEO.ip; payload.geo_country=GEO.country; payload.geo_region=GEO.region; 
         payload.geo_city=GEO.city; payload.geo_postal=GEO.postal; payload.geo_lat=GEO.lat; payload.geo_lon=GEO.lon; 
       }
-      
       const body = JSON.stringify(payload);
-      
-      // 1. sendBeacon (離脱時など)
       if (N.sendBeacon && N.sendBeacon(ENDPOINT, new Blob([body], {type:"text/plain;charset=UTF-8"}))) return;
-      
-      // 2. Fetch (通常時)
       fetch(ENDPOINT, { method:"POST", mode:"no-cors", body }).catch(() => {
-        // 3. Image Pixel (最終手段)
         const img = new Image();
         img.src = `${ENDPOINT}?d=${encodeURIComponent(body)}&t=${now()}`;
       });
@@ -640,42 +623,31 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
   }
 
   W.mzTrack ||= ((name,params)=> sendEvent(name,params));
-  
-  // 初回計測
   Promise.race([ loadGeo(), new Promise(r=>setTimeout(r,800)) ]).finally(() => {
     setTimeout(() => sendEvent("page_view", {}), 100);
   });
 
-  // --- 自動トラッキング設定 ---
   let lastCard = null;
   const cardMeta = card => card ? { card_id: card.dataset.id||card.id||"", title: card.dataset.title||"", group: card.dataset.group||"", has_main: !!card.dataset.main } : {};
 
   D.addEventListener("click", e => {
     const t = e.target;
-    // カードクリック
     const card = t.closest?.(".lz-card"); 
     if (card){ lastCard = cardMeta(card); sendEvent("card_click", {...lastCard}); return; }
-    
-    // ボタンアクション
     const btn = t.closest?.(".lz-btn");
     if (btn){
       const kind = btn.classList.contains("lz-share") ? "share" : btn.classList.contains("lz-pdf") ? "pdf" : btn.classList.contains("lz-dl") ? "download" : btn.classList.contains("lz-x") ? "close" : "btn";
       sendEvent("modal_action", { action:kind, label:text(btn), ...(lastCard||{}) });
       return;
     }
-    
-    // SNS / 外部リンク / ギャラリー
     const sns = t.closest?.(".lz-sns a, .lz-sns-btn");
     if (sns){ sendEvent("sns_click", { platform:sns.dataset.sns||"web", href:sns.href||"", ...(lastCard||{}) }); return; }
-    
     const th = t.closest?.("#lz-gallery img[data-img-idx]");
     if (th){ sendEvent("gallery_thumb_click", { idx:(+th.dataset.imgIdx||0), ...(lastCard||{}) }); return; }
-    
     const ext = t.closest?.(".lz-info a[href], .lz-related a[href]");
     if (ext){ sendEvent("external_link", { href:ext.href||"", label:text(ext), ...(lastCard||{}) }); return; }
   }, {capture:true, passive:true});
 
-  // モーダル監視 (MutationObserver)
   (function(){
     const observeModal = () => {
       const mo = new MutationObserver(muts => {
@@ -689,40 +661,20 @@ if(document.readyState==="loading") { document.addEventListener("DOMContentLoade
         }
       });
       mo.observe(D.documentElement, {childList:true, subtree:true});
-
-      const mo2 = new MutationObserver(() => {
-        if(!D.querySelector(".lz-backdrop.open") && !D.querySelector(".lz-modal.is-open")){
-          // 以前のセッションでモーダルが開いていたかチェックする等のロジックは必要に応じて
-        }
-      });
-      mo2.observe(D.documentElement, {attributes:true, subtree:true, attributeFilter:["class"]});
     };
     observeModal();
   })();
 
-  // --- 離脱計測の堅牢化 ---
   let closedSent = false;
   function flushClose(reason){
     if (closedSent) return;
-    closedSent = true; // 即座にフラグを立てる (重要)
-    
-    // 最終的なアクティブ時間を算出
-    const finalActiveTime = D.visibilityState === "visible" 
-      ? activeTime + (now() - lastVisibleTs) 
-      : activeTime;
-
-    sendEvent("page_close", { 
-      total_engaged_ms: now() - tPage, 
-      active_engaged_ms: finalActiveTime,
-      reason: String(reason || "") 
-    });
+    closedSent = true; 
+    const finalActiveTime = D.visibilityState === "visible" ? activeTime + (now() - lastVisibleTs) : activeTime;
+    sendEvent("page_close", { total_engaged_ms: now() - tPage, active_engaged_ms: finalActiveTime, reason: String(reason || "") });
   }
 
   W.addEventListener("pagehide", e => flushClose(e.persisted ? "bfcache" : "unload"), {capture:true});
   D.addEventListener("visibilitychange", () => {
-    if (D.visibilityState === "hidden") {
-      // モバイルブラウザ向けに、非表示になった瞬間に一度予備送信
-      setTimeout(() => flushClose("visibility_hidden"), 0);
-    }
+    if (D.visibilityState === "hidden") setTimeout(() => flushClose("visibility_hidden"), 0);
   }, {capture:true});
 })();
