@@ -1,8 +1,18 @@
-(function lzFooterBoot() {
+(async function lzFooterBoot() {
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (ジャーニーナビ & フッター)
+     0. Configの読み込み待機
+     ========================================== */
+  const config = await new Promise(resolve => {
+    const check = () => window.LZ_CONFIG ? resolve(window.LZ_CONFIG) : setTimeout(check, 50);
+    check();
+  });
+
+  const { MENU_ORDER, MENU_URL, FOOTER_LINKS, COPYRIGHT } = config;
+
+  /* ==========================================
+     1. CSSの注入
      ========================================== */
   const style = document.createElement('style');
   style.textContent = `
@@ -32,30 +42,35 @@
   document.head.appendChild(style);
 
   /* ==========================================
-     2. HTML構造の注入 (ジャーニーナビ ＋ フッター)
+     2. HTML構造の自動生成と注入
      ========================================== */
+  
+  // ジャーニーナビのリンクをMENU_ORDERから生成
+  const journeyLinks = MENU_ORDER.map(label => {
+    return `<a href="${MENU_URL[label]}" data-step="${label}" class="lz-step">${label}</a>`;
+  }).join('');
+
+  // フッターリンクをFOOTER_LINKSから生成
+  const footerLinks = FOOTER_LINKS.map(item => {
+    return `<a href="${item.url}" class="lz-fnav__link">${item.label}</a>`;
+  }).join('');
+
   const footerHTML = `
     <div class="lz-journey">
       <div class="lz-steps" id="lzSteps">
-        <a href="https://appletown-iizuna.com/learn" data-step="知る" class="lz-step">知る</a>
-        <a href="https://appletown-iizuna.com/taste" data-step="味わう" class="lz-step">味わう</a>
-        <a href="https://appletown-iizuna.com/experience" data-step="体験する" class="lz-step">体験する</a>
-        <a href="https://appletown-iizuna.com/live-work" data-step="働く・住む" class="lz-step">働く・住む</a>
-        <a href="https://appletown-iizuna.com/sell-promote" data-step="販売・発信する" class="lz-step">販売・発信する</a>
+        ${journeyLinks}
       </div>
     </div>
     <footer class="lz-footer">
       <div class="lz-fwrap">
         <nav class="lz-fnav" aria-label="フッターメニュー">
-          <a href="https://appletown-iizuna.com/contact" class="lz-fnav__link">お問い合わせ</a>
-          <a href="#" class="lz-fnav__link">サイトマップ</a>
-          <a href="https://appletown-iizuna.com/site-policy" class="lz-fnav__link">サイトポリシー</a>
-          <a href="https://appletown-iizuna.com/privacy-policy" class="lz-fnav__link">個人情報保護方針</a>
+          ${footerLinks}
         </nav>
-        <div class="lz-fcopy">© 2025 Iizuna Town All Rights Reserved.</div>
+        <div class="lz-fcopy">${COPYRIGHT}</div>
       </div>
     </footer>
   `;
+
   document.body.insertAdjacentHTML('beforeend', footerHTML);
 
   /* ==========================================
