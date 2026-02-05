@@ -1,4 +1,3 @@
-/* web/footer.js - ページ最下部絶対死守版 */
 (async function lzFooterBoot() {
   "use strict";
 
@@ -13,120 +12,91 @@
   const { MENU_ORDER, MENU_URL, FOOTER_LINKS, COPYRIGHT } = config;
 
   /* ==========================================
-     1. CSSの注入 (!importantを多用してペライチに勝つ)
+     1. CSSの注入
      ========================================== */
   const style = document.createElement('style');
   style.textContent = `
-    #lzFooterMain { 
-      clear: both !important; 
-      display: block !important; 
-      width: 100% !important; 
-      margin-top: 100px !important; 
-      padding: 0 !important;
-      position: relative !important;
-      visibility: visible !important;
-      z-index: 9999 !important;
-    }
     /* ジャーニーナビ */
-    .lz-journey { background:#f9f5f4 !important; padding:40px 16px !important; border-top: 1px solid #eee !important; }
-    .lz-steps { display:flex !important; justify-content:center !important; gap:16px !important; flex-wrap:wrap !important; max-width:1200px !important; margin:0 auto !important; }
+    .lz-journey { background:#f9f5f4; padding:28px 16px; overflow:hidden; }
+    .lz-steps { display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
     .lz-step {
-      font-family: system-ui, -apple-system, sans-serif !important; 
-      font-weight:700 !important; font-size:1.4rem !important; padding:14px 24px !important; border-radius:50px !important;
-      background:#fff !important; color:#cf3a3a !important; border:2px solid #cf3a3a !important; 
-      text-decoration:none !important; transition: all .2s !important;
+      font-family: system-ui,-apple-system,sans-serif;
+      font-weight:700; font-size:1.4rem; padding:14px 24px; border-radius:50px;
+      background:#fff; color:#cf3a3a; border:2px solid #cf3a3a;
+      text-decoration:none; transition: all .2s ease;
     }
-    .lz-step:hover { background:#cf3a3a !important; color:#fff !important; }
-    .lz-step.is-current { background:#e5e7eb !important; border-color:#e5e7eb !important; color:#9ca3af !important; pointer-events:none !important; cursor: default !important; }
+    .lz-step:hover { background:#cf3a3a; color:#fff; }
+    .lz-step.is-current, .lz-step[aria-current="page"] {
+      background:#e5e7eb; border-color:#e5e7eb; color:#9ca3af; cursor:default; pointer-events:none;
+    }
+    .lz-step:focus-visible { outline:3px solid rgba(207,58,58,.5); outline-offset:2px; }
 
     /* フッター */
-    .lz-footer { background:#cf3a3a !important; color:#fff !important; padding:60px 20px !important; }
-    .lz-fwrap { max-width:1100px !important; margin:0 auto !important; display:flex !important; flex-direction:column !important; align-items:center !important; gap:20px !important; }
-    .lz-fnav { display:flex !important; flex-wrap:wrap !important; gap:18px 28px !important; justify-content:center !important; }
-    .lz-fnav__link { color:#fff !important; text-decoration:none !important; font-weight:550 !important; font-size:1.25rem !important; }
-    .lz-fcopy { font-size:1.1rem !important; opacity:0.85 !important; margin-top:20px !important; font-family: sans-serif !important; }
-
-    @media (max-width: 768px) {
-      .lz-step { font-size: 1.1rem !important; padding: 10px 18px !important; }
-    }
+    .lz-footer { background:#cf3a3a; color:#fff; padding:30px 20px; margin-top:60px; }
+    .lz-fwrap { max-width:1100px; margin:0 auto; display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; }
+    .lz-fnav { display:flex; flex-wrap:wrap; gap:18px 28px; justify-content:center; }
+    .lz-fnav__link { color:#fff; text-decoration:none; font-family: system-ui,-apple-system,sans-serif; font-weight:550; font-size:1.25rem; transition:color .2s ease; }
+    .lz-fnav__link:hover { color:#ffe6e6; }
+    .lz-fcopy { font-size:1.1rem; opacity:0.85; font-family: system-ui,-apple-system,sans-serif; }
   `;
   document.head.appendChild(style);
 
   /* ==========================================
-     2. HTML構造の生成
+     2. HTML構造の自動生成と注入
      ========================================== */
+  
+  // ジャーニーナビのリンクをMENU_ORDERから生成
   const journeyLinks = MENU_ORDER.map(label => {
-    const url = new URL(MENU_URL[label], location.origin);
-    return `<a href="${MENU_URL[label]}" class="lz-step" data-path="${url.pathname}">${label}</a>`;
+    return `<a href="${MENU_URL[label]}" data-step="${label}" class="lz-step">${label}</a>`;
   }).join('');
 
+  // フッターリンクをFOOTER_LINKSから生成
   const footerLinks = FOOTER_LINKS.map(item => {
     return `<a href="${item.url}" class="lz-fnav__link">${item.label}</a>`;
   }).join('');
 
   const footerHTML = `
-    <div id="lzFooterMain">
-      <div class="lz-journey">
-        <div class="lz-steps">${journeyLinks}</div>
+    <div class="lz-journey">
+      <div class="lz-steps" id="lzSteps">
+        ${journeyLinks}
       </div>
-      <footer class="lz-footer">
-        <div class="lz-fwrap">
-          <nav class="lz-fnav">${footerLinks}</nav>
-          <div class="lz-fcopy">${COPYRIGHT}</div>
-        </div>
-      </footer>
     </div>
+    <footer class="lz-footer">
+      <div class="lz-fwrap">
+        <nav class="lz-fnav" aria-label="フッターメニュー">
+          ${footerLinks}
+        </nav>
+        <div class="lz-fcopy">${COPYRIGHT}</div>
+      </div>
+    </footer>
   `;
 
+  document.body.insertAdjacentHTML('beforeend', footerHTML);
+
   /* ==========================================
-     3. 最後尾ワープ ＆ 監視ロジック
+     3. 現在地ハイライト処理
      ========================================== */
-  const moveToAbsoluteBottom = () => {
-    let footer = document.getElementById('lzFooterMain');
+  const markCurrentStep = () => {
+    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+    const links = document.querySelectorAll('.lz-steps .lz-step');
     
-    // 1. なければ作る
-    if (!footer) {
-      document.body.insertAdjacentHTML('beforeend', footerHTML);
-      footer = document.getElementById('lzFooterMain');
-      
-      // 現在地ハイライト
-      const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-      footer.querySelectorAll('.lz-step').forEach(a => {
-        const linkPath = a.dataset.path.replace(/\/+$/, '') || '/';
-        if (linkPath === currentPath) {
-          a.classList.add('is-current');
-          a.setAttribute('aria-current', 'page');
-        }
-      });
-    }
+    links.forEach(a => {
+      let path = '';
+      try {
+        path = new URL(a.getAttribute('href'), window.location.origin).pathname.replace(/\/+$/, '') || '/';
+      } catch(e) {
+        path = a.getAttribute('href').replace(/[?#].*$/, '').replace(/\/+$/, '') || '/';
+      }
 
-    // 2. 自分が「最後の子要素」かチェック（SCRIPTなどは無視）
-    // 自分より後ろに表示要素（div, section, main等）があれば、自分を末尾に移動
-    let last = document.body.lastElementChild;
-    while (last && (last.tagName === 'SCRIPT' || last.tagName === 'STYLE' || last.tagName === 'LINK')) {
-      last = last.previousElementSibling;
-    }
-
-    if (footer && last && last !== footer) {
-      document.body.appendChild(footer); // 自分の位置を一番最後に移動
-    }
+      if (path === currentPath) {
+        a.classList.add('is-current');
+        a.setAttribute('aria-current', 'page');
+        a.setAttribute('aria-disabled', 'true');
+        a.setAttribute('tabindex', '-1');
+        a.onclick = (e) => e.preventDefault();
+      }
+    });
   };
 
-  // 監視開始: ペライチが新しい要素（lz-sectionなど）を追加したら即座に反応
-  const observer = new MutationObserver(moveToAbsoluteBottom);
-  observer.observe(document.body, { childList: true });
-
-  // リロード直後の「後出し」対策：5秒間、100msおきに強制チェック
-  let pollCount = 0;
-  const poller = setInterval(() => {
-    moveToAbsoluteBottom();
-    if (pollCount++ > 50) clearInterval(poller);
-  }, 100);
-
-  // 読み込み完了時・リサイズ時も実行
-  window.addEventListener('load', moveToAbsoluteBottom);
-  window.addEventListener('resize', moveToAbsoluteBottom);
-  
-  moveToAbsoluteBottom();
-
+  markCurrentStep();
 })();
