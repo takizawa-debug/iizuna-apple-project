@@ -131,7 +131,7 @@ function toast(msg="コピーしました"){
 
 let HOST=null, SHELL=null, MODAL=null;
 let CARDS=[], IDX=0;
-let originalTitle = document.title; // 【SEO】元のページタイトルを記憶
+let originalTitle = document.title; 
 
 function ensureModal(){
   if(HOST) return;
@@ -166,7 +166,7 @@ function lzOpen(html){
 function lzClose(){
   if(!HOST) return;
   HOST.classList.remove("open");
-  document.title = originalTitle; // 【SEO】タイトルを元に戻す
+  document.title = originalTitle; 
   try{ 
     const url = new URL(window.location.href);
     url.searchParams.delete('id');
@@ -255,9 +255,10 @@ function cardHTML(it, pad, groupKey){
       data-group="${esc(groupKey)}">
       <div class="lz-media ${hasMain ? "" : "is-empty"}" style="--ratio:${pad}">
     ${hasMain ? `<img loading="lazy" decoding="async"
+        crossorigin="anonymous"
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
-        alt="${esc(title)}のメイン画像"
+        alt="${esc(title)}の画像"
         onerror="this.closest('.lz-media')?.classList.add('is-empty');">` : ""}
       </div>
       <div class="lz-body">
@@ -321,8 +322,8 @@ function showModalFromCard(card){
   let subs=[]; try{ subs=JSON.parse(card.dataset.sub||"[]"); }catch{}
   const gallery=[main, ...subs].filter(Boolean);
 
-  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="「${esc(t)}」のメイン画像"></div>` : '';
-  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="「${esc(t)}」のギャラリー画像 ${i+1}">`).join("")}</div>` : '';
+  const imageBlock = gallery.length ? `<div class="lz-mm"><img id="lz-mainimg" crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(gallery[0])}" alt="${esc(t)}のメイン画像"></div>` : '';
+  const galleryBlock = (gallery.length>1) ? `<div class="lz-g" id="lz-gallery">${gallery.map((u,i)=>`<img crossorigin="anonymous" referrerpolicy="no-referrer-when-downgrade" src="${esc(u)}" data-img-idx="${i}" class="${i===0?'is-active':''}" alt="${esc(t)}の画像 ${i+1}">`).join("")}</div>` : '';
   const shareBtn = `<button class="lz-btn lz-share" type="button" aria-label="共有"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg><span class="lz-label">共有</span></button>`;
   const dlUrl = card.dataset.dl || "";
   const dlBtn = dlUrl ? `<a class="lz-btn lz-dl" href="${esc(dlUrl)}" target="_blank" rel="noopener" aria-label="DL"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg><span class="lz-label">DL</span></a>` : "";
@@ -356,13 +357,33 @@ function showModalFromCard(card){
       try{
         await ensurePdfLibs(); const url = shareUrlFromCard(card);
         const clone = MODAL.cloneNode(true); clone.querySelector(".lz-actions")?.remove(); clone.style.maxHeight="none"; clone.style.height="auto"; clone.style.width="800px";
-        clone.querySelectorAll("img").forEach(img=>{ img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); });
+        
+        // 【重要修正】クローン内の画像にも crossorigin を強制セット
+        clone.querySelectorAll("img").forEach(img=>{ 
+          img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); 
+          img.crossOrigin = "anonymous";
+        });
         document.body.appendChild(clone);
+        
+        // QRコード生成
         const qrDiv = document.createElement("div"); new QRCode(qrDiv,{ text:url, width:64, height:64, correctLevel: QRCode.CorrectLevel.L });
         const qrCanvas = qrDiv.querySelector("canvas"), qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
         
-        // 【重要修正】useCORS: true に変更して外部サーバーの画像を許可する
-        const canvas = await html2canvas(clone,{scale:2, backgroundColor:"#ffffff", useCORS:true, allowTaint:false}); 
+        // 画像の読み込み完了を待つPromise
+        const imgs = Array.from(clone.querySelectorAll("img"));
+        await Promise.all(imgs.map(img => {
+          if (img.complete) return Promise.resolve();
+          return new Promise(res => { img.onload = res; img.onerror = res; });
+        }));
+
+        // 【修正】useCORS: true を確実に有効化
+        const canvas = await html2canvas(clone,{
+          scale:2, 
+          backgroundColor:"#ffffff", 
+          useCORS:true, 
+          allowTaint:false,
+          logging: false
+        }); 
         document.body.removeChild(clone);
         
         const { jsPDF } = window.jspdf; const pdf = new jsPDF("p","mm","a4");
