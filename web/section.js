@@ -138,10 +138,13 @@
       root.dataset.lzDone = '1';
 
       // モーダル連携（クリックイベント）
-      root.addEventListener("click", function(e) {
-        var card = e.target.closest(".lz-card");
-        if (card && window.lzModal) window.lzModal.open(card);
-      });
+root.addEventListener("click", function(e) {
+  var card = e.target.closest(".lz-card");
+  if (card && window.lzModal) {
+    e.preventDefault(); // ← これが重要！ブラウザの勝手なページ移動を止める
+    window.lzModal.open(card);
+  }
+});
 
     } catch(e) {
       root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">読み込みに失敗しました</div>';
