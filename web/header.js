@@ -1,6 +1,6 @@
 /**
- * header.js - ナビゲーション・コンポーネント (Mobile Logo Fixed Edition)
- * 役割: ロゴのスマホ表示修正、双方向アンカーリンク、ページ跨ぎジャンプ機能
+ * header.js - ナビゲーション・コンポーネント (Mobile Logo Positioning Fixed)
+ * 役割: ロゴのスマホ表示（左端切れ）修正、双方向アンカーリンク、ページ跨ぎジャンプ
  */
 (async function headerNavBoot(){
   "use strict";
@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入 (ロゴの表示をFlexboxで安定化)
+     1. CSSの注入 (ロゴの余白を確保し、表示を安定化)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 46px; --apple-red: #cf3a3a; --soft-red: #fff5f5; --text-dark: #333; }
@@ -23,14 +23,19 @@
     }
     .lz-hdr.is-visible { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
 
-    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(10px, 3vw, 20px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px; flex-wrap: nowrap !important; }
+    /* ★ヘッダーの器：左右の余白（パディング）を広げてロゴを右に寄せる */
+    .lz-hwrap { 
+      height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; 
+      padding: 0 20px !important; /* 左右にしっかり20pxの余裕を確保 */
+      display: flex !important; align-items: center !important; justify-content: space-between !important; 
+      gap: 12px; flex-wrap: nowrap !important; 
+    }
     
-    /* ★ロゴ表示の修正：以前の安定したFlex形式へ */
+    /* ★ロゴエリア：リンゴとテキストをセットで表示 */
     .lz-logo { 
-      display: flex !important; align-items: center !important; gap: 10px !important; 
+      display: flex !important; align-items: center !important; gap: 12px !important; 
       color: #fff !important; text-decoration: none !important; 
-      flex-shrink: 0 !important; /* スマホで潰れないように固定 */
-      min-width: 0 !important;
+      flex-shrink: 0 !important; min-width: 0 !important;
     }
     .lz-logo__img { 
       width: var(--logo-size) !important; height: var(--logo-size) !important; 
