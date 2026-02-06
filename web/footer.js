@@ -1,9 +1,10 @@
-/* web/footer.js - 最終軽量版 */
+/* web/footer.js - 安定配置版 */
 (async function lzFooterBoot() {
   "use strict";
 
-  // 二重表示ガード（念のため）
-  if (document.getElementById('lzFooterMain')) return;
+  // 1. 二重表示ガード：既に存在して「表示されている」場合は終了
+  const existing = document.getElementById('lzFooterMain');
+  if (existing) return;
 
   const config = await new Promise(resolve => {
     const check = () => window.LZ_CONFIG ? resolve(window.LZ_CONFIG) : setTimeout(check, 50);
@@ -12,9 +13,10 @@
 
   const { MENU_ORDER, MENU_URL, FOOTER_LINKS, COPYRIGHT } = config;
 
+  // 2. CSSの注入
   const style = document.createElement('style');
   style.textContent = `
-    #lzFooterMain { clear: both; width: 100%; margin-top: 80px; }
+    #lzFooterMain { clear: both !important; width: 100% !important; margin-top: 80px !important; display: block !important; }
     .lz-journey { background: #f9f5f4; padding: 40px 16px; border-top: 1px solid #eee; }
     .lz-steps { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; max-width: 1200px; margin: 0 auto; }
     .lz-step {
@@ -32,13 +34,16 @@
   `;
   document.head.appendChild(style);
 
+  // 3. リンクの生成
   const journeyLinks = MENU_ORDER.map(label => {
-    const url = new URL(MENU_URL[label], location.origin);
-    return `<a href="${MENU_URL[label]}" class="lz-step" data-path="${url.pathname}">${label}</a>`;
+    // 基準URLを絶対パスで比較するために加工
+    const targetUrl = MENU_URL[label].startsWith('http') ? MENU_URL[label] : location.origin + MENU_URL[label];
+    return `<a href="${MENU_URL[label]}" class="lz-step" data-fullurl="${targetUrl}">${label}</a>`;
   }).join('');
 
   const footerLinks = FOOTER_LINKS.map(item => `<a href="${item.url}" class="lz-fnav__link">${item.label}</a>`).join('');
 
+  // 4. HTMLの構築
   const footerHTML = `
     <div id="lzFooterMain">
       <div class="lz-journey"><div class="lz-steps">${journeyLinks}</div></div>
@@ -51,13 +56,16 @@
     </div>
   `;
 
-  // このブロックのある場所にそのまま表示
-  const currentBlock = document.currentScript ? document.currentScript.parentElement : document.body;
-  currentBlock.insertAdjacentHTML('beforeend', footerHTML);
+  // 5. 【修正ポイント】bodyの最後へ確実に挿入する
+  document.body.insertAdjacentHTML('beforeend', footerHTML);
 
-  const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
+  // 6. カレント表示の判定（より厳密に）
+  const currentUrl = location.href.split(/[?#]/)[0].replace(/\/+$/, '');
   document.querySelectorAll('#lzFooterMain .lz-step').forEach(a => {
-    const linkPath = a.dataset.path.replace(/\/+$/, '') || '/';
-    if (linkPath === currentPath) a.classList.add('is-current');
+    const linkUrl = a.dataset.fullurl.split(/[?#]/)[0].replace(/\/+$/, '');
+    if (linkUrl === currentUrl) {
+      a.classList.add('is-current');
+    }
   });
+
 })();
