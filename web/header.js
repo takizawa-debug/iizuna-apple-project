@@ -1,6 +1,6 @@
 /**
- * header.js - ナビゲーション・コンポーネント (UX Restored Edition)
- * 役割: 絶縁設計(競合回避)、スマホロゴ復旧、2階層目アクセントバー復元、アンカーリンク
+ * header.js - ナビゲーション・コンポーネント (PC/Mobile Display Fixed)
+ * 役割: PC版ハンバーガー非表示、PC用言語セレクター復元、UX・絶縁設計の維持
  */
 (async function headerNavBoot(){
   "use strict";
@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入 (アクセントバーUXを完全に復元)
+     1. CSSの注入
      ========================================== */
   const cssText = `
     :root { --lz-h-max: 1100px; --lz-h-height: 68px; --lz-h-red: #cf3a3a; }
@@ -30,17 +30,8 @@
       gap: 12px; flex-wrap: nowrap !important; 
     }
 
-    /* ロゴ表示：Flexboxでスマホの左端切れを完全に防止 */
-    .lz-h-brand { 
-      display: flex !important; align-items: center !important; gap: 10px !important; 
-      color: #fff !important; text-decoration: none !important; 
-      flex-shrink: 0 !important; min-width: 0 !important;
-    }
-    .lz-h-brand__img { 
-      width: 48px !important; height: 48px !important; 
-      border-radius: 6px !important; object-fit: cover !important; 
-      flex-shrink: 0 !important;
-    }
+    .lz-h-brand { display: flex !important; align-items: center !important; gap: 10px !important; color: #fff !important; text-decoration: none !important; flex-shrink: 0 !important; min-width: 0 !important; }
+    .lz-h-brand__img { width: 48px !important; height: 48px !important; border-radius: 6px !important; object-fit: cover !important; flex-shrink: 0 !important; }
     .lz-h-brand__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; white-space: nowrap !important; overflow: hidden; }
     .lz-h-t1 { font-weight: 400 !important; font-size: clamp(1.15rem, 2vw, 1.35rem) !important; opacity: .9 !important; margin-top: 4px !important; }
     .lz-h-t2 { font-weight: 800 !important; font-size: clamp(1.65rem, 3vw, 2.2rem) !important; letter-spacing: .01em !important; margin-top: 2px !important; }
@@ -55,29 +46,34 @@
     .lz-h-nav__l1 { font-weight: 600 !important; font-size: clamp(1.15rem, 2vw, 1.45rem) !important; color: #fff !important; text-decoration: none !important; padding: 8px 12px !important; border-radius: 10px !important; transition: background 0.3s; }
     .lz-h-nav__l1:hover { background: rgba(255, 255, 255, .15) !important; }
     
-    .lz-h-panel { 
-      position: absolute !important; right: 0 !important; top: 100% !important; 
-      background: #fff !important; border-radius: 20px !important; 
-      box-shadow: 0 15px 50px rgba(0,0,0,.15) !important; padding: 10px !important; 
-      display: none; min-width: 240px !important; z-index: 10001 !important; 
-      transform-origin: top center; animation: lz-h-slide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
+    .lz-h-panel { position: absolute !important; right: 0 !important; top: 100% !important; background: #fff !important; border-radius: 20px !important; box-shadow: 0 15px 50px rgba(0,0,0,.15) !important; padding: 10px !important; display: none; min-width: 240px !important; z-index: 10001 !important; transform-origin: top center; animation: lz-h-slide 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
     .lz-h-panel.is-open { display: block !important; }
-
-    /* ★PCプルダウン：赤いバーのUX復元 */
-    .lz-h-panel a { 
-      display: block !important; padding: 14px 20px !important; 
-      color: #333 !important; text-decoration: none !important; border-radius: 12px !important; 
-      font-weight: 600 !important; font-size: 1.35rem !important; transition: all 0.3s !important; 
-      position: relative !important;
-    }
-    .lz-h-panel a::before {
-      content: ""; position: absolute; left: 8px; width: 4px; height: 0; 
-      background: var(--lz-h-red); border-radius: 10px; transition: height 0.3s ease;
-      top: 50%; transform: translateY(-50%);
-    }
+    .lz-h-panel a { display: block !important; padding: 14px 20px !important; color: #333 !important; text-decoration: none !important; border-radius: 12px !important; font-weight: 600; font-size: 1.35rem !important; transition: all 0.3s !important; position: relative !important; }
+    .lz-h-panel a::before { content: ""; position: absolute; left: 8px; width: 4px; height: 0; background: var(--lz-h-red); border-radius: 10px; transition: height 0.3s ease; top: 50%; transform: translateY(-50%); }
     .lz-h-panel a:hover { background: #fff5f5 !important; color: var(--lz-h-red) !important; padding-left: 28px !important; }
     .lz-h-panel a:hover::before { height: 24px; }
+
+    /* 言語セレクター：PC/スマホ切り分け */
+    .lz-lang-pc { position: relative !important; display: none; height: var(--lz-h-height); align-items: center; }
+    @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
+    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 16px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer; font-weight: 600; }
+    .lz-lang-pc__btn::after { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #fff; transition: 0.3s; }
+    .lz-lang-pc__btn.is-active::after { transform: rotate(180deg); }
+    .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 8px; background: #fff !important; border-radius: 16px !important; padding: 8px !important; display: none; min-width: 160px !important; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 10002; }
+    .lz-lang-pc__menu.is-open { display: flex !important; }
+    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; }
+
+    .lz-lang-mob { position: relative !important; display: flex !important; }
+    @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
+    .lz-lang-mob__btn { width: 36px !important; height: 36px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 50% !important; color: #fff !important; font-size: 13px !important; font-weight: 700 !important; background: transparent !important; }
+    .lz-lang-mob__menu { position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; background: #fff !important; border-radius: 12px !important; padding: 8px !important; display: none; min-width: 150px !important; flex-direction: column !important; z-index: 10003; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+    .lz-lang-mob__menu.is-open { display: flex !important; }
+    .lz-lang-mob__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 1.1rem !important; font-weight: 600; border-radius: 8px; }
+
+    /* ハンバーガー：PCでは非表示 */
+    .lz-h-hamb { display: flex !important; width: 40px !important; height: 40px !important; border: 1px solid rgba(255,255,255,.6) !important; background: none; border-radius: 10px !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 5px !important; cursor: pointer; }
+    @media (min-width: 1024px) { .lz-h-hamb { display: none !important; } }
+    .lz-h-hamb__bar { width: 22px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
 
     /* スマホドロワー */
     .lz-h-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 85vw !important; max-width: 320px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .4s cubic-bezier(0.16, 1, 0.3, 1) !important; overflow-y: auto !important; border-radius: 24px 0 0 24px !important; }
@@ -86,13 +82,7 @@
     .lz-h-dw-l1a { display: block !important; padding: 18px 20px !important; font-weight: 700 !important; font-size: 1.3rem !important; color: #222 !important; text-decoration: none !important; }
     .lz-h-dw-l2-area { background: #fff5f5 !important; display: none; padding: 5px 0 15px 0 !important; }
     .lz-h-dw-group.is-active .lz-h-dw-l2-area { display: block !important; }
-    
-    /* スマホドロワー内の赤いバーUX */
-    .lz-h-dw-l2-area a { 
-      display: flex !important; align-items: center !important; padding: 12px 20px 12px 40px !important; 
-      color: #444 !important; text-decoration: none !important; font-size: 1.25rem !important; 
-      font-weight: 600 !important; position: relative; 
-    }
+    .lz-h-dw-l2-area a { display: flex !important; align-items: center !important; padding: 12px 20px 12px 40px !important; color: #444 !important; text-decoration: none !important; font-size: 1.25rem !important; font-weight: 600 !important; position: relative; }
     .lz-h-dw-l2-area a::before { content: ""; position: absolute; left: 24px; width: 4px; height: 18px; background: var(--lz-h-red); border-radius: 10px; opacity: 0.4; }
 
     @keyframes lz-h-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -103,7 +93,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入
+     2. HTML構造の注入 (PC用言語ボタンを復元)
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -118,15 +108,15 @@
       <div class="lz-h-right">
         <nav class="lz-h-nav"><ul class="lz-h-nav__list" id="lzNavList"></ul></nav>
         <div class="lz-lang-mob" id="lzLangMob">
-          <button style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.6);border-radius:50%;background:none;color:#fff;font-weight:700;">日</button>
-          <div class="lz-lang-mob__menu" style="position:absolute;right:0;top:100%;background:#fff;padding:10px;display:none;min-width:140px;box-shadow:0 8px 20px rgba(0,0,0,0.1);border-radius:10px;z-index:10003;">
-            <a href="#" style="color:#333;text-decoration:none;font-weight:600;display:block;padding:8px;">日本語</a>
-          </div>
+          <button class="lz-lang-mob__btn" type="button">日</button>
+          <div class="lz-lang-mob__menu"><a href="#">日本語</a></div>
         </div>
-        <button id="lzHamb" style="display:flex;width:40px;height:40px;border:1px solid rgba(255,255,255,.6);background:none;border-radius:10px;flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;">
-          <span style="width:22px;height:2px;background:#fff;border-radius:2px;"></span>
-          <span style="width:22px;height:2px;background:#fff;border-radius:2px;"></span>
-          <span style="width:22px;height:2px;background:#fff;border-radius:2px;"></span>
+        <div class="lz-lang-pc" id="lzLangPc">
+          <button class="lz-lang-pc__btn" type="button">日本語</button>
+          <div class="lz-lang-pc__menu"><a href="#">日本語</a></div>
+        </div>
+        <button class="lz-h-hamb" id="lzHamb">
+          <span class="lz-h-hamb__bar"></span><span class="lz-h-hamb__bar"></span><span class="lz-h-hamb__bar"></span>
         </button>
       </div>
     </div>
@@ -143,7 +133,7 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     3. スクロール処理・イベント
+     3. ロジック (PC言語クリック、非表示制御など)
      ========================================== */
   function smoothScrollToL2(label) {
     const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
@@ -202,9 +192,15 @@
       }
     });
 
-    const langBtn = document.querySelector('.lz-lang-mob__btn'), langMenu = document.querySelector('.lz-lang-mob__menu');
-    if(langBtn) langBtn.onclick = (e) => { e.stopPropagation(); langMenu.style.display = (langMenu.style.display === 'block' ? 'none' : 'block'); };
-    document.addEventListener('click', () => { if(langMenu) langMenu.style.display = 'none'; });
+    // 言語設定 (PC & Mobile)
+    const setupLang = (cid, bc, mc) => {
+      const c = document.getElementById(cid), b = c?.querySelector('.'+bc), m = c?.querySelector('.'+mc);
+      if(!b || !m) return;
+      b.onclick = (e) => { e.stopPropagation(); m.classList.toggle('is-open'); b.classList.toggle('is-active'); };
+      document.addEventListener('click', () => { m.classList.remove('is-open'); b.classList.remove('is-active'); });
+    };
+    setupLang('lzLangPc', 'lz-lang-pc__btn', 'lz-lang-pc__menu');
+    setupLang('lzLangMob', 'lz-lang-mob__btn', 'lz-lang-mob__menu');
 
     const hamb = document.getElementById('lzHamb'), close = document.getElementById('lzDwClose');
     hamb.onclick = () => { drawer.classList.add('is-open'); backdrop.style.display = 'block'; };
