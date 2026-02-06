@@ -2,7 +2,7 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (初期状態を透明に)
+     1. CSSの注入 (初期は完全に隠し、1.5秒かけて出す)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
@@ -12,20 +12,23 @@
       background: var(--apple-red) !important; z-index: 9000 !important; color: #fff !important; 
       box-shadow: 0 4px 18px rgba(0,0,0,.12) !important;
       
-      /* --- フェードイン用の設定 --- */
-      opacity: 0;                /* 最初は透明 */
-      visibility: hidden;         /* クリックも判定させない */
-      transform: translateY(-5px); /* 少し上に浮かせておく */
-      transition: opacity 0.8s ease, transform 0.8s ease, visibility 0.8s; /* 0.8秒かけて「もわっ」と出す */
+      /* --- 初期状態：深く隠す --- */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-30px); /* 少し深めに浮かせる */
+      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), 
+                  transform 1.5s cubic-bezier(0.22, 1, 0.36, 1), 
+                  visibility 1.5s; /* 1.5秒かけて優雅に */
     }
 
-    /* 準備完了時に付与されるクラス */
+    /* スクロール開始後に付与されるクラス */
     .lz-hdr.is-visible { 
       opacity: 1 !important; 
       visibility: visible !important; 
       transform: translateY(0) !important; 
     }
 
+    /* ロゴ・タイトル（以前の大きいサイズを維持） */
     .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(12px, 4vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 16px; flex-wrap: nowrap !important; }
     .lz-right { display: flex !important; align-items: center !important; gap: 16px !important; flex: 0 0 auto !important; }
     .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 12px) !important; flex: 1 1 auto !important; min-width: 0 !important; }
@@ -34,18 +37,15 @@
     .lz-t1 { font-weight: 400 !important; font-size: clamp(1.05rem, 1.9vw, 1.35rem) !important; letter-spacing: .01em !important; opacity: .95 !important; }
     .lz-t2 { font-weight: 800 !important; font-size: clamp(1.55rem, 2.7vw, 2.1rem) !important; letter-spacing: .01em !important; margin-top: 4px !important; }
     
+    /* PCナビ */
     .lz-hnav { display: none; }
     @media (min-width: 1024px) { .lz-hnav { display: block !important; } }
     .lz-hnav__list { display: flex !important; align-items: center !important; gap: 22px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
     .lz-hnav__item { position: relative !important; height: var(--hdr-h); display: flex; align-items: center; }
     .lz-hnav__l1 { font-weight: 550 !important; font-size: clamp(1.22rem, 2.3vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 10px 12px !important; border-radius: 8px !important; }
-    
     .lz-hnav__panel { position: absolute !important; right: 0 !important; top: 100% !important; background: #fff !important; color: #222 !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgba(0,0,0,.18) !important; padding: 10px !important; display: none; min-width: 220px !important; z-index: 10001 !important; }
     .lz-hnav__panel.is-open { display: block !important; }
     .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1.25rem; border-bottom: 1px solid #f0f0f0 !important; }
-    .lz-nav-loading { padding: 20px !important; text-align: center !important; color: #999 !important; font-size: 1.1rem !important; }
-    .lz-loading-dots::after { content: '...'; animation: lz-dots 1.5s steps(4, end) infinite; }
-    @keyframes lz-dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80% { content: '...'; } }
 
     /* 言語設定 */
     .lz-lang-pc { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
@@ -58,6 +58,7 @@
     .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1rem; }
     .is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
 
+    /* スマホ設定（正円維持） */
     .lz-lang-mob { position: relative !important; display: flex !important; }
     @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
     .lz-lang-mob__btn { width: 40px !important; height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 50% !important; color: #fff !important; font-size: 14px !important; font-weight: 700 !important; background: transparent !important; cursor: pointer; }
@@ -65,7 +66,6 @@
     .lz-lang-mob__menu.is-open { display: flex !important; }
     .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 6px !important; }
 
-    /* スマホ共通 */
     .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; cursor: pointer; }
     @media (min-width: 1024px) { .lz-hamb { display: none !important; } }
     .lz-hamb__bar { width: 24px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
@@ -73,14 +73,7 @@
     .lz-dw-backdrop.is-open { display: block !important; }
     .lz-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 80vw !important; max-width: 320px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .3s ease !important; overflow-y: auto !important; }
     .lz-drawer.is-open { transform: translateX(0) !important; }
-    .lz-dw-group { border-bottom: 1px solid #eee; }
-    .lz-dw-l1a { flex: 1; display: block; padding: 18px 20px; font-weight: bold; font-size: 1.15rem; color: #333 !important; text-decoration: none !important; }
-    .lz-dw-arrow { padding: 18px 20px; color: var(--apple-red); cursor: pointer; transition: transform .3s; }
-    .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg); }
-    .lz-dw-l2-area { background: #f9f9f9; display: none; padding: 0 0 10px 25px; }
-    .lz-dw-group.is-active .lz-dw-l2-area { display: block; }
-    .lz-dw-l2-area a { display: block; padding: 10px 0; color: #666 !important; text-decoration: none !important; font-size: 1.05rem; }
-
+    
     @media (max-width:1023px){ body { padding-top: var(--hdr-h) !important; } }
   `;
   const styleTag = document.createElement('style');
@@ -144,17 +137,20 @@
 
   function renderSkeleton(){
     const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
-    const load = '<div class="lz-nav-loading"><span class="lz-loading-dots">読み込み中</span></div>';
-    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => `<li class="lz-hnav__item"><a href="${MENU_URL[l1]}" class="lz-hnav__l1">${l1}</a><div class="lz-hnav__panel">${load}</div></li>`).join('');
-    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `<div class="lz-dw-group"><div class="lz-dw-l1-row" style="display:flex;align-items:center;justify-content:space-between;"><a class="lz-dw-l1a" href="${MENU_URL[l1]}">${l1}</a><div class="lz-dw-arrow">▼</div></div><div class="lz-dw-l2-area">${load}</div></div>`).join('');
+    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => `<li class="lz-hnav__item"><a href="${MENU_URL[l1]}" class="lz-hnav__l1">${l1}</a><div class="lz-hnav__panel"></div></li>`).join('');
+    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `<div class="lz-dw-group" data-l1="${l1}"><div class="lz-dw-l1-row"><a class="lz-dw-l1a" href="${MENU_URL[l1]}">${l1}</a><div class="lz-dw-arrow">▼</div></div><div class="lz-dw-l2-area"></div></div>`).join('');
     
-    // スケルトンの構築が終わったらフェードインさせる
+    // 【最重要】スクロール検知イベントの設定
     const hdr = document.getElementById('lzHdr');
-    if (hdr) {
-      requestAnimationFrame(() => {
+    const onScroll = () => {
+      // 20px以上スクロールされた、あるいは既にスクロールされている場合に発動
+      if (window.scrollY > 20) {
         hdr.classList.add('is-visible');
-      });
-    }
+        window.removeEventListener('scroll', onScroll); // 一度出たら監視終了
+      }
+    };
+    window.addEventListener('scroll', onScroll);
+    onScroll(); // 初期ロード時に既にスクロールされている場合への対応
   }
 
   function setupEvents(){
@@ -195,7 +191,7 @@
       MENU_ORDER.forEach((l1, i) => {
         const l2s = map.get(l1) || [], links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
         const panels = document.querySelectorAll('.lz-hnav__panel');
-        if(panels[i]) panels[i].innerHTML = links || '<div class="lz-nav-loading">（記事なし）</div>';
+        if(panels[i]) panels[i].innerHTML = links;
         const dwGroups = document.querySelectorAll('.lz-dw-group');
         if(dwGroups[i]) {
           const area = dwGroups[i].querySelector('.lz-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-dw-arrow'), link = dwGroups[i].querySelector('.lz-dw-l1a');
@@ -203,7 +199,7 @@
             area.innerHTML = links;
             const t = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); };
             arrow.onclick = t; link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) t(e); else closeDrawer(); };
-          } else { area.remove(); arrow.style.display='none'; link.onclick=closeDrawer; }
+          } else { area?.remove(); arrow.style.display='none'; link.onclick=closeDrawer; }
         }
       });
     }
