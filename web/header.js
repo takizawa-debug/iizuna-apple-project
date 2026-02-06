@@ -1,6 +1,6 @@
 /**
- * header.js - ナビゲーション・コンポーネント (Anchor & Smooth Scroll Optimization)
- * 役割: 階層メニュー生成、双方向アンカーリンク、ページ跨ぎジャンプ機能
+ * header.js - ナビゲーション・コンポーネント (Mobile Logo Fixed & Anchor optimized)
+ * 役割: 階層メニュー生成、双方向アンカーリンク、モバイルロゴ表示の保証
  */
 (async function headerNavBoot(){
   "use strict";
@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入
+     1. CSSの注入 (ロゴのモバイル表示を最優先に修正)
      ========================================== */
   const cssText = `
     :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; --soft-red: #fff5f5; --text-dark: #333; }
@@ -23,15 +23,26 @@
     }
     .lz-hdr.is-visible { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
 
-    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(12px, 4vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 16px; flex-wrap: nowrap !important; }
-    .lz-right { display: flex !important; align-items: center !important; gap: 16px !important; flex: 0 0 auto !important; }
+    .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(10px, 3vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px; flex-wrap: nowrap !important; }
+    .lz-right { display: flex !important; align-items: center !important; gap: 12px !important; flex: 0 0 auto !important; }
     
-    .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 12px) !important; flex: 1 1 auto !important; min-width: 0 !important; }
-    .lz-logo__img { position: absolute !important; top: calc((var(--hdr-h) - var(--logo-size)) / 2) !important; left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; border-radius: 5px !important; object-fit: cover !important; }
-    .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.05 !important; font-family: system-ui,sans-serif !important; white-space: nowrap !important; }
-    .lz-t1 { font-weight: 400 !important; font-size: clamp(1.05rem, 1.9vw, 1.35rem) !important; letter-spacing: .01em !important; opacity: .95 !important; }
-    .lz-t2 { font-weight: 800 !important; font-size: clamp(1.55rem, 2.7vw, 2.1rem) !important; letter-spacing: .01em !important; margin-top: 4px !important; }
+    /* ★ロゴエリアの修正：スマホで潰れないよう min-width と display を強化 */
+    .lz-logo { 
+      position: relative !important; display: flex !important; align-items: center !important; 
+      color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; 
+      padding-left: calc(var(--logo-size) + 10px) !important; flex: 1 1 auto !important; 
+      min-width: 180px !important; overflow: visible !important; 
+    }
+    .lz-logo__img { 
+      position: absolute !important; top: calc((var(--hdr-h) - var(--logo-size)) / 2) !important; 
+      left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; 
+      border-radius: 5px !important; object-fit: cover !important; display: block !important;
+    }
+    .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; font-family: system-ui,sans-serif !important; white-space: nowrap !important; }
+    .lz-t1 { font-weight: 400 !important; font-size: clamp(0.9rem, 1.8vw, 1.35rem) !important; letter-spacing: .01em !important; opacity: .95 !important; }
+    .lz-t2 { font-weight: 800 !important; font-size: clamp(1.3rem, 2.5vw, 2.1rem) !important; letter-spacing: .01em !important; margin-top: 2px !important; }
     
+    /* PCナビ */
     .lz-hnav { display: none; }
     @media (min-width: 1024px) { .lz-hnav { display: block !important; } }
     .lz-hnav__list { display: flex !important; align-items: center !important; gap: 22px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
@@ -166,7 +177,7 @@
   function smoothScrollToL2(label) {
     const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
     if (!target) return;
-    const offset = 68 + 20; // ヘッダー高 + 余白
+    const offset = 68 + 20; 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
     window.scrollTo({ top: y, behavior: "smooth" });
   }
@@ -201,7 +212,6 @@
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.classList.remove('is-open'); };
 
-    // PCメニューホバー
     let closeTimer;
     const items = document.querySelectorAll('.lz-hnav__item');
     items.forEach(item => {
@@ -210,7 +220,6 @@
       item.onmouseleave = () => { closeTimer = setTimeout(() => panel.classList.remove('is-open'), 300); };
     });
 
-    // アンカーリンククリック時のイベント委譲（同一ページ内ならスクロール）
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a');
       if (!a || !a.hash) return;
@@ -226,7 +235,6 @@
       }
     });
 
-    // 言語設定
     const setupLang = (cid, bc, mc) => {
       const c = document.getElementById(cid), b = c?.querySelector('.'+bc), m = c?.querySelector('.'+mc);
       if(!b || !m) return;
@@ -272,11 +280,9 @@
     }
   } catch(e) { console.error(e); }
 
-  // ★ ページ跨ぎ遷移後の自動ジャンプ処理
   window.addEventListener('load', () => {
     if (window.location.hash) {
       const label = decodeURIComponent(window.location.hash.replace('#', ''));
-      // section.jsの読み込み完了を待ってからスクロール
       const checkReady = setInterval(() => {
         const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
         if (target) {
@@ -284,7 +290,7 @@
           setTimeout(() => smoothScrollToL2(label), 300);
         }
       }, 100);
-      setTimeout(() => clearInterval(checkReady), 5000); // 5秒でタイムアウト
+      setTimeout(() => clearInterval(checkReady), 5000); 
     }
   });
 
