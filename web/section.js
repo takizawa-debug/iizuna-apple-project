@@ -17,7 +17,7 @@
     style.id = 'lz-section-styles';
     style.textContent = [
       /* ★セクション外側の上下余白を 80px → 50px へ短縮 */
-      '.lz-section { margin: 50px 0; position: relative; visibility: visible; min-height: 400px; }',
+      '.lz-section { margin: 20px 0; position: relative; visibility: visible; min-height: 400px; }',
       '.lz-section.lz-ready { min-height: auto; }',
       
       /* ★見出しブロックの余白を 32px → 20px へ短縮 */
