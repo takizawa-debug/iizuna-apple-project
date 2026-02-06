@@ -21,18 +21,9 @@
   --card-radius: 20px;
   --font-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;
   --font-article: "筑須A丸ゴシック Std M", "Tsukushi A Maru Gothic Std", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
-  --ig: #E4405F;
-  --fb: #1877F2;
-  --x: #000000;
-  --line: #06C755;
-  --tt: #010101;
-  --web: #5b667a;
-  --ec: #0ea5e9;
-  --table-head-bg: #fff3f2;
-  --table-head-fg: #a82626;
-  --table-cell-bg: #ffffff;
-  --table-row-gap: 6px;
-  --table-cell-pad: 10px 12px;
+  --ig: #E4405F; --fb: #1877F2; --x: #000000; --line: #06C755; --tt: #010101; --web: #5b667a; --ec: #0ea5e9;
+  --table-head-bg: #fff3f2; --table-head-fg: #a82626; --table-cell-bg: #ffffff;
+  --table-row-gap: 6px; --table-cell-pad: 10px 12px;
   --fz-l3: 1.85rem;
   --loading-h: clamp(220px, 38vh, 360px);
 }
@@ -49,8 +40,8 @@
   font-family: var(--font-article);
 }
 
-/* --- L2 Title --- */
-.lz-head { margin: 0 0 16px; padding: 0; }
+/* --- L2 Title (タイトルがボケないよう保護) --- */
+.lz-head { margin: 0 0 16px; padding: 0; position: relative; z-index: 10; }
 .lz-titlewrap {
   display: block; width: 100%; background: var(--apple-red); color: #fff; border-radius: var(--radius);
   padding: 14px 16px; box-sizing: border-box;
@@ -67,52 +58,47 @@
 .lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border: none; border-radius: 3px; flex: 0 0 auto; }
 .lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3); color: var(--apple-brown); line-height: 1.25; }
 
-/* --- Section & Track (Scroll Cue Upgrade) --- */
-.lz-section { 
-  visibility: hidden; 
-  margin: 32px 0; 
-  contain: content; 
-  position: relative; /* グラデーション配置用 */
-}
+/* --- Section & Track (チラ見せ設計 ＋ ボケ範囲限定) --- */
+.lz-section { visibility: hidden; margin: 48px 0; contain: content; position: relative; }
 .lz-section.lz-ready { visibility: visible; }
 
-/* 右側に「続き」を予感させるフェードマスク */
-.lz-section::after {
+/* 記事カードだけをボカすためのラッパー */
+.lz-track-outer { position: relative; width: 100%; }
+.lz-track-outer::after {
   content: "";
   position: absolute;
   top: 0; right: 0;
-  width: 40px; height: 100%;
-  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.8));
+  width: 60px; height: 100%;
+  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95));
   pointer-events: none;
   z-index: 2;
-  border-radius: 0 var(--radius) var(--radius) 0;
 }
 
 .lz-track { 
   display: grid; 
   grid-auto-flow: column; 
-  /* PCでは3.2枚見せる（0.2枚のチラ見せ） */
+  /* PCでは3.2枚見せる（0.2枚のはみ出し） */
   grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); 
-  gap: 16px; 
+  gap: 18px; 
   overflow: auto; 
-  padding: 12px 12px 32px; /* 下に余裕を持たせて影を綺麗に */
+  padding: 12px 12px 32px; 
   scroll-snap-type: x mandatory; 
   -webkit-overflow-scrolling: touch; 
   scrollbar-width: none; 
 }
 .lz-track::-webkit-scrollbar { display: none; }
 
-/* スマホ版：1.2枚見せる（もっとも効果的なチラ見せ比率） */
+/* スマホ版：1.22枚見せる */
 @media (max-width: 768px) {
   .lz-track {
     grid-auto-columns: calc(100% / 1.22);
-    gap: 12px;
+    gap: 14px;
     padding-left: 16px;
-    padding-right: 40px; /* 右側のチラ見せ空間 */
+    padding-right: 40px;
   }
 }
 
-/* --- Card (Designer's Hover Upgrade) --- */
+/* --- Card (Designer's Hover) --- */
 .lz-card { 
   border: 1px solid var(--border); 
   border-radius: var(--card-radius); 
@@ -150,6 +136,34 @@
 .lz-body { padding: 14px; display: grid; gap: 6px; }
 .lz-title-sm { margin: 0; font-weight: var(--fw-card-title); font-size: var(--fz-card-title); color: var(--apple-brown); line-height: 1.4; }
 .lz-lead { font-weight: var(--fw-lead); font-size: var(--fz-lead); line-height: 1.6; color: var(--ink-light); min-height: 2.2em; }
+
+/* --- Side Navigation (NEW: 常に表示されるナビ) --- */
+.lz-sidenav {
+  position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 18px; z-index: 8000;
+  background: rgba(255,255,255,0.7); padding: 20px 10px; border-radius: 40px;
+  backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+  opacity: 0; transition: opacity 0.8s, transform 0.8s; pointer-events: none;
+}
+/* ヘッダーが表示されたら出現 */
+.lz-hdr.is-visible ~ .lz-sidenav { opacity: 1; pointer-events: auto; }
+
+.lz-sideitem {
+  position: relative; width: 10px; height: 10px; background: #ccc; border-radius: 50%;
+  cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.lz-sideitem:hover { transform: scale(1.5); background: var(--apple-red); }
+.lz-sideitem.is-active { background: var(--apple-red); transform: scale(1.6); box-shadow: 0 0 12px rgba(207, 58, 58, 0.5); }
+
+/* ホバー時にセクション名を表示 */
+.lz-sideitem::before {
+  content: attr(data-label); position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
+  background: var(--apple-red); color: #fff; padding: 6px 14px; border-radius: 20px;
+  font-size: 1.15rem; font-weight: 700; white-space: nowrap; opacity: 0; transition: 0.3s ease; pointer-events: none;
+}
+.lz-sideitem:hover::before { opacity: 1; right: 34px; }
+
+@media (max-width: 1024px) { .lz-sidenav { display: none; } }
 
 /* --- Loading --- */
 .lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: var(--loading-h); margin: 8px 0 4px; border: 1px dashed var(--border); border-radius: 12px; background: #fffaf8; }
