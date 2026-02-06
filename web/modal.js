@@ -120,6 +120,10 @@ window.lzModal = (function() {
           var qSize = 22;
           pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize - 3, qSize, qSize);
         }
+        // ★修正：日本語フッター画像（一回り大きく）
+        var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 18, "#000");
+        var footerH = 8;
+        pdf.addImage(jpImg.data, "PNG", margin, pageH - margin - 2, footerH / jpImg.ar, footerH);
 
         // ★修正：日時の精密配置（左欠け防止 ＋ フォント拡大）
         var now = new Date();
@@ -129,11 +133,6 @@ window.lzModal = (function() {
         var tsWidth = pdf.getTextWidth(tsFull);
         // 右端マージンから文字幅分を引いた位置（絶対座標）に描画することで欠けを防止
         pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin +3);
-
-        // ★修正：日本語フッター画像（一回り大きく）
-        var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 18, "#000");
-        var footerH = 8;
-        pdf.addImage(jpImg.data, "PNG", margin, pageH - margin - 2, footerH / jpImg.ar, footerH);
 
         heightLeft -= innerH;
         if(heightLeft > 0) {
