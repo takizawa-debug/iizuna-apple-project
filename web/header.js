@@ -1,6 +1,6 @@
 /**
- * header.js - ナビゲーション・コンポーネント (Complete Conflict-Free Edition)
- * 役割: 絶縁設計による他パーツへの干渉防止、スマホロゴ表示復旧、アンカーリンク機能
+ * header.js - ナビゲーション・コンポーネント (UX Restored Edition)
+ * 役割: 絶縁設計(競合回避)、スマホロゴ復旧、2階層目アクセントバー復元、アンカーリンク
  */
 (async function headerNavBoot(){
   "use strict";
@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入 (クラス名を lz-h- に統一して絶縁)
+     1. CSSの注入 (アクセントバーUXを完全に復元)
      ========================================== */
   const cssText = `
     :root { --lz-h-max: 1100px; --lz-h-height: 68px; --lz-h-red: #cf3a3a; }
@@ -25,34 +25,34 @@
 
     .lz-h-wrap { 
       height: 100% !important; max-width: var(--lz-h-max) !important; margin: 0 auto !important; 
-      padding: 0 clamp(15px, 4vw, 24px) !important; 
+      padding: 0 clamp(12px, 3vw, 24px) !important; 
       display: flex !important; align-items: center !important; justify-content: space-between !important; 
       gap: 12px; flex-wrap: nowrap !important; 
     }
 
-    /* ★ロゴ表示：Flexboxで絶対配置を廃止し、左端切れを完全に防止 */
+    /* ロゴ表示：Flexboxでスマホの左端切れを完全に防止 */
     .lz-h-brand { 
-      display: flex !important; align-items: center !important; gap: 12px !important; 
+      display: flex !important; align-items: center !important; gap: 10px !important; 
       color: #fff !important; text-decoration: none !important; 
-      flex: 0 1 auto !important; min-width: 0 !important;
+      flex-shrink: 0 !important; min-width: 0 !important;
     }
     .lz-h-brand__img { 
       width: 48px !important; height: 48px !important; 
       border-radius: 6px !important; object-fit: cover !important; 
-      flex-shrink: 0 !important; /* スマホで画像が潰れるのを防ぐ */
+      flex-shrink: 0 !important;
     }
     .lz-h-brand__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; white-space: nowrap !important; overflow: hidden; }
-    .lz-h-t1 { font-weight: 400 !important; font-size: clamp(0.85rem, 1.8vw, 1.1rem) !important; opacity: .9 !important; }
-    .lz-h-t2 { font-weight: 800 !important; font-size: clamp(1.3rem, 2.5vw, 1.8rem) !important; letter-spacing: .01em !important; }
+    .lz-h-t1 { font-weight: 400 !important; font-size: clamp(0.85rem, 1.8vw, 1.15rem) !important; opacity: .9 !important; }
+    .lz-h-t2 { font-weight: 800 !important; font-size: clamp(1.35rem, 2.5vw, 1.85rem) !important; letter-spacing: .01em !important; }
     
-    .lz-h-right { display: flex !important; align-items: center !important; gap: clamp(10px, 2vw, 20px) !important; flex-shrink: 0 !important; }
+    .lz-h-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2vw, 16px) !important; flex-shrink: 0 !important; }
 
-    /* PCナビ・プルダウン */
+    /* PCナビ */
     .lz-h-nav { display: none; }
     @media (min-width: 1024px) { .lz-h-nav { display: block !important; } }
     .lz-h-nav__list { display: flex !important; align-items: center !important; gap: 20px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
     .lz-h-nav__item { position: relative !important; height: var(--lz-h-height); display: flex; align-items: center; }
-    .lz-h-nav__l1 { font-weight: 600 !important; font-size: clamp(1.1rem, 2vw, 1.4rem) !important; color: #fff !important; text-decoration: none !important; padding: 8px 12px !important; border-radius: 10px !important; transition: 0.3s; }
+    .lz-h-nav__l1 { font-weight: 600 !important; font-size: clamp(1.15rem, 2vw, 1.45rem) !important; color: #fff !important; text-decoration: none !important; padding: 8px 12px !important; border-radius: 10px !important; transition: background 0.3s; }
     .lz-h-nav__l1:hover { background: rgba(255, 255, 255, .15) !important; }
     
     .lz-h-panel { 
@@ -63,20 +63,37 @@
       transform-origin: top center; animation: lz-h-slide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .lz-h-panel.is-open { display: block !important; }
-    .lz-h-panel a { display: block !important; padding: 12px 18px !important; color: #333 !important; text-decoration: none !important; border-radius: 12px !important; font-weight: 600; font-size: 1.25rem; transition: 0.2s; position: relative; }
-    .lz-h-panel a:hover { background: #fff5f5 !important; color: var(--lz-h-red) !important; padding-left: 26px !important; }
+
+    /* ★PCプルダウン：赤いバーのUX復元 */
+    .lz-h-panel a { 
+      display: block !important; padding: 14px 20px !important; 
+      color: #333 !important; text-decoration: none !important; border-radius: 12px !important; 
+      font-weight: 600 !important; font-size: 1.35rem !important; transition: all 0.3s !important; 
+      position: relative !important;
+    }
+    .lz-h-panel a::before {
+      content: ""; position: absolute; left: 8px; width: 4px; height: 0; 
+      background: var(--lz-h-red); border-radius: 10px; transition: height 0.3s ease;
+      top: 50%; transform: translateY(-50%);
+    }
+    .lz-h-panel a:hover { background: #fff5f5 !important; color: var(--lz-h-red) !important; padding-left: 28px !important; }
+    .lz-h-panel a:hover::before { height: 24px; }
 
     /* スマホドロワー */
-    .lz-h-hamb { display: flex !important; width: 42px !important; height: 42px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 5px !important; cursor: pointer; }
-    .lz-h-hamb__bar { width: 22px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
-    
     .lz-h-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 85vw !important; max-width: 320px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .4s cubic-bezier(0.16, 1, 0.3, 1) !important; overflow-y: auto !important; border-radius: 24px 0 0 24px !important; }
     .lz-h-drawer.is-open { transform: translateX(0) !important; }
     .lz-h-dw-head { padding: 18px 20px !important; border-bottom: 1px solid #f0f0f0 !important; display: flex !important; justify-content: space-between !important; align-items: center !important; }
     .lz-h-dw-l1a { display: block !important; padding: 18px 20px !important; font-weight: 700 !important; font-size: 1.3rem !important; color: #222 !important; text-decoration: none !important; }
     .lz-h-dw-l2-area { background: #fff5f5 !important; display: none; padding: 5px 0 15px 0 !important; }
     .lz-h-dw-group.is-active .lz-h-dw-l2-area { display: block !important; }
-    .lz-h-dw-l2-area a { display: flex !important; align-items: center !important; padding: 12px 20px 12px 36px !important; color: #444 !important; text-decoration: none !important; font-size: 1.2rem !important; font-weight: 600 !important; }
+    
+    /* スマホドロワー内の赤いバーUX */
+    .lz-h-dw-l2-area a { 
+      display: flex !important; align-items: center !important; padding: 12px 20px 12px 40px !important; 
+      color: #444 !important; text-decoration: none !important; font-size: 1.25rem !important; 
+      font-weight: 600 !important; position: relative; 
+    }
+    .lz-h-dw-l2-area a::before { content: ""; position: absolute; left: 24px; width: 4px; height: 18px; background: var(--lz-h-red); border-radius: 10px; opacity: 0.4; }
 
     @keyframes lz-h-slide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     @media (max-width: 1023px) { body { padding-top: var(--lz-h-height) !important; } }
@@ -86,7 +103,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入 (lz-h- 接頭辞を徹底)
+     2. HTML構造の注入
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -101,19 +118,23 @@
       <div class="lz-h-right">
         <nav class="lz-h-nav"><ul class="lz-h-nav__list" id="lzNavList"></ul></nav>
         <div class="lz-lang-mob" id="lzLangMob">
-          <button class="lz-lang-mob__btn" style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.6);border-radius:50%;background:none;color:#fff;font-weight:700;">日</button>
+          <button style="width:36px;height:36px;border:1px solid rgba(255,255,255,0.6);border-radius:50%;background:none;color:#fff;font-weight:700;">日</button>
           <div class="lz-lang-mob__menu" style="position:absolute;right:0;top:100%;background:#fff;padding:10px;display:none;min-width:140px;box-shadow:0 8px 20px rgba(0,0,0,0.1);border-radius:10px;z-index:10003;">
             <a href="#" style="color:#333;text-decoration:none;font-weight:600;display:block;padding:8px;">日本語</a>
           </div>
         </div>
-        <button class="lz-h-hamb" id="lzHamb"><span class="lz-h-hamb__bar"></span><span class="lz-h-hamb__bar"></span><span class="lz-h-hamb__bar"></span></button>
+        <button id="lzHamb" style="display:flex;width:40px;height:40px;border:1px solid rgba(255,255,255,.6);background:none;border-radius:10px;flex-direction:column;justify-content:center;align-items:center;gap:5px;cursor:pointer;">
+          <span style="width:22px;height:2px;background:#fff;border-radius:2px;"></span>
+          <span style="width:22px;height:2px;background:#fff;border-radius:2px;"></span>
+          <span style="width:22px;height:2px;background:#fff;border-radius:2px;"></span>
+        </button>
       </div>
     </div>
   </header>
   <div id="lzDwBackdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:19999;display:none;"></div>
   <aside class="lz-h-drawer" id="lzDrawer">
     <div class="lz-h-dw-head">
-      <div style="font-weight:800;color:#cf3a3a;">MENU</div>
+      <div style="font-weight:800;color:#cf3a3a;font-size:1.4rem;">MENU</div>
       <button id="lzDwClose" style="border:none;background:none;font-size:32px;color:#999;cursor:pointer;">&times;</button>
     </div>
     <nav id="lzDwNav"></nav>
