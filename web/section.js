@@ -1,5 +1,5 @@
 /**
- * section.js - 記事一覧コンポーネント (世界観デザイン統合版)
+ * section.js - 記事一覧コンポーネント (世界観デザイン統合・精度重視版)
  * 役割: 記事カード生成、中央揃えロードアニメ、りんごの世界観あしらい
  */
 (function() {
@@ -9,64 +9,74 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (デザインの微調整・あしらいの追加)
+     1. CSS (余白の復元 & 大項目の世界観演出)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      '.lz-section { margin: 48px 0; position: relative; visibility: visible; min-height: 500px; }',
+      '.lz-section { margin: 60px 0; position: relative; visibility: visible; min-height: 500px; }',
       '.lz-section.lz-ready { min-height: auto; }',
       
-      '.lz-head { margin: 0 0 16px; position: relative; z-index: 10; }',
-      '.lz-titlewrap { display: flex; align-items: center; width: 100%; background: var(--apple-red); color: #fff; border-radius: var(--radius); padding: 14px 16px; box-sizing: border-box; }',
+      '.lz-head { margin: 0 0 20px; position: relative; z-index: 10; }',
       
-      /* L2タイトルに小さなりんごのヘタをあしらう */
-      '.lz-title { margin: 0; font-weight: var(--fw-l2); font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; position: relative; padding-right: 25px; }',
-      '.lz-title::after { content: ""; position: absolute; right: 0; top: 0; width: 18px; height: 18px; background: url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'white\' stroke-width=\'2.5\' stroke-linecap=\'round\' stroke-linejoin=\'round\'%3E%3Cpath d=\'M12 2c.5 3 2.5 4 4.5 4S21 5 21 2M12 22c-5.5 0-10-4.5-10-10s4.5-10 10-10\'/%3E%3C/svg%3E") no-repeat center; opacity: 0.7; }',
+      /* ★大項目(赤帯)の再設計：りんごをさりげなく表現 */
+      '.lz-titlewrap {',
+      '  position: relative; display: block; width: 100%; background: var(--apple-red); color: #fff;',
+      '  border-radius: 18px 18px var(--radius) var(--radius);', /* 上を少し丸くしてりんご感を出す */
+      '  padding: 14px 16px; box-sizing: border-box; overflow: visible;',
+      '}',
+      /* りんごのヘタ(茎) */
+      '.lz-titlewrap::before {',
+      '  content: ""; position: absolute; top: -8px; left: 34px; width: 3px; height: 10px;',
+      '  background: #5b3a1e; border-radius: 2px; transform: rotate(-5deg); z-index: -1;',
+      '}',
+      /* りんごの葉っぱ */
+      '.lz-titlewrap::after {',
+      '  content: ""; position: absolute; top: -10px; left: 36px; width: 16px; height: 10px;',
+      '  background: var(--apple-green); border-radius: 0 100% 0 100%; transform: rotate(10deg); z-index: -1;',
+      '}',
+      '.lz-title { margin: 0; font-weight: var(--fw-l2); font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
 
-      /* L3見出しを葉っぱ型に変更 */
-      '.lz-l3head { display: flex; align-items: center; gap: .7em; margin: 32px 2px 16px; }',
+      /* 小見出し (葉っぱのあしらい) */
+      '.lz-l3head { display: flex; align-items: center; gap: .7em; margin: 36px 2px 12px; }',
       '.lz-l3bar { width: 14px; height: 14px; background: var(--apple-green); border-radius: 0 80% 0 80%; transform: rotate(-15deg); flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3); color: var(--apple-brown); line-height: 1.25; }',
 
-      /* ロード画面 (サイズ・位置を維持) */
+      /* ロード画面 (サイズ 160px / -70px 補正を維持) */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; margin: 8px 0 4px; border: 1px dashed var(--border); border-radius: 12px; background: #fffaf8; }',
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
       '.lz-logo { width: 160px; height: 160px; }',
       '.lz-loading .lz-logo { margin-left: -70px; }',
       '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; opacity: .8; } to { stroke-dashoffset: 0; opacity: 1; } }',
-      '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .05em; }',
+      '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .02em; }',
 
-      /* カルーセル & カード */
+      /* カルーセル & カード構造 */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track-outer::after { content: ""; position: absolute; top: 0; right: 0; width: 60px; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95)); pointer-events: none; z-index: 2; }',
       '.lz-track { display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 18px; overflow-x: auto; padding: 12px 12px 32px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }',
       '.lz-track::-webkit-scrollbar { display: none; }',
       '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.22); gap: 14px; padding-left: 16px; padding-right: 40px; } }',
 
-      '.lz-card { border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; scroll-snap-align: start; cursor: pointer; background: #fff; transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }',
+      /* ★カードの余白を 14px に完全復元 */
+      '.lz-card { border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; scroll-snap-align: start; cursor: pointer; background: #fff; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }',
       '.lz-card:hover { transform: translateY(-8px); border-color: var(--apple-red); box-shadow: 0 20px 45px rgba(207, 58, 58, 0.12); }',
-      
-      /* カード内のタイトルにあしらい */
-      '.lz-title-sm { margin: 0; font-weight: 600; font-size: var(--fz-card-title); color: var(--apple-brown); line-height: 1.4; position: relative; display: flex; align-items: center; gap: 0; transition: gap 0.3s ease; }',
-      '.lz-card:hover .lz-title-sm { gap: 8px; color: var(--apple-red-strong); }',
-      '.lz-title-sm::before { content: ""; width: 0; height: 12px; background: var(--apple-green); border-radius: 0 100% 0 100%; transform: rotate(-15deg); transition: width 0.3s ease; flex-shrink: 0; }',
-      '.lz-card:hover .lz-title-sm::before { width: 12px; }',
-
       '.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }',
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }',
       '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }',
       '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(40%, 180px); aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.35; }',
+      
+      '.lz-body { padding: 14px; display: grid; gap: 6px; }',
+      '.lz-title-sm { margin: 0; font-weight: 600; font-size: var(--fz-card-title); color: var(--apple-brown); line-height: 1.4; }',
       '.lz-lead { font-weight: 400; font-size: var(--fz-lead); line-height: 1.6; color: var(--ink-light); min-height: 2.2em; }'
     ].join('\n');
     document.head.appendChild(style);
   };
 
   /* ==========================================
-     2. ユーティリティ: SVGセンター精密計算 (完全復元)
+     2. ユーティリティ: SVGセンター精密計算
      ========================================== */
   function lzCenterLogoSVG(svg){
     try {
