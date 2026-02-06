@@ -1,6 +1,6 @@
 /**
- * section.js - 記事一覧コンポーネント (Ultimate Infinity Edition)
- * 役割: 左右双方向無限ループ、ドラッグ対応、黄金比ロードアニメ、収穫UX
+ * section.js - 記事一覧コンポーネント (Inertia & Infinity Edition)
+ * 役割: 双方向ループ、慣性スクロール優先UX、黄金比ロードアニメ復元
  */
 (function() {
   "use strict";
@@ -24,8 +24,7 @@
       '  position: relative; display: inline-flex; align-items: center;',
       '  padding: 12px 36px 12px 20px; box-sizing: border-box;',
       '  background: linear-gradient(135deg, rgba(207, 58, 58, 0.04) 0%, rgba(255, 255, 255, 0.9) 100%);',
-      '  border-left: 5px solid var(--apple-red);',
-      '  border-radius: 0 40px 40px 0;',
+      '  border-left: 5px solid var(--apple-red); border-radius: 0 40px 40px 0;',
       '  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);',
       '}',
       '.lz-title { margin: 0; font-weight: 800; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
@@ -35,7 +34,6 @@
       '.lz-l3bar::after { content: ""; position: absolute; inset: -4px; border: 1px solid var(--apple-green); border-radius: 50%; opacity: 0.3; }',
       '.lz-l3title { margin: 0; font-weight: 700; font-size: 1.75rem; color: var(--ink-dark); }',
 
-      /* ロード画面：枠なし・背景透明（完全復旧） */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; border: none; background: transparent; }',
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
       '.lz-logo { width: 160px; height: 160px; margin-left: -70px; display: block; }',
@@ -43,7 +41,6 @@
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; opacity: .8; } to { stroke-dashoffset: 0; opacity: 1; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .1em; }',
 
-      /* 無限コンベア：スクロールバー完全隠し */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track {',
       '  display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 24px;',
@@ -56,7 +53,6 @@
 
       '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.25); gap: 16px; } }',
 
-      /* ★記事カード：角丸の同期と収穫UX */
       '.lz-card {',
       '  border: 1px solid rgba(231, 211, 200, 0.4); border-radius: var(--card-radius);',
       '  background: #fff; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;',
@@ -66,6 +62,7 @@
       '  transform: translateY(-8px) scale(1.005); border-color: var(--apple-red);',
       '  box-shadow: 0 20px 40px -10px rgba(207, 58, 58, 0.12);',
       '}',
+      
       '.lz-body { padding: 18px 14px; display: grid; gap: 8px; }',
       '.lz-title-sm { margin: 0; font-weight: 700; font-size: 1.6rem; color: var(--ink-dark); position: relative; transition: padding-left 0.3s ease; }',
       '.lz-card:hover .lz-title-sm, .lz-card.is-active .lz-title-sm { padding-left: 22px; color: var(--apple-red); }',
@@ -84,24 +81,24 @@
   };
 
   /* ==========================================
-     2. ロジック: 双方向無限コンベア (全デバイス対応)
+     2. ロジック: 双方向無限ループ & 余韻優先UX
      ========================================== */
   function setupInfinityTrack(track) {
     if (!track) return;
-    
-    // 溢れている場合のみ構築
     if (track.scrollWidth <= track.clientWidth) return;
 
-    // 前後にコピーを追加して3重にする
+    // 前後に複製して3重にする
     var originalHTML = track.innerHTML;
     track.innerHTML = originalHTML + originalHTML + originalHTML;
 
     var speed = 0.6; 
-    var isPaused = false;
-    var startX, scrollLeftInitial;
+    var isPaused = false; // ホバー中などの強制停止
+    var isUserScrolling = false; // スワイプや慣性移動中
+    var resumeTimer = null;
     var currentScroll = 0;
+    var startX, scrollLeftInitial;
 
-    // 初期位置を中央にセット
+    // 初期位置（中央セット）
     var resetToCenter = function() {
       var singleWidth = track.scrollWidth / 3;
       currentScroll = singleWidth;
@@ -110,11 +107,11 @@
     setTimeout(resetToCenter, 50);
 
     var animate = function() {
-      if (!isPaused) {
+      // ユーザーが触っていない、かつ慣性スクロールも終わっている時のみ自動移動
+      if (!isPaused && !isUserScrolling) {
         currentScroll += speed;
         var singleWidth = track.scrollWidth / 3;
         
-        // 双方向ワープ判定
         if (currentScroll >= singleWidth * 2) { currentScroll -= singleWidth; }
         if (currentScroll <= 0) { currentScroll += singleWidth; }
         
@@ -123,35 +120,50 @@
       requestAnimationFrame(animate);
     };
 
-    // --- PCドラッグ & スマホタッチの統合制御 ---
-    var startDrag = function(e) {
-      isPaused = true;
-      startX = (e.pageX || e.touches[0].pageX) - track.offsetLeft;
-      scrollLeftInitial = track.scrollLeft;
-    };
-    var endDrag = function() {
-      isPaused = false;
-      currentScroll = track.scrollLeft; // 手動後の位置をアニメに同期
-    };
-    var moveDrag = function(e) {
-      if (!isPaused) return;
-      var x = (e.pageX || e.touches[0].pageX) - track.offsetLeft;
-      var walk = (x - startX) * 1.5; 
-      track.scrollLeft = scrollLeftInitial - walk;
+    // ★重要：主導権管理（操作の余韻を保護）
+    var handleInteraction = function() {
+      isUserScrolling = true;
+      clearTimeout(resumeTimer);
+      // スクロールが止まってから2秒後に主導権をコンベアに戻す
+      resumeTimer = setTimeout(function() {
+        isUserScrolling = false;
+        currentScroll = track.scrollLeft; // 現在位置から再開
+      }, 2000);
     };
 
-    track.addEventListener('mousedown', startDrag);
-    track.addEventListener('touchstart', startDrag, { passive: true });
-    window.addEventListener('mouseup', endDrag);
-    track.addEventListener('touchend', endDrag, { passive: true });
-    track.addEventListener('mousemove', moveDrag);
-    track.addEventListener('touchmove', moveDrag, { passive: false });
+    // スクロールイベントで慣性をキャッチ
+    track.addEventListener('scroll', function() {
+      if (isUserScrolling) {
+        var singleWidth = track.scrollWidth / 3;
+        if (track.scrollLeft >= singleWidth * 2) { track.scrollLeft -= singleWidth; }
+        if (track.scrollLeft <= 0) { track.scrollLeft += singleWidth; }
+      }
+      handleInteraction();
+    }, { passive: true });
+
+    // PCドラッグ
+    track.addEventListener('mousedown', function(e) {
+      isPaused = true;
+      startX = e.pageX - track.offsetLeft;
+      scrollLeftInitial = track.scrollLeft;
+    });
+    window.addEventListener('mouseup', function() { isPaused = false; });
+    track.addEventListener('mousemove', function(e) {
+      if (!isPaused || e.buttons !== 1) return;
+      var x = e.pageX - track.offsetLeft;
+      var walk = (x - startX) * 1.5; 
+      track.scrollLeft = scrollLeftInitial - walk;
+    });
+
+    // ホバー停止（PCのみ）
+    track.addEventListener('mouseenter', function() { if(window.innerWidth > 1024) isPaused = true; });
+    track.addEventListener('mouseleave', function() { if(window.innerWidth > 1024) isPaused = false; });
 
     requestAnimationFrame(animate);
   }
 
   /* ==========================================
-     3. ユーティリティ: SVGセンター精密計算 (復元)
+     3. ユーティリティ & 描画本体 (完全復元版)
      ========================================== */
   function lzCenterLogoSVG(svg){
     try {
@@ -181,9 +193,6 @@
     ].join('');
   }
 
-  /* ==========================================
-     4. レンダリング
-     ========================================== */
   window.renderSection = async function(root) {
     if (root.dataset.lzDone === '1') return;
     var config = window.LZ_CONFIG, l1 = root.dataset.l1 || config.L1, l2 = root.dataset.l2 || "";
@@ -208,30 +217,23 @@
     try {
       var json = await C.NET.json(config.ENDPOINT + "?l1=" + encodeURIComponent(l1) + "&l2=" + encodeURIComponent(l2));
       if (!json || !json.ok) throw new Error("no data");
-
-      var items = json.items || [];
-      var groups = new Map(); // Mapを使用して確実なグループ化
-
+      var items = json.items || [], groups = new Map();
       items.forEach(function(it) {
         var k = (it.l3 || "").trim();
         if (!groups.has(k)) groups.set(k, []);
         groups.get(k).push(it);
       });
-
       var html = "", pad = C.ratio(imageRatio);
       groups.forEach(function(arr, key) {
         if (key) html += '<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">' + C.esc(key) + '</h3></div>';
         html += '<div class="lz-track-outer"><div class="lz-track">' + arr.map(function(it){ return cardHTML(it, pad, key); }).join("") + '</div></div>';
       });
-
       root.querySelector(".lz-groupwrap").innerHTML = html;
       root.querySelector(".lz-section").classList.add("lz-ready");
       root.dataset.lzDone = '1';
 
-      /* ★無限コンベア・ドラッグ・スマホアニメの統合起動 */
       root.querySelectorAll(".lz-track").forEach(setupInfinityTrack);
 
-      /* スマホ：もっとも見えているカードをアクティブ（収穫UX） */
       if (mql.matches) {
         var mobileObserver = new IntersectionObserver(function(entries) {
           entries.forEach(function(entry) { entry.target.classList.toggle("is-active", entry.isIntersecting); });
