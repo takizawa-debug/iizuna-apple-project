@@ -131,8 +131,8 @@ window.lzModal = (function() {
         pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin +3);
 
         // ★修正：日本語フッター画像（一回り大きく）
-        var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 40, "#000");
-        var footerH = 5;
+        var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 18, "#000");
+        var footerH = 8;
         pdf.addImage(jpImg.data, "PNG", margin, pageH - margin - 2, footerH / jpImg.ar, footerH);
 
         heightLeft -= innerH;
