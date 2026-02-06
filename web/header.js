@@ -1,6 +1,6 @@
 /**
- * header.js - ナビゲーション・コンポーネント (PC/Mobile Display Fixed)
- * 役割: PC版ハンバーガー非表示、PC用言語セレクター復元、UX・絶縁設計の維持
+ * header.js - ナビゲーション・コンポーネント (Language Menu Restored Edition)
+ * 役割: 言語選択（英・中）の復元、PC版ハンバーガー非表示、UX・絶縁設計の維持
  */
 (async function headerNavBoot(){
   "use strict";
@@ -53,22 +53,26 @@
     .lz-h-panel a:hover { background: #fff5f5 !important; color: var(--lz-h-red) !important; padding-left: 28px !important; }
     .lz-h-panel a:hover::before { height: 24px; }
 
-    /* 言語セレクター：PC/スマホ切り分け */
+    /* 言語セレクター：PC/スマホ */
     .lz-lang-pc { position: relative !important; display: none; height: var(--lz-h-height); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
     .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 16px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer; font-weight: 600; }
     .lz-lang-pc__btn::after { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #fff; transition: 0.3s; }
     .lz-lang-pc__btn.is-active::after { transform: rotate(180deg); }
-    .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 8px; background: #fff !important; border-radius: 16px !important; padding: 8px !important; display: none; min-width: 160px !important; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 10002; }
+    .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 8px; background: #fff !important; border-radius: 16px !important; padding: 8px !important; display: none; min-width: 170px !important; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 10002; }
     .lz-lang-pc__menu.is-open { display: flex !important; }
-    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; }
+    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; transition: 0.2s; }
+    .lz-lang-pc__menu a:hover { background: #fff5f5; color: var(--lz-h-red); }
 
     .lz-lang-mob { position: relative !important; display: flex !important; }
     @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
     .lz-lang-mob__btn { width: 36px !important; height: 36px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 50% !important; color: #fff !important; font-size: 13px !important; font-weight: 700 !important; background: transparent !important; }
-    .lz-lang-mob__menu { position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; background: #fff !important; border-radius: 12px !important; padding: 8px !important; display: none; min-width: 150px !important; flex-direction: column !important; z-index: 10003; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+    .lz-lang-mob__menu { position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; background: #fff !important; border-radius: 12px !important; padding: 8px !important; display: none; min-width: 170px !important; flex-direction: column !important; z-index: 10003; box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
     .lz-lang-mob__menu.is-open { display: flex !important; }
-    .lz-lang-mob__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 1.1rem !important; font-weight: 600; border-radius: 8px; }
+    .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 1.1rem !important; font-weight: 600; border-radius: 8px; }
+    
+    /* 準備中メニューのスタイル死守 */
+    .is-disabled { color: #ccc !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
 
     /* ハンバーガー：PCでは非表示 */
     .lz-h-hamb { display: flex !important; width: 40px !important; height: 40px !important; border: 1px solid rgba(255,255,255,.6) !important; background: none; border-radius: 10px !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 5px !important; cursor: pointer; }
@@ -93,7 +97,7 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. HTML構造の注入 (PC用言語ボタンを復元)
+     2. HTML構造の注入 (英・中 言語メニューを完全復元)
      ========================================== */
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -109,11 +113,19 @@
         <nav class="lz-h-nav"><ul class="lz-h-nav__list" id="lzNavList"></ul></nav>
         <div class="lz-lang-mob" id="lzLangMob">
           <button class="lz-lang-mob__btn" type="button">日</button>
-          <div class="lz-lang-mob__menu"><a href="#">日本語</a></div>
+          <div class="lz-lang-mob__menu">
+            <a href="#">日本語</a>
+            <a href="#" class="is-disabled">English（準備中）</a>
+            <a href="#" class="is-disabled">中文（準備中）</a>
+          </div>
         </div>
         <div class="lz-lang-pc" id="lzLangPc">
           <button class="lz-lang-pc__btn" type="button">日本語</button>
-          <div class="lz-lang-pc__menu"><a href="#">日本語</a></div>
+          <div class="lz-lang-pc__menu">
+            <a href="#">日本語</a>
+            <a href="#" class="is-disabled">English（準備中）</a>
+            <a href="#" class="is-disabled">中文（準備中）</a>
+          </div>
         </div>
         <button class="lz-h-hamb" id="lzHamb">
           <span class="lz-h-hamb__bar"></span><span class="lz-h-hamb__bar"></span><span class="lz-h-hamb__bar"></span>
