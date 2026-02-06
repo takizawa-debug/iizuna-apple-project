@@ -42,7 +42,7 @@
       flex-shrink: 0 !important;
     }
     .lz-h-brand__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; white-space: nowrap !important; overflow: hidden; }
-    .lz-h-t1 { font-weight: 400 !important; font-size: clamp(1.15rem, 2vw, 1.35rem) !important; opacity: .9 !important; }
+    .lz-h-t1 { font-weight: 400 !important; font-size: clamp(1.15rem, 2vw, 1.35rem) !important; opacity: .9 !important; margin-top: 2px !important; }
     .lz-h-t2 { font-weight: 800 !important; font-size: clamp(1.65rem, 3vw, 2.2rem) !important; letter-spacing: .01em !important; margin-top: 2px !important; }
     
     .lz-h-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2vw, 16px) !important; flex-shrink: 0 !important; }
