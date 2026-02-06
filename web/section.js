@@ -9,14 +9,14 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS修正 (サイズを維持し、位置だけを左にオフセット)
+     1. CSS (サイズ維持 & センター軸の確立)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      /* セクション外殻：ガタつき防止の枠確保 */
+      /* 記事読み込み前の枠を確保し、ガタつきを防止 */
       '.lz-section { margin: 48px 0; position: relative; min-height: 500px; }', 
       '.lz-section.lz-ready { min-height: auto; }',
 
@@ -24,20 +24,20 @@
       '.lz-titlewrap { display: block; width: 100%; background: var(--apple-red); color: #fff; border-radius: var(--radius); padding: 14px 16px; box-sizing: border-box; }',
       '.lz-title { margin: 0; font-weight: 550; font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
 
-      /* ローディング：配置はFlexbox、中身の個別調整で中心を出す */
+      /* ロード画面：Flexboxで縦に並べ、余計なオフセットを排除 */
       '.lz-loading { display: flex; align-items: center; justify-content: center; height: 400px; border: 1px dashed var(--border); border-radius: 12px; background: #fffaf8; }',
-      '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; }',
+      '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }',
       
-      /* ★ロゴサイズを160pxに維持し、左に70px寄せて文字と中心を合わせる */
-      '.lz-logo { width: 160px; height: 160px; margin-left: -70px; display: block; overflow: visible; }',
+      /* ★ロゴサイズを160pxに固定（余計なマージンは削除） */
+      '.lz-logo { width: 160px; height: 160px; display: block; overflow: visible; }',
       
       '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; opacity: .8; } to { stroke-dashoffset: 0; opacity: 1; } }',
       
-      /* 読み込み中テキスト：ロゴのマイナスマージンに引きずられないよう調整 */
-      '.lz-loading-label { margin-top: 10px; font-weight: 600; font-size: 1.4rem; color: #a94a4a; letter-spacing: .05em; padding-left: 70px; }',
+      /* 読み込み中テキスト */
+      '.lz-loading-label { margin-top: 15px; font-weight: 600; font-size: 1.4rem; color: #a94a4a; letter-spacing: .05em; }',
 
-      /* カルーセル構造 */
+      /* チラ見せカルーセル構造 */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track-outer::after { content: ""; position: absolute; top: 0; right: 0; width: 60px; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95)); pointer-events: none; z-index: 2; }',
       '.lz-track { display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 18px; overflow-x: auto; padding: 12px 12px 32px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }',
@@ -51,7 +51,7 @@
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }',
       '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }',
       
-      /* ★重要：画像なし記事のプレースホルダー復元 */
+      /* ★画像なし記事のプレースホルダー（リンゴ図形）完全復元 */
       '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(40%, 180px); aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.35; }',
       
       '.lz-body { padding: 14px; display: grid; gap: 6px; }',
@@ -65,7 +65,24 @@
   };
 
   /* ==========================================
-     2. 描画ロジック
+     2. ユーティリティ: SVGセンター精密計算
+     ========================================== */
+  function lzCenterLogoSVG(svg){
+    try {
+      var path = svg.querySelector('path');
+      if(!path) return;
+      // パスの境界ボックス（BBox）を正確に取得して、viewBoxを再設定
+      var bb = path.getBBox();
+      if (bb.width === 0) return; // 描画前ならスキップ
+      var cx = bb.x + bb.width / 2;
+      var cy = bb.y + bb.height / 2;
+      var size = Math.max(bb.width, bb.height) * 1.05; // 5%の余白
+      svg.setAttribute('viewBox', (cx - size/2) + ' ' + (cy - size/2) + ' ' + size + ' ' + size);
+    } catch(e){}
+  }
+
+  /* ==========================================
+     3. 描画ロジック
      ========================================== */
   function cardHTML(it, pad, groupKey) {
     var title = it.title || "(無題)";
@@ -100,6 +117,7 @@
     root.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth);
     root.style.setProperty("--ratio", C.ratio(imageRatio));
 
+    // ロード画面の生成
     root.innerHTML = [
       '<div class="lz-section">',
       '  <div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">' + C.esc(heading) + '</h2></div></div>',
@@ -115,6 +133,14 @@
       '  </div>',
       '</div>'
     ].join('');
+
+    // ★重要：描画直後にSVGのセンター調整を実行
+    var _svg = root.querySelector('.lz-logo');
+    if(_svg) {
+      // 描画を確実にするため2回に分けて実行
+      lzCenterLogoSVG(_svg);
+      setTimeout(function(){ lzCenterLogoSVG(_svg); }, 100);
+    }
     
     try {
       var json = await C.NET.json(config.ENDPOINT + "?l1=" + encodeURIComponent(l1) + "&l2=" + encodeURIComponent(l2));
