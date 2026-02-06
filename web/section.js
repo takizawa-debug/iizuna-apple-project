@@ -1,6 +1,6 @@
 /**
- * section.js - 記事一覧コンポーネント (Manual Infinity Edition)
- * 役割: 左右双方向ループ(手動専用)、中項目書式復元、黄金比ロードアニメ
+ * section.js - 記事一覧コンポーネント (Manual Infinity Edition - Spacing Optimized)
+ * 役割: 左右双方向ループ(手動専用)、中項目書式復元、黄金比ロードアニメ、余韻UX
  */
 (function() {
   "use strict";
@@ -9,26 +9,28 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (中項目復元・角丸同期・ドラッグ対応)
+     1. CSS (上下余白の微調整 & 既存デザイン維持)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      '.lz-section { margin: 80px 0; position: relative; visibility: visible; min-height: 400px; }',
+      /* ★セクション外側の上下余白を 80px → 50px へ短縮 */
+      '.lz-section { margin: 50px 0; position: relative; visibility: visible; min-height: 400px; }',
       '.lz-section.lz-ready { min-height: auto; }',
       
-      '.lz-head { margin: 0 0 32px; position: relative; z-index: 10; }',
+      /* ★見出しブロックの余白を 32px → 20px へ短縮 */
+      '.lz-head { margin: 0 0 20px; position: relative; z-index: 10; }',
       '.lz-titlewrap { position: relative; display: inline-flex; align-items: center; padding: 12px 36px 12px 20px; box-sizing: border-box; background: linear-gradient(135deg, rgba(207, 58, 58, 0.04) 0%, rgba(255, 255, 255, 0.9) 100%); border-left: 5px solid var(--apple-red); border-radius: 0 40px 40px 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }',
       '.lz-title { margin: 0; font-weight: 800; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
 
-      /* ★中項目 (L3見出し) の書式を元通りに復元 */
-      '.lz-l3head { display: flex; align-items: center; gap: .55em; margin: 18px 2px 10px; }',
+      /* ★中項目 (L3見出し) の余白も全体に合わせて微調整 */
+      '.lz-l3head { display: flex; align-items: center; gap: .55em; margin: 24px 2px 10px; }',
       '.lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border-radius: 3px; flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3, 1.85rem); color: var(--apple-brown); line-height: 1.25; }',
 
-      /* ロード画面：黄金比配置を死守 */
+      /* ロード画面：黄金比配置を完全維持 */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; border: none; background: transparent; }',
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
       '.lz-logo { width: 160px; height: 160px; margin-left: -70px; display: block; }',
@@ -36,11 +38,11 @@
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .1em; }',
 
-      /* 無限ループ用トラック（スクロールバー非表示） */
+      /* 無限ループトラック（スクロールバー非表示） */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track {',
       '  display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 24px;',
-      '  overflow-x: auto; padding: 12px 12px 30px; scroll-snap-type: none;',
+      '  overflow-x: auto; padding: 12px 12px 24px; scroll-snap-type: none;',
       '  -webkit-overflow-scrolling: touch; cursor: grab; user-select: none;',
       '  scrollbar-width: none; -ms-overflow-style: none;',
       '}',
@@ -72,21 +74,18 @@
     if (!track) return;
     if (track.scrollWidth <= track.clientWidth) return;
 
-    // 前後にコピーを追加して3重にする（手動でのワープ余白を確保）
     var originalHTML = track.innerHTML;
     track.innerHTML = originalHTML + originalHTML + originalHTML;
 
     var isMouseDown = false;
     var startX, scrollLeftInitial;
 
-    // 初期位置を中央にセット
     var resetToCenter = function() {
       var singleWidth = track.scrollWidth / 3;
       track.scrollLeft = singleWidth;
     };
     setTimeout(resetToCenter, 50);
 
-    // 双方向ループ・ワープ処理
     track.addEventListener('scroll', function() {
       var singleWidth = track.scrollWidth / 3;
       if (track.scrollLeft >= singleWidth * 2) {
@@ -96,7 +95,6 @@
       }
     }, { passive: true });
 
-    // PC：ドラッグ操作
     track.addEventListener('mousedown', function(e) {
       isMouseDown = true;
       startX = e.pageX - track.offsetLeft;
@@ -184,10 +182,8 @@
       root.querySelector(".lz-section").classList.add("lz-ready");
       root.dataset.lzDone = '1';
 
-      /* ★手動無限コンベアの起動 */
       root.querySelectorAll(".lz-track").forEach(setupInfinityTrack);
 
-      /* スマホ：スクロール連動アクティブ（収穫UX） */
       if (mql.matches) {
         var mobileObserver = new IntersectionObserver(function(entries) {
           entries.forEach(function(entry) { entry.target.classList.toggle("is-active", entry.isIntersecting); });
