@@ -118,7 +118,7 @@ window.lzModal = (function() {
         // QRコード
         if(qrData){
           var qSize = 22;
-          pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize, qSize, qSize);
+          pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize - 20, qSize, qSize);
         }
 
         // ★修正：日時の精密配置（左欠け防止 ＋ フォント拡大）
