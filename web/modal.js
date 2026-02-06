@@ -68,7 +68,7 @@ window.lzModal = (function() {
   };
 
   /* ==========================================
-     PDF生成：日時印字の修正
+     PDF生成：日時印字の修正 ＋ フォント拡大
      ========================================== */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
@@ -107,19 +107,20 @@ window.lzModal = (function() {
       pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, margin, imgWmm, imgHmm);
       
       if(qrCanvas) {
-        var qSize = 20;
-        pdf.addImage(qrCanvas.toDataURL("image/png"), "PNG", pageW - margin - qSize, pageH - margin - qSize - 8, qSize, qSize);
+        var qSize = 20; 
+        pdf.addImage(qrCanvas.toDataURL("image/png"), "PNG", pageW - margin - qSize, pageH - margin - qSize - 10, qSize, qSize);
       }
       
       var now = new Date();
       var ts = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + " " + now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
       
-      /* ★修正：日時の印字位置とサイズを微調整（左側が切れないように） */
-      pdf.setFontSize(8);
-      pdf.text(ts + " / 1-1", pageW - margin - 2, pageH - 8, {align:"right"});
+      /* ★修正：日時の印字位置を内側に寄せ、サイズを一回り大きく調整 */
+      pdf.setFontSize(10);
+      pdf.text(ts + " / 1-1", pageW - margin - 5, pageH - 12, {align:"right"});
 
-      var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 12, "#000");
-      pdf.addImage(jpImg.data, "PNG", margin, pageH - 12, 4 / jpImg.ar, 4);
+      /* ★修正：日本語フッターの画像サイズを一回り大きく調整 */
+      var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 16, "#000");
+      pdf.addImage(jpImg.data, "PNG", margin, pageH - 16, 5 / jpImg.ar, 5);
       
       window.open(pdf.output("bloburl"), "_blank");
     } catch(e) { console.error(e); alert("PDF生成に失敗しました。"); }
