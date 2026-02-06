@@ -1,6 +1,6 @@
 /**
- * section.js - 記事一覧コンポーネント (Seamless Conveyor Edition)
- * 役割: 記事カード生成、無限ループ自動スクロール、中央揃えロードアニメ、収穫UX
+ * section.js - 記事一覧コンポーネント (Ultimate UX Edition)
+ * 役割: 無限スクロール、マウスドラッグ、スマホスワイプ優先、カード造形補正
  */
 (function() {
   "use strict";
@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (スクロールバー消去 & 無限トラック設定)
+     1. CSS (造形補正 & スクロールバー完全隠し)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
@@ -18,49 +18,40 @@
     style.textContent = [
       '.lz-section { margin: 80px 0; position: relative; visibility: visible; min-height: 400px; }',
       '.lz-section.lz-ready { min-height: auto; }',
-      
       '.lz-head { margin: 0 0 32px; position: relative; z-index: 10; }',
       '.lz-titlewrap {',
       '  position: relative; display: inline-flex; align-items: center;',
       '  padding: 12px 36px 12px 20px; box-sizing: border-box;',
       '  background: linear-gradient(135deg, rgba(207, 58, 58, 0.04) 0%, rgba(255, 255, 255, 0.9) 100%);',
-      '  border-left: 5px solid var(--apple-red);',
-      '  border-radius: 0 40px 40px 0;',
+      '  border-left: 5px solid var(--apple-red); border-radius: 0 40px 40px 0;',
       '  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);',
       '}',
       '.lz-title { margin: 0; font-weight: 800; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
 
-      '.lz-l3head { display: flex; align-items: center; gap: 12px; margin: 40px 5px 18px; }',
-      '.lz-l3bar { width: 10px; height: 10px; background: var(--apple-green); border-radius: 50%; position: relative; }',
-      '.lz-l3bar::after { content: ""; position: absolute; inset: -4px; border: 1px solid var(--apple-green); border-radius: 50%; opacity: 0.3; }',
-      '.lz-l3title { margin: 0; font-weight: 700; font-size: 1.75rem; color: var(--ink-dark); }',
-
-      /* ロード画面：枠・背景なしのステルス仕様 */
+      /* ロード画面復元 */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; border: none; background: transparent; }',
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
-      
-      /* 図形描写：160px / -70px (滝澤さん承認済の黄金比) */
       '.lz-logo { width: 160px; height: 160px; margin-left: -70px; display: block; }',
       '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; opacity: .8; } to { stroke-dashoffset: 0; opacity: 1; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .1em; }',
 
-      /* ★無限コンベア：スクロールバーを完全に隠す */
+      /* 無限コンベア構造 */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track {',
       '  display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 24px;',
-      '  overflow-x: auto; padding: 12px 12px 30px; scroll-snap-type: none;',
-      '  -webkit-overflow-scrolling: touch;',
-      '  ms-overflow-style: none; scrollbar-width: none; /* Firefox / IE用隠し */',
+      '  overflow-x: auto; padding: 12px 12px 30px; cursor: grab; /* 掴めるアイコン */',
+      '  -webkit-overflow-scrolling: touch; scrollbar-width: none; -ms-overflow-style: none;',
       '}',
-      '.lz-track::-webkit-scrollbar { display: none; } /* Chrome / Safari用隠し */',
+      '.lz-track:active { cursor: grabbing; }',
+      '.lz-track::-webkit-scrollbar { display: none; }',
 
-      '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.25); gap: 16px; } }',
-
-      /* カードデザイン & 収穫UX */
+      /* ★カード造形：overflow:hidden で画像の角を完璧に落とす */
       '.lz-card {',
       '  border: 1px solid rgba(231, 211, 200, 0.4); border-radius: var(--card-radius);',
-      '  background: #fff; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;',
+      '  background: #fff; overflow: hidden; /* これで画像も角丸に */',
+      '  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease;',
+      '  user-select: none; -webkit-user-drag: none;',
       '}',
       '.lz-card:hover, .lz-card.is-active {',
       '  transform: translateY(-8px); border-color: var(--apple-red);',
@@ -71,69 +62,82 @@
       '.lz-title-sm { margin: 0; font-weight: 700; font-size: 1.6rem; color: var(--ink-dark); position: relative; transition: padding-left 0.3s ease; }',
       '.lz-card:hover .lz-title-sm, .lz-card.is-active .lz-title-sm { padding-left: 22px; color: var(--apple-red); }',
       '.lz-title-sm::before {',
-      '  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%) rotate(-15deg);',
+      '  content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%);',
       '  width: 14px; height: 14px; background: var(--apple-green); border-radius: 0 80% 0 80%;',
       '  opacity: 0; transition: opacity 0.3s ease; }',
       '.lz-card:hover .lz-title-sm::before, .lz-card.is-active .lz-title-sm::before { opacity: 1; }',
 
       '.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }',
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }',
-      '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }',
+      '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }',
       '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.15; }'
     ].join('\n');
     document.head.appendChild(style);
   };
 
   /* ==========================================
-     2. ロジック: 無限シームレスコンベア
+     2. ロジック: コンベア & ドラッグ操作 (完全統合版)
      ========================================== */
-  function startInfiniteConveyor(track) {
+  function setupTrackInteractions(track) {
     if (!track) return;
     
-    // 1. カードを複製してループの下地を作る
-    var originalCards = Array.prototype.slice.call(track.children);
-    if (originalCards.length < 3) return; // 少ない場合はループさせない
+    // 無限ループ用の複製
+    var items = Array.prototype.slice.call(track.children);
+    if (items.length < 3) return;
+    items.forEach(function(item) { track.appendChild(item.cloneNode(true)); });
 
-    originalCards.forEach(function(card) {
-      var clone = card.cloneNode(true);
-      track.appendChild(clone);
-    });
+    var state = {
+      isDown: false, startX: 0, scrollLeft: 0,
+      isPaused: false, lastAction: Date.now(),
+      scrollX: 0, speed: 0.6
+    };
 
-    var speed = 0.6; 
-    var isPaused = false;
-    var scrollLeft = 0;
-
+    // --- 自動スクロール (選果機) ---
     function step() {
-      if (!isPaused) {
-        scrollLeft += speed;
-        
-        // 2. 半分（オリジナル記事分）まで来たら、気づかれないように左端へ戻す
-        var halfWidth = track.scrollWidth / 2;
-        if (scrollLeft >= halfWidth) {
-          scrollLeft = 0;
-        }
-        track.scrollLeft = scrollLeft;
+      var now = Date.now();
+      // 操作後3秒間は自動スクロールを再開しない
+      if (!state.isDown && !state.isPaused && (now - state.lastAction > 3000)) {
+        state.scrollX += state.speed;
+        var half = track.scrollWidth / 2;
+        if (state.scrollX >= half) state.scrollX = 0;
+        track.scrollLeft = state.scrollX;
       }
       requestAnimationFrame(step);
     }
 
-    // 3. 検品（ホバー・タッチ）で停止
-    track.addEventListener('mouseenter', function() { isPaused = true; });
-    track.addEventListener('mouseleave', function() { 
-      isPaused = false; 
-      scrollLeft = track.scrollLeft; // 手動スクロール後の位置を同期
+    // --- マウスドラッグ (PC) ---
+    track.addEventListener('mousedown', function(e) {
+      state.isDown = true; state.lastAction = Date.now();
+      state.startX = e.pageX - track.offsetLeft;
+      state.scrollLeft = track.scrollLeft;
     });
-    track.addEventListener('touchstart', function() { isPaused = true; });
+    window.addEventListener('mouseup', function() { state.isDown = false; });
+    track.addEventListener('mousemove', function(e) {
+      if (!state.isDown) return;
+      e.preventDefault();
+      var x = e.pageX - track.offsetLeft;
+      var walk = (x - state.startX) * 1.5;
+      track.scrollLeft = state.scrollLeft - walk;
+      state.scrollX = track.scrollLeft; // 位置同期
+      state.lastAction = Date.now();
+    });
+
+    // --- タッチ操作 (スマホ) ---
+    track.addEventListener('touchstart', function() { state.isDown = true; state.lastAction = Date.now(); });
     track.addEventListener('touchend', function() { 
-      isPaused = false; 
-      scrollLeft = track.scrollLeft;
+      state.isDown = false; state.lastAction = Date.now();
+      state.scrollX = track.scrollLeft; // 位置同期
     });
+
+    // ホバーで一時停止
+    track.addEventListener('mouseenter', function() { state.isPaused = true; });
+    track.addEventListener('mouseleave', function() { state.isPaused = false; });
 
     requestAnimationFrame(step);
   }
 
   /* ==========================================
-     3. ユーティリティ & 描画本体
+     3. 描画本体
      ========================================== */
   function lzCenterLogoSVG(svg){
     try {
@@ -141,9 +145,7 @@
       if(!path) return;
       var bb = path.getBBox();
       if (bb.width === 0) return; 
-      var cx = bb.x + bb.width / 2;
-      var cy = bb.y + bb.height / 2;
-      var box = Math.max(bb.width, bb.height);
+      var cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2, box = Math.max(bb.width, bb.height);
       svg.setAttribute('viewBox', (cx - box/2) + ' ' + (cy - box/2) + ' ' + box + ' ' + box);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
     } catch(e){}
@@ -158,7 +160,7 @@
       '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
       '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '" data-group="' + C.esc(groupKey) + '">',
       '  <div class="lz-media ' + (it.mainImage ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
-      it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async" onerror="this.parentElement.classList.add(\'is-empty\'); this.remove();">' : '',
+      it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async">' : '',
       '  </div>',
       '  <div class="lz-body"><h3 class="lz-title-sm">' + C.esc(title) + '</h3><div class="lz-lead">' + C.esc(it.lead || "") + '</div></div>',
       '</article>'
@@ -174,7 +176,6 @@
 
     var heading = root.dataset.heading || l2;
     var imageRatio = root.dataset.imageRatio || "16:9";
-
     var mql = window.matchMedia("(max-width:768px)");
     root.style.setProperty("--ratio", C.ratio(imageRatio));
 
@@ -182,7 +183,7 @@
       '<div class="lz-section">',
       '  <div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">' + C.esc(heading) + '</h2></div></div>',
       '  <div class="lz-groupwrap">',
-      '    <div class="lz-loading" role="status" aria-live="polite">',
+      '    <div class="lz-loading">',
       '      <div class="lz-loading-inner">',
       '        <svg class="lz-logo" viewBox="-60 -60 720 720" aria-hidden="true" style="overflow:visible">',
       '          <path class="lz-logo-path" pathLength="1000" d="M287.04,32.3c.29.17,1.01.63,1.46,1.55.57,1.19.29,2.29.2,2.57-7.08,18.09-14.18,36.17-21.26,54.26,5.96-.91,14.77-2.45,25.28-5.06,17.98-4.45,22.46-7.44,33.44-9.85,18.59-4.08,33.88-1.67,44.51,0,21.1,3.32,37.42,10.74,47.91,16.6-4.08,8.59-11.1,20.05-23.06,29.99-18.47,15.35-38.46,18.54-52.07,20.7-7.55,1.21-21.61,3.32-39.12.24-13.71-2.41-11-4.76-30.72-9.36-6.73-1.56-12.82-2.64-17.98-7.87-3.73-3.77-4.92-7.63-6.74-7.3-2.44.43-1.84,7.58-4.5,16.85-.98,3.46-5.56,19.45-14.05,21.35-5.5,1.23-9.85-4.07-17.02-9.79-17.52-13.96-36.26-17.94-45.91-19.99-7.62-1.62-25.33-5.16-45.19,1.36-6.6,2.17-19.57,7.82-35.2,23.74-48.04,48.93-49.39,127.17-49.69,143.97-.08,5-.47,48.18,16.56,90.06,6.63,16.3,14.21,28.27,24.85,38.3,4.2,3.97,12.19,11.37,24.85,16.56,13.72,5.63,26.8,6.15,31.06,6.21,8.06.12,9.06-1.03,14.49,0,10.22,1.95,13.47,7.33,22.77,12.42,10.16,5.56,19.45,6.3,30.02,7.25,8.15.73,18.56,1.67,31.15-1.99,9.83-2.85,16.44-7.18,25.24-12.93,2.47-1.61,9.94-6.61,20.55-16.18,12.76-11.51,21.35-21.79,25.53-26.87,26.39-32.12,39.71-48.12,50.73-71.43,12.87-27.23,17.2-49.56,18.63-57.97,3.23-18.95,5.82-35.27,0-54.87-2.24-7.54-6.98-23.94-21.74-37.27-5.26-4.76-12.9-11.66-24.85-13.46-17.04-2.58-30.24,7.19-33.13,9.32-9.71,7.17-13.91,16.56-21.93,35.04-1.81,4.19-8.26,19.38-14.31,43.63-2.82,11.32-6.43,25.97-8.28,45.55-1.47,15.61-3.27,34.6,1.04,59.01,4.92,27.9,15.01,47.01,17.6,51.76,5.58,10.26,12.02,21.83,24.85,33.13,6.45,5.69,17.55,15.24,35.2,19.77,19.17,4.92,34.7.98,38.3,0,14.29-3.9,24.02-11.27,28.99-15.63"></path>',
@@ -201,15 +202,13 @@
       var json = await C.NET.json(config.ENDPOINT + "?l1=" + encodeURIComponent(l1) + "&l2=" + encodeURIComponent(l2));
       if (!json || !json.ok) throw new Error("no data");
 
-      var groups = {};
+      var groups = {}, html = "", pad = C.ratio(imageRatio);
       json.items.forEach(function(it) {
         var k = (it.l3 || "").trim();
         if (!groups[k]) groups[k] = [];
         groups[k].push(it);
       });
 
-      var html = "";
-      var pad = C.ratio(imageRatio);
       Object.keys(groups).forEach(function(key) {
         if (key) html += '<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">' + C.esc(key) + '</h3></div>';
         html += '<div class="lz-track-outer"><div class="lz-track" data-group="' + C.esc(key) + '">' + groups[key].map(function(it){ return cardHTML(it, pad, key); }).join("") + '</div></div>';
@@ -219,10 +218,8 @@
       root.querySelector(".lz-section").classList.add("lz-ready");
       root.dataset.lzDone = '1';
 
-      /* ★無限ループコンベアの起動 */
-      root.querySelectorAll(".lz-track").forEach(startInfiniteConveyor);
+      root.querySelectorAll(".lz-track").forEach(setupTrackInteractions);
 
-      /* スマホ：スクロール連動アクティブ */
       if (mql.matches) {
         var mobileObserver = new IntersectionObserver(function(entries) {
           entries.forEach(function(entry) { entry.target.classList.toggle("is-active", entry.isIntersecting); });
@@ -232,15 +229,10 @@
 
       root.addEventListener("click", function(e) {
         var card = e.target.closest(".lz-card");
-        if (card && window.lzModal) {
-          e.preventDefault();
-          window.lzModal.open(card);
-        }
+        if (card && window.lzModal) { e.preventDefault(); window.lzModal.open(card); }
       });
 
-    } catch(e) {
-      root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">読み込みに失敗しました</div>';
-    }
+    } catch(e) { root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">読み込みに失敗しました</div>'; }
   };
 
   var boot = function() {
