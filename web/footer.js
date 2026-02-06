@@ -92,7 +92,7 @@
   const footerHTML = `
     <div id="lzFooterMain">
       <div class="lz-journey">
-        <div class="lz-journey__title">りんごのまちをめぐる</div>
+        <div class="lz-journey__title">りんごのまちを旅する</div>
         <div class="lz-steps">${journeyLinks}</div>
       </div>
       <footer class="lz-footer">
