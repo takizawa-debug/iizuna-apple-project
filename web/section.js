@@ -124,25 +124,21 @@
     } catch(e){}
   }
 
-/* --- section.js 内の cardHTML 関数をこちらに差し替え --- */
-function cardHTML(it, pad, groupKey) {
-  var title = it.title || "(無題)";
-  return [
-    '<article class="lz-card" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
-    '  data-lead="' + C.esc(it.lead || "") + '" data-body="' + C.esc(it.body || "") + '" data-main="' + C.esc(it.mainImage || "") + '"',
-    '  data-sub=\'' + C.esc(JSON.stringify(it.subImages || [])) + '\' data-sns=\'' + C.esc(JSON.stringify(it.sns || {})) + '\'',
-    '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
-    /* ★関連記事データを追加 */
-    '  data-rel1-url="' + C.esc(it.rel1Url || "") + '" data-rel1-title="' + C.esc(it.rel1Title || "") + '"',
-    '  data-rel2-url="' + C.esc(it.rel2Url || "") + '" data-rel2-title="' + C.esc(it.rel2Title || "") + '"',
-    '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '" data-group="' + C.esc(groupKey) + '">',
-    '  <div class="lz-media ' + (it.mainImage ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
-    it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async" onerror="this.parentElement.classList.add(\'is-empty\'); this.remove();">' : '',
-    '  </div>',
-    '  <div class="lz-body"><h3 class="lz-title-sm">' + C.esc(title) + '</h3><div class="lz-lead">' + C.esc(it.lead || "") + '</div></div>',
-    '</article>'
-  ].join('');
-}
+  function cardHTML(it, pad, groupKey) {
+    var title = it.title || "(無題)";
+    return [
+      '<article class="lz-card" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
+      '  data-lead="' + C.esc(it.lead || "") + '" data-body="' + C.esc(it.body || "") + '" data-main="' + C.esc(it.mainImage || "") + '"',
+      '  data-sub=\'' + C.esc(JSON.stringify(it.subImages || [])) + '\' data-sns=\'' + C.esc(JSON.stringify(it.sns || {})) + '\'',
+      '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
+      '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '" data-group="' + C.esc(groupKey) + '">',
+      '  <div class="lz-media ' + (it.mainImage ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
+      it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async" onerror="this.parentElement.classList.add(\'is-empty\'); this.remove();">' : '',
+      '  </div>',
+      '  <div class="lz-body"><h3 class="lz-title-sm">' + C.esc(title) + '</h3><div class="lz-lead">' + C.esc(it.lead || "") + '</div></div>',
+      '</article>'
+    ].join('');
+  }
 
   window.renderSection = async function(root) {
     if (root.dataset.lzDone === '1') return;
