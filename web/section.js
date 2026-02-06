@@ -9,36 +9,34 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (上下余白の微調整 & 既存デザイン維持)
+     1. CSS (ロード図形サイズ調整 & 既存デザイン維持)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      /* ★セクション外側の上下余白を 80px → 50px へ短縮 */
       '.lz-section { margin: 20px 0; position: relative; visibility: visible; min-height: 400px; }',
       '.lz-section.lz-ready { min-height: auto; }',
       
-      /* ★見出しブロックの余白を 32px → 20px へ短縮 */
       '.lz-head { margin: 0 0 20px; position: relative; z-index: 10; }',
       '.lz-titlewrap { position: relative; display: inline-flex; align-items: center; padding: 12px 36px 12px 20px; box-sizing: border-box; background: linear-gradient(135deg, rgba(207, 58, 58, 0.04) 0%, rgba(255, 255, 255, 0.9) 100%); border-left: 5px solid var(--apple-red); border-radius: 0 40px 40px 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }',
       '.lz-title { margin: 0; font-weight: 800; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
 
-      /* ★中項目 (L3見出し) の余白も全体に合わせて微調整 */
       '.lz-l3head { display: flex; align-items: center; gap: .55em; margin: 24px 2px 10px; }',
       '.lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border-radius: 3px; flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3, 1.85rem); color: var(--apple-brown); line-height: 1.25; }',
 
-      /* ロード画面：黄金比配置を完全維持 */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; border: none; background: transparent; }',
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
-      '.lz-logo { width: 160px; height: 160px; margin-left: -70px; display: block; }',
+      
+      /* ★ロード図形：干渉解除に合わせて 160px → 100px に適正化。margin-leftもセンターへ調整 */
+      '.lz-logo { width: 100px; height: 100px; margin-left: -50px; display: block; }',
+      
       '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .1em; }',
 
-      /* 無限ループトラック（スクロールバー非表示） */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track {',
       '  display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 24px;',
@@ -50,7 +48,6 @@
       '.lz-track::-webkit-scrollbar { display: none; }',
       '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.25); gap: 16px; } }',
 
-      /* 記事カード：角丸同期 */
       '.lz-card { border: 1px solid rgba(231, 211, 200, 0.4); border-radius: var(--card-radius); background: #fff; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease; overflow: hidden; }',
       '.lz-card:hover, .lz-card.is-active { transform: translateY(-8px) scale(1.005); border-color: var(--apple-red); box-shadow: 0 20px 40px -10px rgba(207, 58, 58, 0.12); }',
       '.lz-body { padding: 18px 14px; display: grid; gap: 8px; }',
