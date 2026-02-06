@@ -118,7 +118,7 @@ window.lzModal = (function() {
         // QRコード
         if(qrData){
           var qSize = 22;
-          pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize - 20, qSize, qSize);
+          pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize - 2, qSize, qSize);
         }
 
         // ★修正：日時の精密配置（左欠け防止 ＋ フォント拡大）
@@ -128,7 +128,7 @@ window.lzModal = (function() {
         pdf.setFontSize(11); // 一回り大きく
         var tsWidth = pdf.getTextWidth(tsFull);
         // 右端マージンから文字幅分を引いた位置（絶対座標）に描画することで欠けを防止
-        pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin);
+        pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin );
 
         // ★修正：日本語フッター画像（一回り大きく）
         var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 18, "#000");
