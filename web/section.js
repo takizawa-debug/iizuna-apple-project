@@ -5,53 +5,30 @@
 (function() {
   "use strict";
 
-  // 1. common.js の生存確認と依存取得
   var C = window.LZ_COMMON;
   if (!C) {
     console.error("section.js: LZ_COMMON is missing. Check load order.");
     return;
   }
 
-  // 2. CSSの注入 (JS完結型)
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      /* セクション全体 */
       '.lz-section { margin: 48px 0; position: relative; }',
       '.lz-section.lz-ready { visibility: visible; }',
-
-      /* L2タイトル（赤帯） */
       '.lz-head { margin: 0 0 16px; position: relative; z-index: 10; }',
       '.lz-titlewrap { display: block; width: 100%; background: var(--apple-red); color: #fff; border-radius: var(--radius); padding: 14px 16px; box-sizing: border-box; }',
       '.lz-title { margin: 0; font-weight: var(--fw-l2); font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
-
-      /* L3見出し */
       '.lz-l3head { display: flex; align-items: center; gap: .55em; margin: 18px 2px 10px; }',
       '.lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border-radius: 3px; flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3); color: var(--apple-brown); line-height: 1.25; }',
-
-      /* カルーセル構造（チラ見せ設計） */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
-      '.lz-track-outer::after {',
-      '  content: ""; position: absolute; top: 0; right: 0; width: 60px; height: 100%;',
-      '  background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95));',
-      '  pointer-events: none; z-index: 2;',
-      '}',
-      '.lz-track {',
-      '  display: grid; grid-auto-flow: column;',
-      '  grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2));',
-      '  gap: 18px; overflow-x: auto; padding: 12px 12px 32px;',
-      '  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;',
-      '}',
+      '.lz-track-outer::after { content: ""; position: absolute; top: 0; right: 0; width: 60px; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95)); pointer-events: none; z-index: 2; }',
+      '.lz-track { display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 18px; overflow-x: auto; padding: 12px 12px 32px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }',
       '.lz-track::-webkit-scrollbar { display: none; }',
-
-      '@media (max-width: 768px) {',
-      '  .lz-track { grid-auto-columns: calc(100% / 1.22); gap: 14px; padding-left: 16px; padding-right: 40px; }',
-      '}',
-
-      /* カード & ホバー演出 */
+      '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.22); gap: 14px; padding-left: 16px; padding-right: 40px; } }',
       '.lz-card { border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; scroll-snap-align: start; cursor: pointer; background: #fff; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.4s ease; will-change: transform; }',
       '.lz-card:hover { transform: translateY(-8px); border-color: var(--apple-red); box-shadow: 0 20px 45px rgba(207, 58, 58, 0.12); }',
       '.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }',
@@ -62,28 +39,19 @@
       '.lz-body { padding: 14px; display: grid; gap: 6px; }',
       '.lz-title-sm { margin: 0; font-weight: var(--fw-card-title); font-size: var(--fz-card-title); color: var(--apple-brown); line-height: 1.4; }',
       '.lz-lead { font-weight: var(--fw-lead); font-size: var(--fz-lead); line-height: 1.6; color: var(--ink-light); min-height: 2.2em; }',
-
-      /* ローディング */
       '.lz-loading { display: flex; align-items: center; justify-content: center; height: var(--loading-h); border: 1px dashed var(--border); border-radius: 12px; background: #fffaf8; color: #a94a4a; font-weight: 600; }'
     ].join('\n');
     document.head.appendChild(style);
   };
 
-  /* ==========================================
-     3. 描画ロジック
-     ========================================== */
   function cardHTML(it, pad, groupKey) {
     var title = it.title || "(無題)";
     var hasMain = !!(it.mainImage && it.mainImage.trim() !== "");
-    // 安全にJSON化して属性に保持
-    var subs = JSON.stringify(it.subImages || []);
-    var sns = JSON.stringify(it.sns || {});
-    var related = JSON.stringify(it.relatedArticles || []);
-
+    // ★重要: id属性から記号を排除し、data-idに生のタイトルを持たせる
     return [
-      '<article class="lz-card" id="' + C.esc(title) + '" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
+      '<article class="lz-card" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
       '  data-lead="' + C.esc(it.lead || "") + '" data-body="' + C.esc(it.body || "") + '" data-main="' + C.esc(it.mainImage || "") + '"',
-      '  data-sub=\'' + C.esc(subs) + '\' data-sns=\'' + C.esc(sns) + '\' data-related=\'' + C.esc(related) + '\'',
+      '  data-sub=\'' + C.esc(JSON.stringify(it.subImages || [])) + '\' data-sns=\'' + C.esc(JSON.stringify(it.sns || {})) + '\'',
       '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
       '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '" data-group="' + C.esc(groupKey) + '">',
       '  <div class="lz-media ' + (hasMain ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
@@ -99,19 +67,17 @@
     var config = window.LZ_CONFIG;
     var l1 = root.dataset.l1 || config.L1;
     var l2 = root.dataset.l2 || "";
-    if (!l2) return; // l2がない場合は何もしない
+    if (!l2) return;
 
     var heading = root.dataset.heading || l2;
     var cardWidth = root.dataset.cardWidth || "33.33%";
     var cardWidthSm = root.dataset.cardWidthSm || "80%";
     var imageRatio = root.dataset.imageRatio || "16:9";
 
-    // CSS変数の適用
     var mql = window.matchMedia("(max-width:768px)");
     root.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth);
     root.style.setProperty("--ratio", C.ratio(imageRatio));
 
-    // スケルトン表示
     root.innerHTML = '<div class="lz-section"><div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">' + C.esc(heading) + '</h2></div></div><div class="lz-groupwrap"><div class="lz-loading">記事を読み込んでいます...</div></div></div>';
     
     try {
@@ -133,34 +99,29 @@
       });
 
       root.querySelector(".lz-groupwrap").innerHTML = html;
-      // 描画完了：成功パターンに基づき、root自体のクラスを操作
       root.querySelector(".lz-section").classList.add("lz-ready");
       root.dataset.lzDone = '1';
 
-      // モーダル連携（クリックイベント）
-root.addEventListener("click", function(e) {
-  var card = e.target.closest(".lz-card");
-  if (card && window.lzModal) {
-    e.preventDefault(); // ← これが重要！ブラウザの勝手なページ移動を止める
-    window.lzModal.open(card);
-  }
-});
+      root.addEventListener("click", function(e) {
+        var card = e.target.closest(".lz-card");
+        if (card && window.lzModal) {
+          e.preventDefault();
+          window.lzModal.open(card);
+        }
+      });
 
     } catch(e) {
       root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">読み込みに失敗しました</div>';
     }
   };
 
-  // 4. 初期化 (成功した setInterval ロジックをそのまま採用)
   var boot = function() {
     injectStyles();
     var waitConfig = setInterval(function() {
       if (window.LZ_CONFIG) {
         clearInterval(waitConfig);
         var els = document.querySelectorAll(".lz-container, .lz-section[data-l2]");
-        for (var i = 0; i < els.length; i++) {
-          window.renderSection(els[i]);
-        }
+        for (var i = 0; i < els.length; i++) { window.renderSection(els[i]); }
       }
     }, 50);
   };
