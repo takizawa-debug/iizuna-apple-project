@@ -1,6 +1,6 @@
 /**
- * search.js - サイト内検索 (Highlight & Dynamic Refresh Edition)
- * 役割: ヒットワードの黄色ハイライト、×ボタンでの5語レコメンド更新、高視認性UI
+ * search.js - サイト内検索 (Final UX Edition)
+ * 役割: 重複ボタン除去、ヒットワード強調、5語レコメンド自動更新、高視認性UI
  */
 (async function apzSearchBoot() {
   "use strict";
@@ -13,9 +13,6 @@
   const { SEARCH_ENDPOINT, MENU_URL, ASSETS } = config;
   const FALLBACK_IMG = ASSETS.LOGO_RED;
 
-  /* ==========================================
-     1. 厳選キーワードリスト（約100個）
-     ========================================== */
   const RECOMMEND_WORDS = [
     "サンふじ", "シナノゴールド", "シナノスイート", "秋映", "紅玉", "グラニースミス", "ブラムリー", "高坂りんご", "メイポール", "ドルゴ", "和リンゴ", "ムーンルージュ", "なかののきらめき", "いろどり", "ぐんま名月", "王林", "ジョナゴールド", "つがる", "きたろう", "はるか", "あいかの香り", "千秋", "世界一", "ニュートン",
     "直売所", "いいづなマルシェむれ", "さんちゃん", "横手販売所", "アップルパイ", "タルトタタン", "シードル", "りんごジュース", "ジャム", "ドライフルーツ", "焼きりんご", "りんご飴", "コンポート", "りんごバター", "ドレッシング",
@@ -27,11 +24,11 @@
   ];
 
   /* ==========================================
-     2. CSS (巨大化 ＋ ハイライト ＋ 検索中アニメ)
+     1. CSS (ブラウザ標準のxを隠し、独自デザインに統一)
      ========================================== */
   const style = document.createElement('style');
   style.textContent = `
-    .apz-search-fab { position:fixed; right:20px; bottom:20px; width:64px; height:64px; border-radius:50%; background:#cf3a3a; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:12000; }
+    .apz-search-fab { position:fixed; right:20px; bottom:20px; width:64px; height:64px; border-radius:50%; background:#cf3a3a; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:12000; transition: transform 0.2s; }
     .apz-search-fab__icon { width:32px; height:32px; }
 
     .apz-search-float { position:fixed; right:24px; bottom:100px; z-index:12000; pointer-events:none; opacity:0; transform:translateY(12px); transition:all .25s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -43,24 +40,25 @@
     .apz-search-card__close { width:36px; height:36px; border-radius:50%; border:none; background:#f5f5f5; cursor:pointer; font-size:24px; color:#999; display:flex; align-items:center; justify-content:center; }
 
     .apz-search__box { position:relative; margin-bottom:20px; }
-    #apzSearchInput { width:100%; box-sizing:border-box; height:64px; border-radius:32px; border:2px solid #eee; padding:0 60px 0 24px; font-size:1.5rem; font-weight:600; outline:none; transition: all 0.3s; background:#fcfcfc; }
+    
+    /* ★ブラウザ標準の青いxボタンを完全に消去 */
+    #apzSearchInput { width:100%; box-sizing:border-box; height:64px; border-radius:32px; border:2px solid #eee; padding:0 60px 0 24px; font-size:1.5rem; font-weight:600; outline:none; transition: all 0.3s; background:#fcfcfc; -webkit-appearance: none; }
+    #apzSearchInput::-webkit-search-cancel-button,
+    #apzSearchInput::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+    
     #apzSearchInput:focus { border-color: #cf3a3a; background:#fff; }
-    .apz-search__clear { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none; border-radius:50%; background:#ddd; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; }
+    .apz-search__clear { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none; border-radius:50%; background:#ddd; color:#666; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; z-index: 5; }
 
-    /* おすすめレコメンド */
     .apz-search-suggest { margin-bottom: 20px; padding: 16px; background: #fafafa; border-radius: 20px; border: 1px dashed #ddd; }
     .apz-search-suggest__label { font-size: 1rem; font-weight: 800; color: #888; margin-bottom: 12px; }
     .apz-search-tags { display: flex; flex-wrap: wrap; gap: 10px; }
-    .apz-search-tag { padding: 8px 18px; background: #fff; color: #cf3a3a; border-radius: 22px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; border: 1px solid #f0f0f0; }
-    .apz-search-tag:hover { background: #cf3a3a; color: #fff; transform: translateY(-2px); }
+    .apz-search-tag { padding: 8px 18px; background: #fff; color: #cf3a3a; border-radius: 22px; font-size: 1.1rem; font-weight: 700; cursor: pointer; border: 1px solid #f0f0f0; }
 
-    /* 検索中ローディング */
     .apz-search-searching { display:none; padding:40px; text-align:center; flex-direction:column; align-items:center; gap:16px; }
     .apz-search-searching.is-active { display:flex; }
     .apz-search-spinner { width:40px; height:40px; border:4px solid rgba(207,58,58,0.1); border-top-color:#cf3a3a; border-radius:50%; animation: apz-spin 0.8s linear infinite; }
     @keyframes apz-spin { to { transform: rotate(360deg); } }
 
-    /* 結果リスト ＋ ハイライト */
     .apz-search-results { max-height:450px; overflow:auto; }
     .apz-item-btn { width:100%; display:flex; align-items:center; gap:20px; padding:18px; border:none; border-bottom: 1px solid #f5f5f5; background:transparent; cursor:pointer; text-align:left; border-radius:16px; }
     .apz-item-btn:hover { background:#fff5f5; }
@@ -69,7 +67,7 @@
     .apz-title { font-size:1.5rem; font-weight:800; color:#222; margin-bottom:6px; line-height:1.4; }
     .apz-snippet { font-size:1.15rem; color:#666; line-height:1.6; }
     
-    /* ★ワードハイライト（黄色い編みかけ） */
+    /* ワードハイライト */
     .apz-hit { background:#fff6a0 !important; color:#000 !important; padding:0 2px !important; border-radius:3px !important; font-weight:bold !important; }
 
     .apz-empty { padding:50px; text-align:center; font-size:1.3rem; color:#bbb; display:none; }
@@ -83,7 +81,7 @@
   document.head.appendChild(style);
 
   /* ==========================================
-     3. HTML構造
+     2. HTML構造
      ========================================== */
   const searchHTML = `
     <div class="apz-search-fab" id="apzSearchFab" role="button">
@@ -117,7 +115,7 @@
   document.body.insertAdjacentHTML('beforeend', searchHTML);
 
   /* ==========================================
-     4. ユーティリティ: ハイライト・スニペット
+     3. ユーティリティ
      ========================================== */
   const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
 
@@ -140,7 +138,7 @@
   }
 
   /* ==========================================
-     5. 検索・レコメンドロジック
+     4. 検索・レコメンドロジック
      ========================================== */
   const D = document, fab = D.getElementById("apzSearchFab"), float = D.getElementById("apzSearchFloat");
   const input = D.getElementById("apzSearchInput"), clearBt = D.getElementById("apzSearchClear");
@@ -150,7 +148,6 @@
 
   let lastResults = [];
 
-  // ★レコメンド更新：5つに絞ってランダム抽出
   function refreshRecommendations() {
     const shuffled = [...RECOMMEND_WORDS].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 5);
@@ -204,10 +201,9 @@
   fab.onclick = openFloat;
   D.getElementById("apzSearchClose").onclick = () => float.classList.remove("is-open");
   
-  // ★×ボタンクリック時にレコメンドを更新する
   clearBt.onclick = () => { 
     input.value = ""; 
-    refreshRecommendations(); // リストを新しくする
+    refreshRecommendations(); 
     runSearch(""); 
     input.focus(); 
   };
@@ -216,7 +212,7 @@
   input.oninput = () => { 
     clearTimeout(timer); 
     if (!input.value.trim()) {
-      refreshRecommendations(); // 文字を全部消した時も更新
+      refreshRecommendations();
       renderResults([], "");
     } else {
       timer = setTimeout(() => runSearch(input.value), 400); 
