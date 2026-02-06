@@ -1,6 +1,6 @@
 /**
- * section.js - 記事一覧コンポーネント (世界観デザイン統合・精度重視版)
- * 役割: 記事カード生成、中央揃えロードアニメ、りんごの世界観あしらい
+ * section.js - 記事一覧コンポーネント (完熟りんご造形デザイン版)
+ * 役割: 記事カード生成、中央揃えロードアニメ、りんご造形タイトルの実装
  */
 (function() {
   "use strict";
@@ -9,39 +9,51 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (余白の復元 & 大項目の世界観演出)
+     1. CSS (大項目の造形デザイン & 余白の完全復元)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      '.lz-section { margin: 60px 0; position: relative; visibility: visible; min-height: 500px; }',
+      '.lz-section { margin: 80px 0; position: relative; visibility: visible; min-height: 500px; }',
       '.lz-section.lz-ready { min-height: auto; }',
       
-      '.lz-head { margin: 0 0 20px; position: relative; z-index: 10; }',
+      '.lz-head { margin: 0 0 30px; position: relative; z-index: 10; }',
       
-      /* ★大項目(赤帯)の再設計：りんごをさりげなく表現 */
+      /* ★大項目(タイトルボックス)自体の造形をりんご化 */
       '.lz-titlewrap {',
-      '  position: relative; display: block; width: 100%; background: var(--apple-red); color: #fff;',
-      '  border-radius: 18px 18px var(--radius) var(--radius);', /* 上を少し丸くしてりんご感を出す */
-      '  padding: 14px 16px; box-sizing: border-box; overflow: visible;',
+      '  position: relative; display: flex; align-items: center; width: 100%;',
+      '  background: var(--apple-red); color: #fff;',
+      '  /* 左右非対称な角丸で「手にとって選んだりんご」のような個性を演出 */',
+      '  border-radius: 60px 20px 45px 25px;', 
+      '  padding: 18px 24px 18px 60px;', /* 左側に葉っぱのスペースを確保 */
+      '  box-sizing: border-box; overflow: visible;',
+      '  box-shadow: 0 8px 20px rgba(168, 38, 38, 0.15);',
       '}',
-      /* りんごのヘタ(茎) */
-      '.lz-titlewrap::before {',
-      '  content: ""; position: absolute; top: -8px; left: 34px; width: 3px; height: 10px;',
-      '  background: #5b3a1e; border-radius: 2px; transform: rotate(-5deg); z-index: -1;',
-      '}',
-      /* りんごの葉っぱ */
-      '.lz-titlewrap::after {',
-      '  content: ""; position: absolute; top: -10px; left: 36px; width: 16px; height: 10px;',
-      '  background: var(--apple-green); border-radius: 0 100% 0 100%; transform: rotate(10deg); z-index: -1;',
-      '}',
-      '.lz-title { margin: 0; font-weight: var(--fw-l2); font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
 
-      /* 小見出し (葉っぱのあしらい) */
-      '.lz-l3head { display: flex; align-items: center; gap: .7em; margin: 36px 2px 12px; }',
-      '.lz-l3bar { width: 14px; height: 14px; background: var(--apple-green); border-radius: 0 80% 0 80%; transform: rotate(-15deg); flex: 0 0 auto; }',
+      /* 上部の小さなくぼみ */
+      '.lz-titlewrap::before {',
+      '  content: ""; position: absolute; top: -2px; left: 50%; transform: translateX(-50%);',
+      '  width: 40px; height: 10px; background: #fff; border-radius: 0 0 20px 20px;',
+      '}',
+
+      /* 左端に大きくはみ出すシンボリックな葉っぱ */
+      '.lz-titlewrap::after {',
+      '  content: ""; position: absolute; top: -15px; left: 10px;',
+      '  width: 42px; height: 30px;',
+      '  background: var(--apple-green);',
+      '  border-radius: 0 100% 0 100%;',
+      '  transform: rotate(-20deg);',
+      '  box-shadow: -2px 4px 10px rgba(0,0,0,0.1);',
+      '  border: 2px solid #fff;', /* 白い縁取りで輪郭をハッキリさせる */
+      '}',
+
+      '.lz-title { margin: 0; font-weight: 700; font-size: var(--fz-l2); letter-spacing: .05em; white-space: nowrap; z-index: 2; }',
+
+      /* 小見出し (L3) */
+      '.lz-l3head { display: flex; align-items: center; gap: .7em; margin: 40px 2px 16px; }',
+      '.lz-l3bar { width: 16px; height: 16px; background: var(--apple-green); border-radius: 0 80% 0 80%; transform: rotate(-15deg); flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3); color: var(--apple-brown); line-height: 1.25; }',
 
       /* ロード画面 (サイズ 160px / -70px 補正を維持) */
@@ -53,24 +65,25 @@
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; opacity: .8; } to { stroke-dashoffset: 0; opacity: 1; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .02em; }',
 
-      /* カルーセル & カード構造 */
+      /* カルーセル構造 */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track-outer::after { content: ""; position: absolute; top: 0; right: 0; width: 60px; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95)); pointer-events: none; z-index: 2; }',
       '.lz-track { display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 18px; overflow-x: auto; padding: 12px 12px 32px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }',
       '.lz-track::-webkit-scrollbar { display: none; }',
       '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.22); gap: 14px; padding-left: 16px; padding-right: 40px; } }',
 
-      /* ★カードの余白を 14px に完全復元 */
-      '.lz-card { border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; scroll-snap-align: start; cursor: pointer; background: #fff; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }',
-      '.lz-card:hover { transform: translateY(-8px); border-color: var(--apple-red); box-shadow: 0 20px 45px rgba(207, 58, 58, 0.12); }',
+      /* ★記事カード：余白(14px)を厳守 */
+      '.lz-card { border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; scroll-snap-align: start; cursor: pointer; background: #fff; transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }',
+      '.lz-card:hover { transform: translateY(-10px); border-color: var(--apple-red); box-shadow: 0 25px 50px rgba(207, 58, 58, 0.15); }',
+      '.lz-body { padding: 14px; display: grid; gap: 8px; }',
+      '.lz-title-sm { margin: 0; font-weight: 600; font-size: var(--fz-card-title); color: var(--apple-brown); line-height: 1.4; transition: color 0.3s; }',
+      '.lz-card:hover .lz-title-sm { color: var(--apple-red-strong); }',
+      '.lz-lead { font-weight: 400; font-size: var(--fz-lead); line-height: 1.6; color: var(--ink-light); min-height: 2.2em; }',
+
       '.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }',
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }',
       '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }',
-      '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(40%, 180px); aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.35; }',
-      
-      '.lz-body { padding: 14px; display: grid; gap: 6px; }',
-      '.lz-title-sm { margin: 0; font-weight: 600; font-size: var(--fz-card-title); color: var(--apple-brown); line-height: 1.4; }',
-      '.lz-lead { font-weight: 400; font-size: var(--fz-lead); line-height: 1.6; color: var(--ink-light); min-height: 2.2em; }'
+      '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(40%, 180px); aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.35; }'
     ].join('\n');
     document.head.appendChild(style);
   };
