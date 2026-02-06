@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (Full Restoration Edition)
- * 役割: モーダル構築、関連記事表示の復旧、前後ナビ矢印の完全復元
+ * modal.js - 詳細表示・機能コンポーネント (GAS Optimized Edition)
+ * 役割: モーダル構築、関連記事表示、DLボタン対応、前後ナビ矢印の完全同期
  */
 window.lzModal = (function() {
   "use strict";
@@ -29,43 +29,41 @@ window.lzModal = (function() {
       '.lz-modal { position: relative; width: min(860px, 92vw); max-height: 88vh; overflow: auto; background: #fff; border: 2px solid #cf3a3a; border-radius: 12px; z-index: 20001; }',
       '.lz-mh { background: #fff; border-bottom: 1px solid #eee; padding: 8px 10px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; position: sticky; top: 0; z-index: 10; }',
       '.lz-mt { margin: 0; font-weight: 600; font-size: 1.8rem; color: #a82626; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
-      '.lz-actions { display: flex; gap: 8px; align-items: center; }',
-      '.lz-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cf3a3a; background: #fff; border-radius: 999px; padding: .42em .8em; cursor: pointer; color: #cf3a3a; font-weight: 550; line-height: 1; transition: .15s; }',
+      '.lz-actions { display: flex; gap: 6px; align-items: center; }',
+      '.lz-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cf3a3a; background: #fff; border-radius: 999px; padding: .45em .9em; cursor: pointer; color: #cf3a3a; font-weight: 600; font-size: 1.15rem; line-height: 1; transition: .2s; }',
       '.lz-btn:hover { background: #cf3a3a; color: #fff; }',
-      '.lz-btn svg { width: 18px; height: 18px; }',
-      '@media (max-width:768px) { .lz-btn { width: 36px; height: 36px; padding: 0; } .lz-btn .lz-label { display: none; } }',
+      '.lz-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }',
+      '@media (max-width:768px) { .lz-btn { width: 38px; height: 38px; padding: 0; } .lz-btn .lz-label { display: none; } }',
       '.lz-mm { position: relative; background: #faf7f5; overflow: hidden; }',
       '.lz-mm::before { content: ""; display: block; padding-top: 56.25%; }',
       '.lz-mm img { position: absolute; inset: 0; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; transition: opacity .22s ease; }',
       '.lz-mm img.lz-fadeout { opacity: 0; }',
-      '.lz-lead-strong { padding: 12px 12px 0; font-weight: 600; font-size: 1.45rem; line-height: 1.7; color: #333; }',
-      '.lz-txt { padding: 12px; font-size: 1.4rem; color: #495057; line-height: 1.75; white-space: pre-wrap; }',
-      '.lz-info { margin: 12px; width: calc(100% - 24px); border-collapse: separate; border-spacing: 0 4px; }',
-      '.lz-info th { width: 8em; font-weight: 600; color: #a82626; background: #fff3f2; text-align: left; border-radius: 6px 0 0 6px; padding: 8px 12px; font-size: 1.2rem; }',
-      '.lz-info td { background: #ffffff; border-radius: 0 6px 6px 0; padding: 8px 12px; border: 1px solid #eee; font-size: 1.2rem; }',
-      '.lz-sns { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px; }',
-      '.lz-sns a { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; }',
-      '.lz-sns a svg { width: 20px; height: 20px; }',
-      '.lz-sns a[data-sns="web"] { background: #5b667a; } .lz-sns a[data-sns="ec"] { background: #0ea5e9; }',
+      '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
+      '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
+      '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
+      '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
+      '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
+      '.lz-sns { display: flex; gap: 10px; flex-wrap: wrap; padding: 15px; }',
+      '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: transform .2s; }',
+      '.lz-sns a:hover { transform: scale(1.1); }',
+      '.lz-sns a svg { width: 22px; height: 22px; }',
+      '.lz-sns a[data-sns="web"] { background: #5b667a; } .lz-sns a[data-sns="ec"] { background: #e67e22; }',
       '.lz-sns a[data-sns="ig"] { background: #E4405F; } .lz-sns a[data-sns="fb"] { background: #1877F2; }',
-      '.lz-sns a[data-sns="x"] { background: #000; } .lz-sns a[data-sns="line"] { background: #06C755; }',
-      '.lz-g { padding: 0 12px 12px; display: grid; gap: 8px; grid-template-columns: repeat(5, 1fr); }',
-      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; border: 1px solid #eee; cursor: pointer; }',
-      '.lz-g img.is-active { outline: 2px solid #cf3a3a; outline-offset: 2px; }',
-      
-      /* ★関連記事のスタイル復元 */
-      '.lz-related { padding: 12px; background: #fffcfb; border-top: 1px solid #eee; }',
-      '.lz-related-label { font-size: 1.1rem; color: #999; font-weight: 800; margin-bottom: 8px; }',
-      '.lz-related-item a { display: block; color: #cf3a3a; text-decoration: none; font-weight: 700; padding: 6px 0; font-size: 1.3rem; border-bottom: 1px dashed #eee; }',
-      '.lz-related-item a:hover { text-decoration: underline; background: #fff5f5; }',
-
-      /* ★矢印ナビのスタイル */
-      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .95); border: 1px solid #cf3a3a; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 4px 15px rgba(0,0,0,0.15); transition: .2s; }',
-      '.lz-arrow:hover { background: #cf3a3a; }',
-      '.lz-arrow svg { width: 24px; height: 24px; stroke: #cf3a3a; stroke-width: 3; fill: none; transition: .2s; }',
+      '.lz-sns a[data-sns="x"] { background: #000; } .lz-sns a[data-sns="line"] { background: #06C755; } .lz-sns a[data-sns="tt"] { background: #000; }',
+      '.lz-g { padding: 0 15px 15px; display: grid; gap: 10px; grid-template-columns: repeat(5, 1fr); }',
+      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; transition: opacity .2s; }',
+      '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; }',
+      '.lz-related { padding: 15px; background: #fafafa; border-top: 1px solid #eee; border-radius: 0 0 12px 12px; }',
+      '.lz-related-label { font-size: 1.1rem; color: #888; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }',
+      '.lz-related-item a { display: block; color: #cf3a3a; text-decoration: none; font-weight: 700; padding: 10px 0; font-size: 1.35rem; border-bottom: 1px dashed #ddd; transition: .2s; }',
+      '.lz-related-item a:hover { background: #fff5f5; padding-left: 8px; }',
+      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; }',
+      '.lz-arrow:hover { background: #cf3a3a; transform: translateY(-50%) scale(1.05); }',
+      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; transition: .2s; }',
       '.lz-arrow:hover svg { stroke: #fff; }',
-      '.lz-prev { left: -70px; } .lz-next { right: -70px; }',
-      '@media(max-width:1024px) { .lz-prev, .lz-next { top: auto; bottom: -65px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } .lz-arrow { width: 44px; height: 44px; } }'
+      '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
+      '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
+      '@media(max-width:768px) { .lz-prev, .lz-next { top: auto; bottom: -68px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -86,44 +84,62 @@ window.lzModal = (function() {
     var gallery = [d.main].concat(subs).filter(Boolean);
     var sns = {}; try { sns = JSON.parse(d.sns || "{}"); } catch(e){}
 
+    /* ★ GASデータ項目を完全網羅 */
     var rows = [];
     var fields = [
-      {k:'address', l:'住所'}, {k:'hoursCombined', l:'営業時間'},
-      {k:'bizDays', l:'営業曜日'}, {k:'holiday', l:'定休日'},
-      {k:'fee', l:'参加費'}, {k:'target', l:'対象'}, {k:'org', l:'主催者名'}
+      {k:'address', l:'住所'}, 
+      {k:'bizDays', l:'営業曜日'}, 
+      {k:'holiday', l:'定休日'},
+      {k:'hoursCombined', l:'営業時間'},
+      {k:'eventDate', l:'開催日'},
+      {k:'eventTime', l:'開催時間'},
+      {k:'fee', l:'参加費'}, 
+      {k:'bring', l:'もちもの'},
+      {k:'target', l:'対象'}, 
+      {k:'apply', l:'申し込み方法'},
+      {k:'org', l:'主催者名'},
+      {k:'venueNote', l:'会場注意事項'},
+      {k:'note', l:'備考'}
     ];
     for(var i=0; i<fields.length; i++) {
-      if(d[fields[i].k]) rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
+      if(d[fields[i].k] && d[fields[i].k].trim() !== "") {
+        rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
+      }
     }
     if (d.tel) rows.push('<tr><th>問い合わせ</th><td><a href="tel:'+C.esc(d.tel)+'">'+C.esc(d.tel)+'</a></td></tr>');
 
     var snsHtml = [];
-    var addSns = function(url, key) { if(url) snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
-    addSns(d.home, "web"); addSns(d.ec, "ec");
-    addSns(sns.instagram, "ig"); addSns(sns.facebook, "fb");
-    addSns(sns.x, "x"); addSns(sns.line, "line");
+    var addSns = function(url, key) { if(url && url.trim() !== "") snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
+    addSns(d.home, "web"); 
+    addSns(d.ec, "ec"); // GASのECサイトに対応
+    addSns(sns.instagram, "ig"); 
+    addSns(sns.facebook, "fb");
+    addSns(sns.x, "x"); 
+    addSns(sns.line, "line");
+    addSns(sns.tiktok, "tt");
 
-    /* ★関連記事ブロックのロジック復元 */
+    /* ★関連記事のパースとリスト化 */
     var relatedBlock = "";
     try {
-      var relData = d.related || "[]";
-      var rel = JSON.parse(relData).filter(function(x){ return x && (x.title || x.url); });
+      var rel = JSON.parse(d.related || "[]").filter(function(x){ return x && (x.title || x.url); });
       if (rel.length) {
         relatedBlock = '<div class="lz-related"><div class="lz-related-label">関連記事</div>' + 
           rel.map(function(a){
-            var url = a.url ? C.esc(a.url) : "#";
-            var lbl = a.title ? C.esc(a.title) : C.esc(a.url || "関連リンク");
-            return '<div class="lz-related-item"><a href="' + url + '" target="_blank" rel="noopener">' + lbl + '</a></div>';
+            return '<div class="lz-related-item"><a href="' + C.esc(a.url || "#") + '" target="_blank" rel="noopener">' + C.esc(a.title || a.url) + '</a></div>';
           }).join("") + '</div>';
       }
     } catch(e) {}
+
+    /* ★ダウンロードボタン（data-dl）があれば表示 */
+    var dlBtn = (d.dl && d.dl.trim() !== "") ? '<a class="lz-btn" href="'+C.esc(d.dl)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">保存</span></a>' : "";
 
     MODAL.innerHTML = [
       '<div class="lz-mh">',
       '  <h2 class="lz-mt">' + C.esc(title) + '</h2>',
       '  <div class="lz-actions">',
-      '    <button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">共有</span></button>',
-      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">印刷</span></button>' : ''),
+      '    <button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">共有</span></button>',
+      dlBtn,
+      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">印刷</span></button>' : ''),
       '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">閉じる</span></button>',
       '  </div>',
       '</div>',
@@ -134,16 +150,16 @@ window.lzModal = (function() {
       gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : '',
       rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : '',
       snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : '',
-      relatedBlock, // ★関連記事を追加
+      relatedBlock,
       '</div>'
     ].join('');
 
-    // 各ボタンイベント
+    // イベント付与
     MODAL.querySelector(".lz-share").onclick = function() {
       var shareUrl = window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(d.id);
       var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (d.lead || "") + "\nーーー\n詳しくはこちら\n" + shareUrl + "\n\n#いいづなりんご #飯綱町";
       if(navigator.share) navigator.share({ text: payload });
-      else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("共有テキストをコピーしました！"); }
+      else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("コピーしました！"); }
     };
     if(MODAL.querySelector(".lz-pdf")) MODAL.querySelector(".lz-pdf").onclick = function(){ window.generatePdf(MODAL, title, d.id); };
 
@@ -163,7 +179,7 @@ window.lzModal = (function() {
       };
     }
 
-    /* ★矢印ナビゲーションの完全復旧 */
+    // 矢印ナビ
     SHELL.querySelectorAll(".lz-arrow").forEach(function(a){ a.remove(); });
     if (CARDS.length > 1) {
       var p = document.createElement("button"); p.className = "lz-arrow lz-prev"; p.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>';
@@ -196,7 +212,6 @@ window.lzModal = (function() {
         HOST.onclick = function(e){ if(e.target === HOST) close(); };
         document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
       }
-      // 現在のトラック内の全カードを取得
       var track = card.closest(".lz-track");
       CARDS = track ? Array.from(track.querySelectorAll(".lz-card")) : [card];
       IDX = CARDS.indexOf(card);

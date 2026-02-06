@@ -31,7 +31,7 @@
       /* ★文字色を薄いグレーに変更 */
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #ccc; }',
       
-      /* ★左右のズレを修正（margin-leftを削除） */
+      /* ★サイズを100pxに適正化、中央揃えに固定 */
       '.lz-logo { width: 100px; height: 100px; display: block; }',
       
       /* ★アイコンの線を薄いグレーに変更 */
@@ -124,14 +124,22 @@
     } catch(e){}
   }
 
+  /* ★修正：modal.jsが必要とするデータをすべてカードに埋め込む */
   function cardHTML(it, pad, groupKey) {
     var title = it.title || "(無題)";
+    var subs = it.subImages || [];
+    var sns = it.sns || {};
+    var related = it.relatedArticles || [];
+
     return [
       '<article class="lz-card" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
       '  data-lead="' + C.esc(it.lead || "") + '" data-body="' + C.esc(it.body || "") + '" data-main="' + C.esc(it.mainImage || "") + '"',
-      '  data-sub=\'' + C.esc(JSON.stringify(it.subImages || [])) + '\' data-sns=\'' + C.esc(JSON.stringify(it.sns || {})) + '\'',
+      '  data-sub=\'' + C.esc(JSON.stringify(subs)) + '\' data-sns=\'' + C.esc(JSON.stringify(sns)) + '\'',
+      '  data-related=\'' + C.esc(JSON.stringify(related)) + '\'', // ★関連記事を同期
       '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
-      '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '" data-group="' + C.esc(groupKey) + '">',
+      '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '"',
+      '  data-ec="' + C.esc(it.ec || "") + '" data-target="' + C.esc(it.target || "") + '" data-org="' + C.esc(it.organizer || "") + '"', // ★EC/対象/主催を追加
+      '  data-group="' + C.esc(groupKey) + '">',
       '  <div class="lz-media ' + (it.mainImage ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
       it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async" onerror="this.parentElement.classList.add(\'is-empty\'); this.remove();">' : '',
       '  </div>',
