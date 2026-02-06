@@ -58,11 +58,11 @@
 .lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border: none; border-radius: 3px; flex: 0 0 auto; }
 .lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3); color: var(--apple-brown); line-height: 1.25; }
 
-/* --- Section & Track (チラ見せ設計 ＋ ボケ範囲限定) --- */
+/* --- Section & Track (チラ見せ設計 ＋ マスク範囲限定) --- */
 .lz-section { visibility: hidden; margin: 48px 0; contain: content; position: relative; }
 .lz-section.lz-ready { visibility: visible; }
 
-/* 記事カードだけをボカすためのラッパー */
+/* ★修正：記事カードの部分だけをボカすためのラッパー★ */
 .lz-track-outer { position: relative; width: 100%; }
 .lz-track-outer::after {
   content: "";
@@ -77,7 +77,6 @@
 .lz-track { 
   display: grid; 
   grid-auto-flow: column; 
-  /* PCでは3.2枚見せる（0.2枚のはみ出し） */
   grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); 
   gap: 18px; 
   overflow: auto; 
@@ -88,7 +87,6 @@
 }
 .lz-track::-webkit-scrollbar { display: none; }
 
-/* スマホ版：1.22枚見せる */
 @media (max-width: 768px) {
   .lz-track {
     grid-auto-columns: calc(100% / 1.22);
@@ -118,7 +116,7 @@
   box-shadow: 0 20px 45px rgba(207, 58, 58, 0.12);
 }
 
-.lz-media { position: relative; background: #f6f7f9; overflow: hidden; }
+.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }
 .lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }
 .lz-media > img { 
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; 
@@ -126,11 +124,14 @@
 }
 .lz-card:hover .lz-media > img { transform: scale(1.08); }
 
+/* ★復活：画像なし時の「リンゴ図形」プレースホルダー★ */
 .lz-media.is-empty::after {
-  content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
-  width: min(45%, 220px); aspect-ratio: 1/1;
-  background-image: url('https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-3700-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png');
-  background-position: center; background-repeat: no-repeat; background-size: contain; opacity: .2;
+  content: ""; 
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(40%, 180px); aspect-ratio: 1/1;
+  background-image: url('https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png');
+  background-position: center; background-repeat: no-repeat; background-size: contain; 
+  opacity: 0.35; /* 視認性を向上させて「デザイン」として見せる */
 }
 
 .lz-body { padding: 14px; display: grid; gap: 6px; }
@@ -145,7 +146,6 @@
   backdrop-filter: blur(8px); box-shadow: 0 10px 30px rgba(0,0,0,0.05);
   opacity: 0; transition: opacity 0.8s, transform 0.8s; pointer-events: none;
 }
-/* ヘッダーが表示されたら出現 */
 .lz-hdr.is-visible ~ .lz-sidenav { opacity: 1; pointer-events: auto; }
 
 .lz-sideitem {
@@ -155,7 +155,6 @@
 .lz-sideitem:hover { transform: scale(1.5); background: var(--apple-red); }
 .lz-sideitem.is-active { background: var(--apple-red); transform: scale(1.6); box-shadow: 0 0 12px rgba(207, 58, 58, 0.5); }
 
-/* ホバー時にセクション名を表示 */
 .lz-sideitem::before {
   content: attr(data-label); position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
   background: var(--apple-red); color: #fff; padding: 6px 14px; border-radius: 20px;

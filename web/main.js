@@ -219,7 +219,10 @@ function cardHTML(it, pad, groupKey){
     note:      get(it, ["note","備考"]),
     dl:        get(it, ["downloadUrl","ダウンロードURL"])
   };
-  const hasMain = !!(it.mainImage);
+  
+  // ★修正：画像がない場合の判定をより厳密に
+  const hasMain = !!(it.mainImage && it.mainImage.trim() !== "");
+  
   return `
     <article class="lz-card" id="${esc(id)}"
       data-id="${esc(id)}" data-title="${esc(title)}" data-lead="${esc(it.lead||"")}"
@@ -258,7 +261,7 @@ function cardHTML(it, pad, groupKey){
         referrerpolicy="no-referrer-when-downgrade"
         src="${esc(it.mainImage)}"
         alt="${esc(title)}のメイン画像"
-        onerror="this.closest('.lz-media')?.classList.add('is-empty');">` : ""}
+        onerror="this.parentElement.classList.add('is-empty'); this.remove();">` : ""}
       </div>
       <div class="lz-body">
         <h3 class="lz-title-sm">${esc(title)}</h3>
@@ -386,7 +389,7 @@ function showModalFromCard(card){
 
 function showModal(i){ if(i<0) i=CARDS.length-1; if(i>=CARDS.length) i=0; IDX=i; showModalFromCard(CARDS[i]); }
 
-/* --- Core Rendering (チラ見せ構造対応) --- */
+/* --- Core Rendering (チラ見せ構造 ＋ プレースホルダー対応) --- */
 async function renderSection(root){
   const { l1="", l2="", heading="", cardWidth="33.33%", cardWidthSm="50%", imageRatio="16:9", autoplay="false", autoplayInterval="", autoplayStep="" } = root.dataset;
   if(!LZ_ENDPOINT || !l2){ root.innerHTML=`<div style="padding:12px;color:#b91c1c;">設定エラー</div>`; return; }
@@ -401,6 +404,7 @@ async function renderSection(root){
   for(const it of items){ const key = (it.l3 || it.L3 || it.L3_LABEL || "").trim(); if(!groups.has(key)) groups.set(key, []); groups.get(key).push(it); }
   const pad = ratio(imageRatio); let html = "";
   
+  // ★修正：タイトルのボケ防止のため、記事のみをラップ
   const wrapTrack = (content) => `<div class="lz-track-outer">${content}</div>`;
 
   const none = groups.get("") || []; 
@@ -419,7 +423,44 @@ async function renderSection(root){
     wrap.querySelectorAll(".lz-track").forEach(track => setupAutoPlay(track, opt));
   }
   wrap.addEventListener("click", e=>{ const card = e.target.closest(".lz-card"); if(!card) return; const track = card.closest(".lz-track"); CARDS = [...track.querySelectorAll(".lz-card")]; IDX = CARDS.indexOf(card); showModal(IDX); }, {passive:true});
+  
+  // ★修正：動的なエラー検知でプレースホルダーに切り替え
   wrap.querySelectorAll('.lz-media > img').forEach(img=>{ img.addEventListener('error', ()=>{ const m = img.parentElement; img.remove(); m?.classList.add('is-empty'); }, { once:true }); });
+}
+
+/* --- Floating Side Nav (サイドドットナビ) --- */
+function buildSideNav() {
+  const sections = Array.from(document.querySelectorAll(".lz-section[data-l2]"));
+  if (!sections.length || window.innerWidth <= 1024) return;
+
+  const sideNav = document.createElement('div');
+  sideNav.className = 'lz-sidenav';
+  document.body.appendChild(sideNav);
+
+  sections.forEach(sec => {
+    const item = document.createElement('div');
+    item.className = 'lz-sideitem';
+    item.dataset.label = sec.dataset.l2;
+    item.onclick = () => {
+      // ヘッダーの高さを考慮してジャンプ
+      const offset = (document.querySelector(".lz-hdr")?.offsetHeight || 68) + 20;
+      const y = sec.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    };
+    sideNav.appendChild(item);
+  });
+
+  const updateActive = () => {
+    let current = "";
+    sections.forEach(sec => {
+      if (window.scrollY >= (sec.offsetTop - 250)) current = sec.dataset.l2;
+    });
+    sideNav.querySelectorAll('.lz-sideitem').forEach(item => {
+      item.classList.toggle('is-active', item.dataset.label === current);
+    });
+  };
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
 }
 
 function buildNav(options={}){
@@ -443,40 +484,6 @@ function buildNav(options={}){
     const io=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting){ links.forEach(x=>x.classList.remove("is-active")); const a=byId[en.target.id]; if(a) a.classList.add("is-active"); } }); },{rootMargin:"-40% 0px -55% 0px"});
     sections.forEach(s=>io.observe(s));
   }
-}
-
-/* --- Floating Side Nav --- */
-function buildSideNav() {
-  const sections = Array.from(document.querySelectorAll(".lz-section[data-l2]"));
-  if (!sections.length) return;
-
-  const sideNav = document.createElement('div');
-  sideNav.className = 'lz-sidenav';
-  document.body.appendChild(sideNav);
-
-  sections.forEach(sec => {
-    const item = document.createElement('div');
-    item.className = 'lz-sideitem';
-    item.dataset.label = sec.dataset.l2;
-    item.onclick = () => {
-      const offset = document.querySelector(".lz-hdr")?.offsetHeight || 0;
-      const y = sec.getBoundingClientRect().top + window.pageYOffset - offset - 20;
-      window.scrollTo({ top: y, behavior: "smooth" });
-    };
-    sideNav.appendChild(item);
-  });
-
-  const updateActive = () => {
-    let current = "";
-    sections.forEach(sec => {
-      if (window.scrollY >= (sec.offsetTop - 200)) current = sec.dataset.l2;
-    });
-    sideNav.querySelectorAll('.lz-sideitem').forEach(item => {
-      item.classList.toggle('is-active', item.dataset.label === current);
-    });
-  };
-  window.addEventListener('scroll', updateActive, { passive: true });
-  updateActive();
 }
 
 function openFromQueryWithRetry(){
@@ -506,7 +513,7 @@ function boot(){
   const offset = document.querySelector(".pera1-header")?.offsetHeight||0;
   
   buildNav({offset});
-  buildSideNav();
+  buildSideNav(); // サイドナビの起動
 
   const handleUrlParams = (isInitialLoad = false) => {
     const params = new URLSearchParams(window.location.search);
