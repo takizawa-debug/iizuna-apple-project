@@ -1,6 +1,6 @@
 /**
- * section.js - 記事一覧コンポーネント (即時表示・完全再現版)
- * 役割: 記事カード生成、中央揃えロードアニメ、プレースホルダー復元、自動再生
+ * section.js - 記事一覧コンポーネント (サイズ・位置 完全復元版)
+ * 役割: 記事カード生成、中央揃えロードアニメ(160px)、プレースホルダー、自動再生
  */
 (function() {
   "use strict";
@@ -9,48 +9,46 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (visibility 設定を修正し、即時表示を可能に)
+     1. CSS (元の style.css を100%忠実に再現)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      /* セクション：最初から表示(visible)にし、中身のローディングを見せる */
+      /* セクション：最初から見えるようにし、枠を確保 */
       '.lz-section { margin: 48px 0; position: relative; min-height: 500px; visibility: visible; }', 
       '.lz-section.lz-ready { min-height: auto; }',
 
       '.lz-head { margin: 0 0 16px; position: relative; z-index: 10; }',
       '.lz-titlewrap { display: block; width: 100%; background: var(--apple-red); color: #fff; border-radius: var(--radius); padding: 14px 16px; box-sizing: border-box; }',
-      '.lz-title { margin: 0; font-weight: var(--fw-l2); font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
+      '.lz-title { margin: 0; font-weight: var(--fw-l2, 550); font-size: var(--fz-l2, 2.4rem); letter-spacing: .02em; white-space: nowrap; }',
 
-      /* ローディング：中央配置 */
+      /* ローディングエリア：元の設定を完全再現 */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; margin: 8px 0 4px; border: 1px dashed var(--border); border-radius: 12px; background: #fffaf8; }',
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
       '.lz-loading .lz-loading-label { font-weight: 550; letter-spacing: .02em; font-size: 1.4rem; }',
       
-      /* ★ロゴ：サイズ 160px、位置 -70px を厳守 */
-      '.lz-logo { width: 160px; height: 160px; }',
+      /* ★ロゴ：サイズ 160px 固定、margin-left -70px で中心軸を合わせる */
+      '.lz-logo { width: 160px; height: 160px; display: block; }',
       '.lz-loading .lz-logo { margin-left: -70px; }',
       
       '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; opacity: .8; } to { stroke-dashoffset: 0; opacity: 1; } }',
 
-      /* 記事リスト構造 */
+      /* トラック構造（チラ見せ） */
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track-outer::after { content: ""; position: absolute; top: 0; right: 0; width: 60px; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0), rgba(255,255,255,0.95)); pointer-events: none; z-index: 2; }',
       '.lz-track { display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 18px; overflow-x: auto; padding: 12px 12px 32px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; }',
       '.lz-track::-webkit-scrollbar { display: none; }',
       '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.22); gap: 14px; padding-left: 16px; padding-right: 40px; } }',
 
-      /* カードデザイン */
+      /* カード & プレースホルダー */
       '.lz-card { border: 1px solid var(--border); border-radius: var(--card-radius); overflow: hidden; scroll-snap-align: start; cursor: pointer; background: #fff; transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.6s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }',
       '.lz-card:hover { transform: translateY(-8px); border-color: var(--apple-red); box-shadow: 0 20px 45px rgba(207, 58, 58, 0.12); }',
       '.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }',
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }',
       '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); }',
-      
-      /* ★プレースホルダーリンゴ復元 */
       '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(40%, 180px); aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.35; }',
       
       '.lz-body { padding: 14px; display: grid; gap: 6px; }',
@@ -99,7 +97,7 @@
     root.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth);
     root.style.setProperty("--ratio", C.ratio(imageRatio));
 
-    // ★重要：即座にタイトルとローディングを表示する（セクション自体の非表示を解除）
+    // ★重要：動的な viewbox 調整ロジックを排除し、静的な HTML のみで構成
     root.innerHTML = [
       '<div class="lz-section">',
       '  <div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">' + C.esc(heading) + '</h2></div></div>',
