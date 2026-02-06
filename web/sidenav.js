@@ -1,138 +1,141 @@
 /**
- * sidenav.js - サイド・ドットナビ コンポーネント (修正版)
- * 役割: 全デバイス対応のページ内ナビゲーション生成、スクロール監視
+ * sidenav.js - サイド・ドットナビ コンポーネント (頑丈版)
+ * 役割: ページ内ナビゲーション生成、スクロール監視、アクティブ判定
  */
 (function() {
   "use strict";
 
-  // common.js が読み込まれているか確認
-  if (!window.LZ_COMMON) return;
+  // 1. 依存関係のチェック
+  var C = window.LZ_COMMON;
+  if (!C) return;
 
   /* ==========================================
-     1. CSSの注入 (サイドナビ専用デザイン)
+     2. CSSの注入 (JS完結・レスポンシブ)
      ========================================== */
-  const injectNavStyles = () => {
-    const style = document.createElement('style');
+  var injectNavStyles = function() {
+    if (document.getElementById('lz-sidenav-styles')) return;
+    var style = document.createElement('style');
     style.id = 'lz-sidenav-styles';
-    style.textContent = `
-      /* ナビゲーション本体 */
-      .lz-sidenav {
-        position: fixed; right: 12px; top: 50%; transform: translateY(-50%);
-        display: flex; flex-direction: column; gap: 14px; z-index: 8000;
-        background: rgba(255,255,255,0.3); /* 背景に溶け込む透明度 */
-        padding: 16px 8px; border-radius: 40px;
-        backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-        opacity: 0; transition: opacity 0.8s, transform 0.8s; pointer-events: none;
-      }
-      /* 表示トリガー：少しでもスクロールされたら出現 */
-      body.is-scrolled .lz-sidenav,
-      .lz-sidenav.is-visible { opacity: 1; pointer-events: auto; }
+    style.textContent = [
+      '.lz-sidenav {',
+      '  position: fixed; right: 12px; top: 50%; transform: translateY(-50%);',
+      '  display: flex; flex-direction: column; gap: 14px; z-index: 8000;',
+      '  background: rgba(255,255,255,0.3); padding: 16px 8px; border-radius: 40px;',
+      '  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);',
+      '  opacity: 0; transition: opacity 0.8s, transform 0.8s; pointer-events: none;',
+      '}',
+      'body.is-scrolled .lz-sidenav { opacity: 1; pointer-events: auto; }',
 
-      /* ドット（基本：スマホ・タブレット共通） */
-      .lz-sideitem {
-        position: relative; width: 8px; height: 8px; background: #ccc; border-radius: 50%;
-        cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-      /* アクティブ状態：りんごの赤 */
-      .lz-sideitem.is-active { background: var(--apple-red); transform: scale(1.4); box-shadow: 0 0 10px rgba(207, 58, 58, 0.4); }
+      /* ドット基本設定 */
+      '.lz-sideitem {',
+      '  position: relative; width: 8px; height: 8px; background: #ccc; border-radius: 50%;',
+      '  cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);',
+      '}',
+      '.lz-sideitem.is-active { background: var(--apple-red); transform: scale(1.4); box-shadow: 0 0 10px rgba(207, 58, 58, 0.4); }',
 
-      /* PC版の高度な装飾 (1025px以上) */
-      @media (min-width: 1025px) {
-        .lz-sidenav { right: 24px; padding: 20px 10px; background: rgba(255,255,255,0.7); }
-        .lz-sideitem { width: 10px; height: 10px; }
-        .lz-sideitem:hover { transform: scale(1.5); background: var(--apple-red); }
+      /* PC版のラベル表示 (1025px以上) */
+      '@media (min-width: 1025px) {',
+      '  .lz-sidenav { right: 24px; padding: 20px 10px; background: rgba(255,255,255,0.7); }',
+      '  .lz-sideitem { width: 10px; height: 10px; }',
+      '  .lz-sideitem:hover { transform: scale(1.5); background: var(--apple-red); }',
+      '  .lz-sideitem::before {',
+      '    content: attr(data-label); position: absolute; right: 28px; top: 50%; transform: translateY(-50%);',
+      '    background: var(--apple-red); color: #fff; padding: 6px 14px; border-radius: 20px;',
+      '    font-size: 1.15rem; font-weight: 700; white-space: nowrap; opacity: 0;',
+      '    transition: all 0.3s ease; pointer-events: none;',
+      '  }',
+      '  .lz-sideitem:hover::before { opacity: 1; right: 34px; }',
+      '}',
 
-        /* ホバー時にセクション名をフワッと表示 */
-        .lz-sideitem::before {
-          content: attr(data-label); position: absolute; right: 28px; top: 50%; transform: translateY(-50%);
-          background: var(--apple-red); color: #fff; padding: 6px 14px; border-radius: 20px;
-          font-size: 1.15rem; font-weight: 700; white-space: nowrap; opacity: 0; 
-          transition: all 0.3s ease; pointer-events: none;
-        }
-        .lz-sideitem:hover::before { opacity: 1; right: 34px; }
-      }
-
-      /* スマホ版：タップしやすさを向上 */
-      @media (max-width: 1024px) {
-        .lz-sidenav { padding: 20px 12px; right: 8px; }
-        .lz-sideitem { margin: 6px 0; }
-      }
-    `;
+      /* スマホ版の調整 */
+      '@media (max-width: 1024px) {',
+      '  .lz-sidenav { padding: 20px 12px; right: 8px; }',
+      '  .lz-sideitem { margin: 6px 0; }',
+      '}'
+    ].join('\n');
     document.head.appendChild(style);
   };
 
   /* ==========================================
-     2. ロジック: ナビゲーション構築
+     3. ナビゲーション構築ロジック
      ========================================== */
   function buildSideNav() {
-    // 重複生成防止
     if (document.querySelector('.lz-sidenav')) return;
 
-    const containers = Array.from(document.querySelectorAll(".lz-container"));
-    if (!containers.length) return;
+    // 描画済みのセクションを取得
+    var containers = document.querySelectorAll(".lz-section.lz-ready");
+    if (containers.length === 0) return;
 
-    const sideNav = document.createElement('div');
+    var sideNav = document.createElement('div');
     sideNav.className = 'lz-sidenav';
     document.body.appendChild(sideNav);
 
-    containers.forEach(con => {
-      const label = con.dataset.l2;
-      if (!label) return;
+    for (var i = 0; i < containers.length; i++) {
+      (function(index) {
+        var con = containers[index].parentElement; // .lz-container または親要素
+        var label = con.dataset.l2;
+        if (!label) return;
 
-      const item = document.createElement('div');
-      item.className = 'lz-sideitem';
-      item.dataset.label = label;
-      
-      // クリックイベント：対象セクションの中央へスムーズスクロール
-      item.onclick = () => {
-        const target = con.querySelector('.lz-section');
-        if (!target) return;
-        const offset = (document.querySelector(".lz-hdr")?.offsetHeight || 68) + 20;
-        const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
-        window.scrollTo({ top: y, behavior: "smooth" });
-      };
-      
-      sideNav.appendChild(item);
-    });
+        var item = document.createElement('div');
+        item.className = 'lz-sideitem';
+        item.setAttribute('data-label', label);
+        
+        item.onclick = function() {
+          var header = document.querySelector(".pera1-header, .lz-hdr");
+          var offset = (header ? header.offsetHeight : 68) + 20;
+          var rect = containers[index].getBoundingClientRect();
+          var targetY = rect.top + window.pageYOffset - offset;
+          window.scrollTo({ top: targetY, behavior: "smooth" });
+        };
+        
+        sideNav.appendChild(item);
+      })(i);
+    }
 
     /* ==========================================
-       3. スクロール監視 (アクティブ判定)
+       4. スクロール監視
        ========================================== */
-    const updateNavigation = () => {
-      const scrollPos = window.scrollY;
-      let currentLabel = "";
+    var updateNavigation = function() {
+      var scrollPos = window.scrollY;
+      var currentLabel = "";
 
-      // スクロール状態をbodyに付与（CSSでの表示切り替え用）
-      document.body.classList.toggle('is-scrolled', scrollPos > 100);
-      if (scrollPos > 100) sideNav.classList.add('is-visible');
+      // 出現制御
+      document.body.classList.toggle('is-scrolled', scrollPos > 200);
 
-      containers.forEach(con => {
-        const sec = con.querySelector('.lz-section');
-        if (sec && scrollPos >= (con.offsetTop - 350)) {
+      for (var j = 0; j < containers.length; j++) {
+        var con = containers[j].parentElement;
+        if (scrollPos >= (con.offsetTop - 350)) {
           currentLabel = con.dataset.l2;
         }
-      });
+      }
 
-      sideNav.querySelectorAll('.lz-sideitem').forEach(item => {
-        item.classList.toggle('is-active', item.dataset.label === currentLabel);
-      });
+      var items = sideNav.querySelectorAll('.lz-sideitem');
+      for (var k = 0; k < items.length; k++) {
+        var it = items[k];
+        if (it.getAttribute('data-label') === currentLabel) {
+          it.classList.add('is-active');
+        } else {
+          it.classList.remove('is-active');
+        }
+      }
     };
 
     window.addEventListener('scroll', updateNavigation, { passive: true });
-    updateNavigation(); // 初回実行
+    updateNavigation();
   }
 
   /* ==========================================
-     4. 起動シーケンス
+     5. 起動処理 (MutationObserver)
      ========================================== */
-  const bootNav = () => {
+  var bootNav = function() {
     injectNavStyles();
     
-    // section.js による記事描画（lz-ready）を待ってから構築
-    const observer = new MutationObserver((mutations) => {
-      const allReady = Array.from(document.querySelectorAll('.lz-container'))
-                            .every(c => c.querySelector('.lz-ready'));
-      if (allReady) {
+    // 記事が描画されるのを監視
+    var observer = new MutationObserver(function() {
+      var readySections = document.querySelectorAll('.lz-section.lz-ready');
+      var totalContainers = document.querySelectorAll('.lz-container, .lz-section[data-l2]');
+      
+      if (readySections.length > 0 && readySections.length >= totalContainers.length) {
         buildSideNav();
         observer.disconnect();
       }
@@ -140,8 +143,8 @@
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // 万が一のためのタイムアウト起動
-    setTimeout(buildSideNav, 3000);
+    // 念のためのバックアップ起動
+    setTimeout(buildSideNav, 5000);
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootNav);
