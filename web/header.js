@@ -2,29 +2,23 @@
   "use strict";
 
   /* ==========================================
-     1. CSSの注入 (スマホドロワーのデザインを完全踏襲)
+     1. CSSの注入 (UI/UXを極限までブラッシュアップ)
      ========================================== */
   const cssText = `
-    :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; }
+    :root { --content-max: 1100px; --hdr-h: 68px; --logo-size: 50px; --apple-red: #cf3a3a; --soft-red: #fff5f5; }
     
-    /* ヘッダー全体の設定（もわっと登場） */
     .lz-hdr { 
       position: fixed !important; inset: 0 0 auto 0 !important; height: var(--hdr-h) !important; 
       background: var(--apple-red) !important; z-index: 9000 !important; color: #fff !important; 
       box-shadow: 0 4px 18px rgba(0,0,0,.12) !important;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(-30px);
-      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), 
-                  transform 1.5s cubic-bezier(0.22, 1, 0.36, 1), 
-                  visibility 1.5s;
+      opacity: 0; visibility: hidden; transform: translateY(-30px);
+      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 1.5s;
     }
     .lz-hdr.is-visible { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
 
     .lz-hwrap { height: 100% !important; max-width: var(--content-max) !important; margin: 0 auto !important; padding: 0 clamp(12px, 4vw, 24px) !important; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 16px; flex-wrap: nowrap !important; }
     .lz-right { display: flex !important; align-items: center !important; gap: 16px !important; flex: 0 0 auto !important; }
     
-    /* ロゴ・タイトル（大きいサイズ維持） */
     .lz-logo { position: relative !important; display: flex !important; align-items: center !important; gap: 12px !important; color: #fff !important; text-decoration: none !important; height: var(--hdr-h) !important; padding-left: calc(var(--logo-size) + 12px) !important; flex: 1 1 auto !important; min-width: 0 !important; }
     .lz-logo__img { position: absolute !important; top: calc((var(--hdr-h) - var(--logo-size)) / 2) !important; left: 0 !important; width: var(--logo-size) !important; height: var(--logo-size) !important; border-radius: 5px !important; object-fit: cover !important; }
     .lz-logo__txt { display: flex !important; flex-direction: column !important; line-height: 1.05 !important; font-family: system-ui,sans-serif !important; white-space: nowrap !important; }
@@ -36,49 +30,100 @@
     @media (min-width: 1024px) { .lz-hnav { display: block !important; } }
     .lz-hnav__list { display: flex !important; align-items: center !important; gap: 22px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
     .lz-hnav__item { position: relative !important; height: var(--hdr-h); display: flex; align-items: center; }
-    .lz-hnav__l1 { font-weight: 550 !important; font-size: clamp(1.22rem, 2.3vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 10px 12px !important; border-radius: 8px !important; }
-    .lz-hnav__panel { position: absolute !important; right: 0 !important; top: 100% !important; background: #fff !important; color: #222 !important; border-radius: 12px !important; box-shadow: 0 18px 50px rgba(0,0,0,.18) !important; padding: 10px !important; display: none; min-width: 220px !important; z-index: 10001 !important; }
+    .lz-hnav__l1 { font-weight: 600 !important; font-size: clamp(1.22rem, 2.3vw, 1.58rem) !important; color: #fff !important; text-decoration: none !important; padding: 10px 14px !important; border-radius: 12px !important; transition: background 0.3s; }
+    .lz-hnav__l1:hover { background: rgba(255, 255, 255, .15) !important; }
+    
+    /* --- プルダウンパネル（デザイナーズ・カスタム） --- */
+    .lz-hnav__panel { 
+      position: absolute !important; right: 0 !important; top: 100% !important; 
+      background: #fff !important; color: #222 !important; 
+      border-radius: 24px !important; /* もっと丸く可愛く */
+      box-shadow: 0 20px 60px rgba(0,0,0,.15) !important; 
+      padding: 12px !important; 
+      display: none; 
+      min-width: 260px !important; /* 少し広げてゆとりを */
+      z-index: 10001 !important; 
+      border: 1px solid rgba(0,0,0,0.04) !important;
+      transform-origin: top center;
+      animation: lz-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes lz-slide-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     .lz-hnav__panel.is-open { display: block !important; }
-    .lz-hnav__panel a { display: block !important; padding: 12px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1.25rem; border-bottom: 1px solid #f0f0f0 !important; }
+    
+    .lz-hnav__panel a { 
+      display: flex !important; 
+      align-items: center !important;
+      padding: 14px 20px !important; 
+      color: #333 !important; 
+      text-decoration: none !important; 
+      border-radius: 16px !important; /* リンクも丸く */
+      font-weight: 600 !important; 
+      font-size: 1.35rem !important; /* フォントを大きく */
+      border-bottom: none !important; /* 線は消してシンプルに */
+      margin-bottom: 4px !important;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+      position: relative;
+    }
+    .lz-hnav__panel a:last-child { margin-bottom: 0 !important; }
+    
+    /* ホバー時の「押したくなる」演出 */
+    .lz-hnav__panel a:hover { 
+      background: var(--soft-red) !important; 
+      color: var(--apple-red) !important; 
+      padding-left: 26px !important; /* 少し右にずれる可愛さ */
+    }
+    .lz-hnav__panel a::before {
+      content: ""; position: absolute; left: 8px; width: 4px; height: 0; 
+      background: var(--apple-red); border-radius: 10px; transition: height 0.3s;
+    }
+    .lz-hnav__panel a:hover::before { height: 20px; }
 
-    /* 読み込み中アニメ */
-    .lz-nav-loading { padding: 20px !important; text-align: center !important; color: #999 !important; font-size: 1.1rem !important; }
+    .lz-nav-loading { padding: 30px !important; text-align: center !important; color: #bbb !important; font-size: 1.2rem !important; }
     .lz-loading-dots::after { content: '...'; animation: lz-dots 1.5s steps(4, end) infinite; }
     @keyframes lz-dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80% { content: '...'; } }
 
     /* 言語設定 */
     .lz-lang-pc { position: relative !important; display: none; height: var(--hdr-h); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
-    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; font-weight: 550; font-size: 1.1rem !important; }
+    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 40px !important; padding: 0 16px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 20px !important; cursor: pointer !important; font-weight: 600; font-size: 1.1rem !important; transition: 0.3s; }
+    .lz-lang-pc__btn:hover { background: rgba(255,255,255,0.1); }
     .lz-lang-pc__btn::after { content: ""; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 5px solid #fff; transition: transform .3s; }
     .lz-lang-pc__btn.is-active::after { transform: rotate(180deg); }
-    .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 5px !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 8px !important; display: none; min-width: 160px !important; flex-direction: column !important; z-index: 10002; }
+    
+    .lz-lang-pc__menu { 
+      position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 8px !important; 
+      background: #fff !important; border-radius: 20px !important; 
+      box-shadow: 0 10px 30px rgba(0,0,0,.15) !important; padding: 10px !important; 
+      display: none; min-width: 170px !important; flex-direction: column !important; z-index: 10002; 
+    }
     .lz-lang-pc__menu.is-open { display: flex !important; }
-    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #222 !important; text-decoration: none !important; border-radius: 8px !important; font-weight: 550; font-size: 1rem; }
-    .is-disabled { color: #bbb !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.6; }
+    .lz-lang-pc__menu a { display: block !important; padding: 12px 16px !important; color: #333 !important; text-decoration: none !important; border-radius: 12px !important; font-weight: 600; font-size: 1.1rem; transition: 0.2s; }
+    .lz-lang-pc__menu a:hover { background: var(--soft-red); color: var(--apple-red); }
+    .is-disabled { color: #ccc !important; cursor: not-allowed !important; pointer-events: none !important; opacity: 0.5; }
 
+    /* スマホ・デザイン（正円・以前の形を死守） */
     .lz-lang-mob { position: relative !important; display: flex !important; }
     @media (min-width: 1024px) { .lz-lang-mob { display: none !important; } }
     .lz-lang-mob__btn { width: 40px !important; height: 40px !important; display: flex !important; align-items: center !important; justify-content: center !important; border: 1px solid rgba(255,255,255,0.6) !important; border-radius: 50% !important; color: #fff !important; font-size: 14px !important; font-weight: 700 !important; background: transparent !important; cursor: pointer; }
-    .lz-lang-mob__menu { position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; background: #fff !important; border-radius: 10px !important; box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important; padding: 6px !important; display: none; min-width: 160px !important; flex-direction: column !important; z-index: 10003; }
+    .lz-lang-mob__menu { position: absolute !important; right: 0 !important; top: calc(100% + 10px) !important; background: #fff !important; border-radius: 12px !important; box-shadow: 0 8px 25px rgba(0,0,0,0.2) !important; padding: 8px !important; display: none; min-width: 160px !important; flex-direction: column !important; z-index: 10003; }
     .lz-lang-mob__menu.is-open { display: flex !important; }
-    .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 14px !important; font-weight: 600 !important; border-radius: 6px !important; }
+    .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 1.1rem !important; font-weight: 600 !important; border-radius: 8px !important; }
 
-    /* ★スマホドロワー復元セクション★ */
-    .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 10px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; cursor: pointer; }
+    .lz-hamb { display: flex !important; width: 44px !important; height: 44px !important; border: 1px solid rgba(255,255,255,.6) !important; background: transparent !important; border-radius: 12px !important; color: #fff !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 6px !important; cursor: pointer; }
     @media (min-width: 1024px) { .lz-hamb { display: none !important; } }
     .lz-hamb__bar { width: 24px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
     .lz-dw-backdrop { position: fixed !important; inset: 0 !important; background: rgba(0,0,0,.35) !important; z-index: 19999 !important; display: none; }
     .lz-dw-backdrop.is-open { display: block !important; }
     .lz-drawer { position: fixed !important; right: 0 !important; top: 0 !important; bottom: 0 !important; width: 80vw !important; max-width: 320px !important; background: #fff !important; z-index: 20001 !important; transform: translateX(100%) !important; transition: transform .3s ease !important; overflow-y: auto !important; }
     .lz-drawer.is-open { transform: translateX(0) !important; }
-    
     .lz-dw-group { border-bottom: 1px solid #eee; }
     .lz-dw-l1-row { display: flex !important; align-items: center !important; justify-content: space-between !important; width: 100% !important; }
     .lz-dw-l1a { flex: 1 !important; display: block !important; padding: 18px 20px !important; font-weight: bold !important; font-size: 1.15rem !important; color: #333 !important; text-decoration: none !important; }
     .lz-dw-arrow { padding: 18px 20px !important; color: var(--apple-red) !important; cursor: pointer !important; transition: transform .3s !important; font-size: 1.2rem !important; display: flex !important; align-items: center !important; }
     .lz-dw-group.is-active .lz-dw-arrow { transform: rotate(180deg) !important; }
-    
     .lz-dw-l2-area { background: #f9f9f9 !important; display: none; padding: 5px 0 15px 30px !important; }
     .lz-dw-group.is-active .lz-dw-l2-area { display: block !important; }
     .lz-dw-l2-area a { display: block !important; padding: 12px 0 !important; color: #666 !important; text-decoration: none !important; font-size: 1.05rem !important; }
@@ -159,14 +204,8 @@
         <div class="lz-dw-l2-area">${load}</div>
       </div>`).join('');
     
-    // スクロール検知
     const hdr = document.getElementById('lzHdr');
-    const onScroll = () => {
-      if (window.scrollY > 20) {
-        hdr.classList.add('is-visible');
-        window.removeEventListener('scroll', onScroll);
-      }
-    };
+    const onScroll = () => { if (window.scrollY > 20) { hdr.classList.add('is-visible'); window.removeEventListener('scroll', onScroll); } };
     window.addEventListener('scroll', onScroll);
     onScroll();
   }
@@ -208,25 +247,16 @@
       json.items.forEach(it => { if(!map.has(it.l1)) map.set(it.l1, []); if(!map.get(it.l1).includes(it.l2)) map.get(it.l1).push(it.l2); });
       MENU_ORDER.forEach((l1, i) => {
         const l2s = map.get(l1) || [], links = l2s.map(l2 => `<a href="${MENU_URL[l1]}?section=${encodeURIComponent(l2)}">${l2}</a>`).join('');
-        
-        // PC反映
         const panels = document.querySelectorAll('.lz-hnav__panel');
         if(panels[i]) panels[i].innerHTML = links || '<div class="lz-nav-loading">（記事なし）</div>';
-        
-        // スマホ反映（アコーディオン再接続）
         const dwGroups = document.querySelectorAll('.lz-dw-group');
         if(dwGroups[i]) {
           const area = dwGroups[i].querySelector('.lz-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-dw-arrow'), link = dwGroups[i].querySelector('.lz-dw-l1a');
           if(l2s.length > 0) {
             area.innerHTML = links;
             const t = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); };
-            arrow.onclick = t; 
-            link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) t(e); else closeDrawer(); };
-          } else { 
-            area.innerHTML = ''; area.style.padding = '0';
-            arrow.style.display='none'; 
-            link.onclick=closeDrawer; 
-          }
+            arrow.onclick = t; link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) t(e); else closeDrawer(); };
+          } else { area.innerHTML = ''; area.style.padding = '0'; arrow.style.display='none'; link.onclick=closeDrawer; }
         }
       });
     }
