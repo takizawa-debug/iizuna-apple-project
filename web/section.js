@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (ロード図形サイズ調整 & 既存デザイン維持)
+     1. CSS (ロード表示の微調整 & 既存デザイン維持)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
@@ -28,12 +28,14 @@
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3, 1.85rem); color: var(--apple-brown); line-height: 1.25; }',
 
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; border: none; background: transparent; }',
-      '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #a94a4a; }',
+      /* ★文字色を薄いグレーに変更 */
+      '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #ccc; }',
       
-      /* ★ロード図形：干渉解除に合わせて 160px → 100px に適正化。margin-leftもセンターへ調整 */
-      '.lz-logo { width: 100px; height: 100px; margin-left: -50px; display: block; }',
+      /* ★左右のズレを修正（margin-leftを削除） */
+      '.lz-logo { width: 100px; height: 100px; display: block; }',
       
-      '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
+      /* ★アイコンの線を薄いグレーに変更 */
+      '.lz-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .1em; }',
 
