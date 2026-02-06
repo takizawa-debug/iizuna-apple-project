@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (GAS Optimized Edition)
- * 役割: モーダル構築、関連記事表示、DLボタン対応、前後ナビ矢印の完全同期
+ * modal.js - 詳細表示・機能コンポーネント (PDF Restoration Edition)
+ * 役割: モーダル構築、関連記事、前後ナビ、そして【印刷機能】の完全復旧
  */
 window.lzModal = (function() {
   "use strict";
@@ -58,9 +58,8 @@ window.lzModal = (function() {
       '.lz-related-item a { display: block; color: #cf3a3a; text-decoration: none; font-weight: 700; padding: 10px 0; font-size: 1.35rem; border-bottom: 1px dashed #ddd; transition: .2s; }',
       '.lz-related-item a:hover { background: #fff5f5; padding-left: 8px; }',
       '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; }',
-      '.lz-arrow:hover { background: #cf3a3a; transform: translateY(-50%) scale(1.05); }',
-      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; transition: .2s; }',
-      '.lz-arrow:hover svg { stroke: #fff; }',
+      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; }',
+      '.lz-arrow:hover { background: #cf3a3a; } .lz-arrow:hover svg { stroke: #fff; }',
       '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
       '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
       '@media(max-width:768px) { .lz-prev, .lz-next { top: auto; bottom: -68px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } }'
@@ -68,6 +67,66 @@ window.lzModal = (function() {
     document.head.appendChild(style);
   };
 
+  /* ==========================================
+     【重要】PDF生成ロジック：完全復活
+     ========================================== */
+  function renderFooterImagePx(text, px, color) {
+    var scale = 2, w = 1200, h = Math.round(px * 2.4);
+    var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
+    var ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = color; ctx.font = px + "px 'Noto Sans JP',sans-serif"; ctx.textBaseline = "middle";
+    ctx.fillText(text, 2, h / 2);
+    return { data: canvas.toDataURL("image/png"), ar: h / w };
+  }
+
+  async function generatePdf(element, title, cardId) {
+    if(!confirm("PDFを作成して新しいタブで開きます。よろしいですか？")) return;
+    try {
+      // ライブラリの動的ロードを確認
+      if (!window.jspdf) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      if (!window.html2canvas) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+      if (!window.QRCode) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
+
+      var qrUrl = window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(cardId);
+      var clone = element.cloneNode(true);
+      clone.querySelector(".lz-actions").remove();
+      clone.style.maxHeight = "none"; clone.style.width = "800px";
+      document.body.appendChild(clone);
+
+      var qrDiv = document.createElement("div"); 
+      new QRCode(qrDiv, { text: qrUrl, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L });
+      var qrCanvas = qrDiv.querySelector("canvas");
+
+      var canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      document.body.removeChild(clone);
+
+      var pdf = new window.jspdf.jsPDF("p", "mm", "a4");
+      var margin = 12, pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
+      var imgWmm = pageW - margin * 2, imgHmm = canvas.height * imgWmm / canvas.width;
+      
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, margin, imgWmm, imgHmm);
+      
+      if(qrCanvas) {
+        var qSize = 20; // QRサイズ
+        pdf.addImage(qrCanvas.toDataURL("image/png"), "PNG", pageW - margin - qSize, pageH - margin - qSize - 8, qSize, qSize);
+      }
+      
+      var now = new Date();
+      var ts = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + " " + now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
+      pdf.setFontSize(9);
+      pdf.text(ts + " / 1-1", pageW - margin, pageH - 10, {align:"right"});
+
+      var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 14, "#000");
+      pdf.addImage(jpImg.data, "PNG", margin, pageH - 15, 5 / jpImg.ar, 5);
+      
+      window.open(pdf.output("bloburl"), "_blank");
+    } catch(e) { console.error(e); alert("PDF生成に失敗しました。"); }
+  }
+
+  /* ==========================================
+     3. モーダル本体制御
+     ========================================== */
   var HOST, SHELL, MODAL, CARDS = [], IDX = 0;
 
   function render(card) {
@@ -84,22 +143,12 @@ window.lzModal = (function() {
     var gallery = [d.main].concat(subs).filter(Boolean);
     var sns = {}; try { sns = JSON.parse(d.sns || "{}"); } catch(e){}
 
-    /* ★ GASデータ項目を完全網羅 */
     var rows = [];
     var fields = [
-      {k:'address', l:'住所'}, 
-      {k:'bizDays', l:'営業曜日'}, 
-      {k:'holiday', l:'定休日'},
-      {k:'hoursCombined', l:'営業時間'},
-      {k:'eventDate', l:'開催日'},
-      {k:'eventTime', l:'開催時間'},
-      {k:'fee', l:'参加費'}, 
-      {k:'bring', l:'もちもの'},
-      {k:'target', l:'対象'}, 
-      {k:'apply', l:'申し込み方法'},
-      {k:'org', l:'主催者名'},
-      {k:'venueNote', l:'会場注意事項'},
-      {k:'note', l:'備考'}
+      {k:'address', l:'住所'}, {k:'bizDays', l:'営業曜日'}, {k:'holiday', l:'定休日'},
+      {k:'hoursCombined', l:'営業時間'}, {k:'eventDate', l:'開催日'}, {k:'eventTime', l:'開催時間'},
+      {k:'fee', l:'参加費'}, {k:'bring', l:'もちもの'}, {k:'target', l:'対象'}, 
+      {k:'apply', l:'申し込み方法'}, {k:'org', l:'主催者名'}, {k:'venueNote', l:'会場注意事項'}, {k:'note', l:'備考'}
     ];
     for(var i=0; i<fields.length; i++) {
       if(d[fields[i].k] && d[fields[i].k].trim() !== "") {
@@ -110,15 +159,10 @@ window.lzModal = (function() {
 
     var snsHtml = [];
     var addSns = function(url, key) { if(url && url.trim() !== "") snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
-    addSns(d.home, "web"); 
-    addSns(d.ec, "ec"); // GASのECサイトに対応
-    addSns(sns.instagram, "ig"); 
-    addSns(sns.facebook, "fb");
-    addSns(sns.x, "x"); 
-    addSns(sns.line, "line");
-    addSns(sns.tiktok, "tt");
+    addSns(d.home, "web"); addSns(d.ec, "ec");
+    addSns(sns.instagram, "ig"); addSns(sns.facebook, "fb");
+    addSns(sns.x, "x"); addSns(sns.line, "line"); addSns(sns.tiktok, "tt");
 
-    /* ★関連記事のパースとリスト化 */
     var relatedBlock = "";
     try {
       var rel = JSON.parse(d.related || "[]").filter(function(x){ return x && (x.title || x.url); });
@@ -130,7 +174,6 @@ window.lzModal = (function() {
       }
     } catch(e) {}
 
-    /* ★ダウンロードボタン（data-dl）があれば表示 */
     var dlBtn = (d.dl && d.dl.trim() !== "") ? '<a class="lz-btn" href="'+C.esc(d.dl)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">保存</span></a>' : "";
 
     MODAL.innerHTML = [
@@ -154,16 +197,17 @@ window.lzModal = (function() {
       '</div>'
     ].join('');
 
-    // イベント付与
+    // 【復旧】印刷ボタンのイベント登録
+    var pdfBtnEl = MODAL.querySelector(".lz-pdf");
+    if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
+
     MODAL.querySelector(".lz-share").onclick = function() {
       var shareUrl = window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(d.id);
       var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (d.lead || "") + "\nーーー\n詳しくはこちら\n" + shareUrl + "\n\n#いいづなりんご #飯綱町";
       if(navigator.share) navigator.share({ text: payload });
-      else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("コピーしました！"); }
+      else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("共有テキストをコピーしました！"); }
     };
-    if(MODAL.querySelector(".lz-pdf")) MODAL.querySelector(".lz-pdf").onclick = function(){ window.generatePdf(MODAL, title, d.id); };
 
-    // ギャラリー
     var mainImg = MODAL.querySelector("#lz-mainimg");
     var thumbs = MODAL.querySelector(".lz-g");
     if(thumbs && mainImg) {
@@ -179,7 +223,6 @@ window.lzModal = (function() {
       };
     }
 
-    // 矢印ナビ
     SHELL.querySelectorAll(".lz-arrow").forEach(function(a){ a.remove(); });
     if (CARDS.length > 1) {
       var p = document.createElement("button"); p.className = "lz-arrow lz-prev"; p.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>';
