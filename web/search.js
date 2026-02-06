@@ -1,5 +1,5 @@
 /**
- * search.js - サイト内検索 (Final UX Edition)
+ * search.js - サイト内記事検索 (Final UX Edition)
  * 役割: 重複ボタン除去、ヒットワード強調、5語レコメンド自動更新、高視認性UI
  */
 (async function apzSearchBoot() {
@@ -90,7 +90,7 @@
     <div class="apz-search-float" id="apzSearchFloat" aria-hidden="true">
       <div class="apz-search-card">
         <div class="apz-search-card__head">
-          <div class="apz-search-card__title">サイト内検索</div>
+          <div class="apz-search-card__title">サイト内記事検索</div>
           <button class="apz-search-card__close" id="apzSearchClose">✕</button>
         </div>
         <div class="apz-search__box">
