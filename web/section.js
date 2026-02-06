@@ -1,6 +1,6 @@
 /**
- * section.js - 記事一覧コンポーネント (style.css 完全再現版)
- * 役割: 記事カード生成、中央揃えロードアニメ、プレースホルダー復元、自動再生
+ * section.js - 記事一覧コンポーネント (即時表示・完全復元版)
+ * 役割: 記事カード生成、ローディングアニメ(即時表示)、プレースホルダー、自動再生
  */
 (function() {
   "use strict";
@@ -16,13 +16,12 @@
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
     style.textContent = [
-      /* セクション：枠の確保 */
-      '.lz-section { margin: 48px 0; position: relative; min-height: 500px; visibility: hidden; }', 
-      '.lz-section.lz-ready { visibility: visible; min-height: auto; }',
+      /* セクション：枠の確保。visibilityはJSで制御するためここでは一旦visible */
+      '.lz-section { margin: 48px 0; position: relative; min-height: 500px; display: block; opacity: 1; }', 
 
       '.lz-head { margin: 0 0 16px; position: relative; z-index: 10; }',
       '.lz-titlewrap { display: block; width: 100%; background: var(--apple-red); color: #fff; border-radius: var(--radius); padding: 14px 16px; box-sizing: border-box; }',
-      '.lz-title { margin: 0; font-weight: var(--fw-l2); font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
+      '.lz-title { margin: 0; font-weight: 550; font-size: var(--fz-l2); letter-spacing: .02em; white-space: nowrap; }',
 
       /* ローディング：style.css の記述を完全移植 */
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; margin: 8px 0 4px; border: 1px dashed var(--border); border-radius: 12px; background: #fffaf8; }',
@@ -99,7 +98,7 @@
     root.style.setProperty("--cw", mql.matches ? cardWidthSm : cardWidth);
     root.style.setProperty("--ratio", C.ratio(imageRatio));
 
-    // ロード画面の生成：style.css の指定通りにタグを組む
+    // ★重要：データ取得を開始する「前」にタイトルとローダーを注入
     root.innerHTML = [
       '<div class="lz-section">',
       '  <div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">' + C.esc(heading) + '</h2></div></div>',
@@ -134,8 +133,8 @@
         html += '<div class="lz-track-outer"><div class="lz-track" data-group="' + C.esc(key) + '">' + groups[key].map(function(it){ return cardHTML(it, pad, key); }).join("") + '</div></div>';
       });
 
+      // データの流し込み
       root.querySelector(".lz-groupwrap").innerHTML = html;
-      root.querySelector(".lz-section").classList.add("lz-ready");
       root.dataset.lzDone = '1';
 
       root.addEventListener("click", function(e) {
