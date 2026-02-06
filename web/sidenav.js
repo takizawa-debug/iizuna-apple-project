@@ -1,6 +1,6 @@
 /**
- * sidenav.js - サイド・ドットナビ (りんご＆葉っぱデザイン版)
- * 役割: ページ内ナビゲーション、スクロール監視、テーマに沿ったUI演出
+ * sidenav.js - サイド・ドットナビ (全デバイス・世界観統合版)
+ * 役割: ページ内ナビゲーション、スクロール監視、全デバイス対応UI
  */
 (function() {
   "use strict";
@@ -9,7 +9,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (葉っぱとりんごをコードで描画)
+     1. CSS (スマホ対応 & 世界観維持)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-sidenav-styles')) return;
@@ -17,9 +17,9 @@
     style.id = 'lz-sidenav-styles';
     style.textContent = [
       '.lz-sidenav {',
-      '  position: fixed; right: 24px; top: 50%; transform: translateY(-50%);',
+      '  position: fixed; right: 20px; top: 50%; transform: translateY(-50%);',
       '  display: flex; flex-direction: column; gap: 20px; z-index: 8000;',
-      '  background: rgba(255,255,255,0.4); padding: 22px 12px; border-radius: 40px;',
+      '  background: rgba(255,255,255,0.4); padding: 22px 10px; border-radius: 40px;',
       '  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);',
       '  box-shadow: 0 10px 30px rgba(0,0,0,0.05);',
       '  opacity: 0; transition: opacity 0.8s, transform 0.8s; pointer-events: none;',
@@ -30,42 +30,47 @@
       '.lz-sideitem {',
       '  position: relative; width: 14px; height: 14px;',
       '  background: var(--apple-green);',
-      '  /* 葉っぱの形に変形 */',
       '  border-radius: 0 80% 0 80%;',
       '  transform: rotate(-15deg);',
       '  cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);',
       '}',
-      '.lz-sideitem:hover { transform: scale(1.3) rotate(0deg); }',
 
       /* --- りんご (アクティブ時) --- */
       '.lz-sideitem.is-active {',
       '  background: var(--apple-red);',
-      '  border-radius: 50% 50% 45% 45%;', /* 少し下を窄めてりんごらしく */
-      '  transform: scale(1.6) rotate(0deg);',
+      '  border-radius: 50% 50% 45% 45%;',
+      '  transform: scale(1.5) rotate(0deg);',
       '  box-shadow: 0 4px 8px rgba(207, 58, 58, 0.3);',
       '}',
-      /* りんごのヘタ (アクティブ時のみ出現) */
       '.lz-sideitem.is-active::after {',
       '  content: ""; position: absolute; top: -3px; left: 50%;',
       '  width: 2px; height: 5px; background: #5b3a1e; transform: translateX(-50%);',
       '}',
 
-      /* ラベル表示 */
-      '.lz-sideitem::before {',
-      '  content: attr(data-label); position: absolute; right: 32px; top: 50%; transform: translateY(-50%);',
-      '  background: var(--apple-red); color: #fff; padding: 6px 14px; border-radius: 20px;',
-      '  font-size: 1.15rem; font-weight: 700; white-space: nowrap; opacity: 0; transition: 0.3s ease; pointer-events: none;',
-      '  font-family: var(--font-base);',
+      /* ラベル表示 (PCなどマウスがある場合のみ) */
+      '@media (min-width: 1025px) {',
+      '  .lz-sideitem::before {',
+      '    content: attr(data-label); position: absolute; right: 32px; top: 50%; transform: translateY(-50%);',
+      '    background: var(--apple-red); color: #fff; padding: 6px 14px; border-radius: 20px;',
+      '    font-size: 1.15rem; font-weight: 700; white-space: nowrap; opacity: 0; transition: 0.3s ease; pointer-events: none;',
+      '    font-family: var(--font-base);',
+      '  }',
+      '  .lz-sideitem:hover::before { opacity: 1; right: 38px; }',
+      '  .lz-sideitem:hover { transform: scale(1.3) rotate(0deg); }',
       '}',
-      '.lz-sideitem:hover::before { opacity: 1; right: 38px; }',
 
-      '@media (max-width: 1024px) { .lz-sidenav { display: none; } }'
+      /* ★スマホ版の微調整 (右端に寄せ、少し小さくする) */
+      '@media (max-width: 1024px) {',
+      '  .lz-sidenav { right: 8px; gap: 16px; padding: 16px 8px; background: rgba(255,255,255,0.6); }',
+      '  .lz-sideitem { width: 12px; height: 12px; }',
+      '  .lz-sideitem.is-active { transform: scale(1.4); }',
+      '}'
     ].join('\n');
     document.head.appendChild(style);
   };
 
   /* ==========================================
-     2. ロジック: ナビゲーション構築
+     2. ロジック本体 (既存の安定版を維持)
      ========================================== */
   function buildSideNav() {
     if (document.querySelector('.lz-sidenav')) return;
@@ -98,9 +103,6 @@
       })(i);
     }
 
-    /* ==========================================
-       3. スクロール監視
-       ========================================== */
     var updateActive = function() {
       var scrollY = window.scrollY;
       var currentLabel = "";
@@ -123,12 +125,8 @@
     updateActive();
   }
 
-  /* ==========================================
-     4. 起動シーケンス
-     ========================================== */
   var bootNav = function() {
     injectStyles();
-    
     var observer = new MutationObserver(function() {
       var allSections = document.querySelectorAll('.lz-section[data-l2]');
       var readySections = document.querySelectorAll('.lz-section[data-l2].lz-ready');
@@ -137,7 +135,6 @@
         observer.disconnect();
       }
     });
-
     observer.observe(document.body, { childList: true, subtree: true });
     setTimeout(buildSideNav, 4000);
   };
