@@ -132,7 +132,7 @@ window.lzModal = (function() {
         pdf.setFontSize(11); // 一回り大きく
         var tsWidth = pdf.getTextWidth(tsFull);
         // 右端マージンから文字幅分を引いた位置（絶対座標）に描画することで欠けを防止
-        pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin +3);
+        pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin +4);
 
         heightLeft -= innerH;
         if(heightLeft > 0) {
