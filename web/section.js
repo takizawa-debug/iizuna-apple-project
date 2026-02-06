@@ -30,7 +30,7 @@
       '.lz-loading .lz-loading-label { font-weight: 550; letter-spacing: .02em; font-size: 1.4rem; }',
       
       /* ★ロゴ：サイズ 160px 固定、margin-left -70px で中心軸を合わせる */
-      '.lz-logo { width: 160px; height: 160px; display: block; }',
+      '.lz-logo { width: 180px; height: 180px; display: block; }',
       '.lz-loading .lz-logo { margin-left: -70px; }',
       
       '.lz-logo-path { fill: none; stroke: #cf3a3a; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
