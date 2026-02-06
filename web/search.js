@@ -1,6 +1,6 @@
 /**
- * search.js - サイト内検索 (AI Recommend & Loading UI Edition)
- * 役割: GASデータからの自動キーワード抽出、検索中ローディング表示、高視認性UI
+ * search.js - サイト内検索 (Static Keyword Recommend & Loading UI)
+ * 役割: 高速レコメンド（100語リスト）、検索中アニメーション、高視認性UI
  */
 (async function apzSearchBoot() {
   "use strict";
@@ -10,104 +10,104 @@
     check();
   });
 
-  const { SEARCH_ENDPOINT, ENDPOINT, MENU_URL, ASSETS } = config;
+  const { SEARCH_ENDPOINT, MENU_URL, ASSETS } = config;
   const FALLBACK_IMG = ASSETS.LOGO_RED;
 
   /* ==========================================
-     1. CSS (巨大化 ＋ 検索中アニメーション)
+     1. 厳選キーワードリスト（約100個）
+     ========================================== */
+  const RECOMMEND_WORDS = [
+    "サンふじ", "シナノゴールド", "シナノスイート", "秋映", "紅玉", "グラニースミス", "ブラムリー", "高坂りんご", "メイポール", "ドルゴ", "和リンゴ", "ムーンルージュ", "なかののきらめき", "いろどり", "ぐんま名月", "王林", "ジョナゴールド", "つがる", "きたろう", "はるか", "あいかの香り", "千秋", "世界一", "ニュートン",
+    "直売所", "いいづなマルシェむれ", "さんちゃん", "横手販売所", "アップルパイ", "タルトタタン", "シードル", "りんごジュース", "ジャム", "ドライフルーツ", "焼きりんご", "りんご飴", "コンポート", "りんごバター", "ドレッシング",
+    "ふるさと納税", "オーナー制度", "収穫体験", "りんご狩り", "剪定", "摘花", "袋掛け", "葉取らず", "蜜入り", "完熟", "産地直送", "贈答用", "家庭用", "お徳用",
+    "飯綱町", "三水", "牟礼", "北信州", "霊仙寺湖", "飯縄山", "北信五岳", "丹霞郷", "いいづな歴史", "英国りんご", "クッキングアップル", "加工用りんご",
+    "いいづなコネクト", "廃校活用", "ワークラボ", "りんごの聖地", "1127の日", "いいづな事業部", "農家直送", "りんご並木", "雪中貯蔵", "スマート農業",
+    "レシピ", "離乳食", "簡単デザート", "お弁当", "健康", "美容", "ポリフェノール", "ビタミンC", "整腸作用", "ダイエット", "医者いらず",
+    "カフェ", "レストラン", "スイーツショップ", "観光", "散策", "サイクリング", "写真映え", "冬景色", "花見", "りんごの花", "お土産", "人気ランキング", "おすすめ", "隠れた名店"
+  ];
+
+  /* ==========================================
+     2. CSS (巨大化 ＋ 検索中アニメ)
      ========================================== */
   const style = document.createElement('style');
   style.textContent = `
-    .apz-search-fab { position:fixed; right:20px; bottom:20px; width:64px; height:64px; border-radius:50%; background:#cf3a3a; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:12000; transition: transform 0.2s; }
-    .apz-search-fab:hover { transform: scale(1.05); }
-    .apz-search-fab__icon { width:30px; height:30px; }
+    .apz-search-fab { position:fixed; right:20px; bottom:20px; width:64px; height:64px; border-radius:50%; background:#cf3a3a; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:12000; }
+    .apz-search-fab__icon { width:32px; height:32px; }
 
     .apz-search-float { position:fixed; right:24px; bottom:100px; z-index:12000; pointer-events:none; opacity:0; transform:translateY(12px); transition:all .25s cubic-bezier(0.16, 1, 0.3, 1); }
     .apz-search-float.is-open { opacity:1; transform:translateY(0); pointer-events:auto; }
 
-    /* ウィンドウ巨大化：680px */
     .apz-search-card { width:min(680px, 94vw); background:#fff; border-radius:28px; box-shadow:0 25px 70px rgba(0,0,0,.4); padding:24px; box-sizing:border-box; }
     .apz-search-card__head { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
     .apz-search-card__title { font-size:1.6rem; font-weight:800; color:#cf3a3a; }
     .apz-search-card__close { width:36px; height:36px; border-radius:50%; border:none; background:#f5f5f5; cursor:pointer; font-size:24px; color:#999; display:flex; align-items:center; justify-content:center; }
 
-    /* 検索ボックス */
     .apz-search__box { position:relative; margin-bottom:20px; }
-    #apzSearchInput { width:100%; box-sizing:border-box; height:60px; border-radius:30px; border:2px solid #eee; padding:0 60px 0 24px; font-size:1.4rem; font-weight:600; outline:none; transition: all 0.3s; background:#fcfcfc; }
+    #apzSearchInput { width:100%; box-sizing:border-box; height:64px; border-radius:32px; border:2px solid #eee; padding:0 60px 0 24px; font-size:1.5rem; font-weight:600; outline:none; transition: all 0.3s; background:#fcfcfc; }
     #apzSearchInput:focus { border-color: #cf3a3a; background:#fff; }
-    .apz-search__clear { position:absolute; right:14px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none; border-radius:50%; background:#ddd; cursor:pointer; display:flex; align-items:center; justify-content:center; }
+    .apz-search__clear { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none; border-radius:50%; background:#ddd; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; }
 
-    /* おすすめレコメンドエリア */
-    .apz-search-suggest { margin-bottom: 20px; padding: 16px; background: #fafafa; border-radius: 20px; border: 1px dashed #ddd; display: none; }
+    /* レコメンドエリア */
+    .apz-search-suggest { margin-bottom: 20px; padding: 16px; background: #fafafa; border-radius: 20px; border: 1px dashed #ddd; }
     .apz-search-suggest__label { font-size: 1rem; font-weight: 800; color: #888; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
     .apz-search-tags { display: flex; flex-wrap: wrap; gap: 10px; }
     .apz-search-tag { padding: 8px 18px; background: #fff; color: #cf3a3a; border-radius: 22px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: 0.2s; border: 1px solid #f0f0f0; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .apz-search-tag:hover { background: #cf3a3a; color: #fff; transform: translateY(-2px); }
 
-    /* ★検索中ローディングUI */
-    .apz-search-searching { display:none; padding:30px; text-align:center; flex-direction:column; align-items:center; gap:12px; }
+    /* ★検索中ローディング */
+    .apz-search-searching { display:none; padding:40px; text-align:center; flex-direction:column; align-items:center; gap:16px; }
     .apz-search-searching.is-active { display:flex; }
-    .apz-search-spinner { width:30px; height:30px; border:3px solid rgba(207,58,58,0.1); border-top-color:#cf3a3a; border-radius:50%; animation: apz-spin 0.8s linear infinite; }
+    .apz-search-spinner { width:40px; height:40px; border:4px solid rgba(207,58,58,0.1); border-top-color:#cf3a3a; border-radius:50%; animation: apz-spin 0.8s linear infinite; }
     @keyframes apz-spin { to { transform: rotate(360deg); } }
-    .apz-search-searching__txt { font-size:1.1rem; font-weight:600; color:#cf3a3a; }
+    .apz-search-searching__txt { font-size:1.3rem; font-weight:600; color:#cf3a3a; }
 
-    /* 結果リスト */
+    /* 結果リスト（巨大化） */
     .apz-search-results { max-height:450px; overflow:auto; }
-    .apz-search-list { list-style:none; margin:0; padding:0; }
-    .apz-item-btn { width:100%; display:flex; align-items:center; gap:20px; padding:16px; border:none; border-bottom: 1px solid #f5f5f5; background:transparent; cursor:pointer; text-align:left; border-radius:16px; transition: 0.2s; }
+    .apz-item-btn { width:100%; display:flex; align-items:center; gap:20px; padding:18px; border:none; border-bottom: 1px solid #f5f5f5; background:transparent; cursor:pointer; text-align:left; border-radius:16px; }
     .apz-item-btn:hover { background:#fff5f5; }
-    .apz-thumb { flex:0 0 85px; height: 85px; border-radius:15px; overflow:hidden; background:#f6f7f9; }
+    .apz-thumb { flex:0 0 90px; height: 90px; border-radius:15px; overflow:hidden; background:#f6f7f9; }
     .apz-thumb img { width:100%; height:100%; object-fit:cover; }
-    .apz-meta { flex:1; min-width:0; }
-    .apz-l2l3 { font-size:1rem; color:#a0a0a0; margin-bottom:6px; font-weight:600; }
-    .apz-title { font-size:1.4rem; font-weight:800; color:#222; margin-bottom:6px; line-height:1.4; }
-    .apz-snippet { font-size:1.1rem; color:#666; line-height:1.6; }
-    .apz-hit { background:#fff6a0; color:#000; padding:0 3px; border-radius:3px; }
-    .apz-empty { padding:40px; text-align:center; font-size:1.2rem; color:#bbb; font-weight:600; display:none; }
+    .apz-l2l3 { font-size:1.1rem; color:#a0a0a0; margin-bottom:6px; font-weight:600; }
+    .apz-title { font-size:1.5rem; font-weight:800; color:#222; margin-bottom:6px; line-height:1.4; }
+    .apz-snippet { font-size:1.15rem; color:#666; line-height:1.6; }
+    .apz-empty { padding:50px; text-align:center; font-size:1.3rem; color:#bbb; font-weight:600; display:none; }
 
     @media (max-width:768px) {
       .apz-search-float { left:0; right:0; bottom:0; transform:translateY(100%); }
       .apz-search-float.is-open { transform:translateY(0); }
       .apz-search-card { width:100%; height:88vh; border-radius:28px 28px 0 0; }
-      .apz-search-results { max-height:calc(88vh - 250px); }
     }
   `;
   document.head.appendChild(style);
 
   /* ==========================================
-     2. HTML構造
+     3. HTML構造
      ========================================== */
   const searchHTML = `
-    <div class="apz-search-fab" id="apzSearchFab" role="button" aria-label="検索">
-      <svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="apz-search-fab__icon">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
+    <div class="apz-search-fab" id="apzSearchFab" role="button">
+      <svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="apz-search-fab__icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
     </div>
     <div class="apz-search-float" id="apzSearchFloat" aria-hidden="true">
       <div class="apz-search-card">
         <div class="apz-search-card__head">
-          <div class="apz-search-card__title">飯綱町の林檎を検索</div>
+          <div class="apz-search-card__title">サイト内検索</div>
           <button class="apz-search-card__close" id="apzSearchClose">✕</button>
         </div>
         <div class="apz-search__box">
-          <input id="apzSearchInput" type="search" placeholder="キーワードを入力..." autocomplete="off">
+          <input id="apzSearchInput" type="search" placeholder="何をお探しですか？" autocomplete="off">
           <button class="apz-search__clear" id="apzSearchClear" style="display:none;">✕</button>
         </div>
-        
         <div class="apz-search-suggest" id="apzSearchSuggest">
-          <div class="apz-search-suggest__label">✨ AIおすすめキーワード</div>
+          <div class="apz-search-suggest__label">✨ おすすめキーワード</div>
           <div class="apz-search-tags" id="apzRecommendTags"></div>
         </div>
-
         <div class="apz-search-searching" id="apzSearchSearching">
           <div class="apz-search-spinner"></div>
-          <div class="apz-search-searching__txt">検索中...</div>
+          <div class="apz-search-searching__txt">検索しています...</div>
         </div>
-
         <div class="apz-search-results" id="apzSearchResults">
-          <ul class="apz-search-list" id="apzSearchList"></ul>
-          <div class="apz-empty" id="apzSearchEmpty">一致する記事が見つかりませんでした</div>
+          <ul class="apz-search-list" id="apzSearchList" style="list-style:none;margin:0;padding:0;"></ul>
+          <div class="apz-empty" id="apzSearchEmpty">見つかりませんでした</div>
         </div>
       </div>
     </div>
@@ -115,53 +115,30 @@
   document.body.insertAdjacentHTML('beforeend', searchHTML);
 
   /* ==========================================
-     3. ロジック (AIレコメンド ＋ ローディング)
+     4. 検索・レコメンドロジック
      ========================================== */
-  const D = document;
-  const fab = D.getElementById("apzSearchFab");
-  const float = D.getElementById("apzSearchFloat");
-  const input = D.getElementById("apzSearchInput");
-  const clearBt = D.getElementById("apzSearchClear");
-  const listEl = D.getElementById("apzSearchList");
-  const emptyEl = D.getElementById("apzSearchEmpty");
-  const suggestEl = D.getElementById("apzSearchSuggest");
-  const tagArea = D.getElementById("apzRecommendTags");
+  const D = document, fab = D.getElementById("apzSearchFab"), float = D.getElementById("apzSearchFloat");
+  const input = D.getElementById("apzSearchInput"), clearBt = D.getElementById("apzSearchClear");
+  const listEl = D.getElementById("apzSearchList"), emptyEl = D.getElementById("apzSearchEmpty");
+  const suggestEl = D.getElementById("apzSearchSuggest"), tagArea = D.getElementById("apzRecommendTags");
   const searchingEl = D.getElementById("apzSearchSearching");
 
   let lastResults = [];
-  const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
 
-  // ★AIレコメンド：GASからデータを取得してランダム表示
-  async function loadAIRecommendations() {
-    try {
-      tagArea.innerHTML = "";
-      const res = await fetch(`${ENDPOINT}?all=1`);
-      const json = await res.json();
-      if (!json.ok || !json.items) return;
-
-      const candidates = new Set();
-      json.items.forEach(it => {
-        if (it.l3 && it.l3.trim()) candidates.add(it.l3.trim());
-        if (it.title && it.title.length < 12) candidates.add(it.title.trim());
-      });
-
-      const shuffled = Array.from(candidates).sort(() => 0.5 - Math.random());
-      const selected = shuffled.slice(0, 6);
-
-      if (selected.length > 0) {
-        suggestEl.style.display = "block";
-        tagArea.innerHTML = selected.map(word => `<span class="apz-search-tag">${esc(word)}</span>`).join('');
-        tagArea.querySelectorAll('.apz-search-tag').forEach(tag => {
-          tag.onclick = () => { input.value = tag.textContent; runSearch(input.value); };
-        });
-      }
-    } catch (e) { console.error("Recommend fetch error", e); }
+  // ★100語リストからランダムに10個選んで表示
+  function refreshRecommendations() {
+    const shuffled = [...RECOMMEND_WORDS].sort(() => 0.5 - Math.random());
+    const selected = shuffled.slice(0, 10);
+    tagArea.innerHTML = selected.map(word => `<span class="apz-search-tag">${word}</span>`).join('');
+    tagArea.querySelectorAll('.apz-search-tag').forEach(tag => {
+      tag.onclick = () => { input.value = tag.textContent; runSearch(input.value); };
+    });
   }
 
   function renderResults(results, query){
     lastResults = results || []; 
     listEl.innerHTML = "";
-    searchingEl.classList.remove("is-active"); // ローディング停止
+    searchingEl.classList.remove("is-active"); 
 
     const q = query.trim();
     if (!q) { suggestEl.style.display = "block"; emptyEl.style.display = "none"; return; }
@@ -170,19 +147,22 @@
     if (!results || !results.length){ emptyEl.style.display = "block"; return; }
     
     emptyEl.style.display = "none";
-    listEl.innerHTML = results.map((it, idx) => {
-      const pathHtml = [it.l1, it.l2, it.l3].filter(Boolean).map(x => x).join(" / ");
-      return `<li><button class="apz-item-btn" type="button" data-idx="${idx}"><div class="apz-thumb"><img src="${esc(it.mainImage || FALLBACK_IMG)}"></div><div class="apz-meta"><div class="apz-l2l3">${esc(pathHtml)}</div><div class="apz-title">${esc(it.title)}</div><div class="apz-snippet">${esc(it.lead || "").slice(0, 60)}</div></div></button></li>`;
-    }).join("");
+    listEl.innerHTML = results.map((it, idx) => `
+      <li><button class="apz-item-btn" type="button" data-idx="${idx}">
+        <div class="apz-thumb"><img src="${it.mainImage || FALLBACK_IMG}"></div>
+        <div class="apz-meta">
+          <div class="apz-l2l3">${it.l1} / ${it.l2}</div>
+          <div class="apz-title">${it.title}</div>
+          <div class="apz-snippet">${(it.lead || "").slice(0, 65)}...</div>
+        </div>
+      </button></li>`).join("");
   }
 
   async function runSearch(query){
     const q = query.trim();
     clearBt.style.display = q ? "flex" : "none";
-    
     if (!q) { renderResults([], ""); return; }
 
-    // ★検索開始：ローディング表示
     listEl.innerHTML = "";
     emptyEl.style.display = "none";
     suggestEl.style.display = "none";
@@ -195,11 +175,9 @@
     } catch(_) { renderResults([], q); }
   }
 
-  const openFloat = () => { float.classList.add("is-open"); loadAIRecommendations(); setTimeout(() => input.focus(), 10); };
-  const closeFloat = () => { float.classList.remove("is-open"); };
-
+  const openFloat = () => { float.classList.add("is-open"); refreshRecommendations(); setTimeout(() => input.focus(), 10); };
   fab.onclick = openFloat;
-  D.getElementById("apzSearchClose").onclick = closeFloat;
+  D.getElementById("apzSearchClose").onclick = () => float.classList.remove("is-open");
   clearBt.onclick = () => { input.value = ""; runSearch(""); input.focus(); };
   
   let timer = null;
@@ -208,9 +186,8 @@
   listEl.onclick = (e) => {
     const btn = e.target.closest(".apz-item-btn"); if (!btn) return;
     const hit = lastResults[+btn.dataset.idx]; if (!hit) return;
-    closeFloat();
     location.href = `${MENU_URL[hit.l1] || location.origin}?id=${encodeURIComponent(hit.title)}`;
   };
   
-  D.addEventListener("click", (e) => { if (!e.target.closest(".apz-search-card") && !e.target.closest("#apzSearchFab")) closeFloat(); });
+  D.addEventListener("click", (e) => { if (!e.target.closest(".apz-search-card") && !e.target.closest("#apzSearchFab")) float.classList.remove("is-open"); });
 })();
