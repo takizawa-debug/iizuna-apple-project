@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (DeepLink & PDF Fixed Edition)
- * 役割: モーダル構築、関連記事、前後ナビ、ディープリンク自動起動、精密印刷
+ * modal.js - 詳細表示・機能コンポーネント (DeepLink & PDF Precision Edition)
+ * 役割: モーダル構築、関連記事、前後ナビ、ディープリンク自動起動、マルチページ対応印刷
  */
 window.lzModal = (function() {
   "use strict";
@@ -68,7 +68,7 @@ window.lzModal = (function() {
   };
 
   /* ==========================================
-     PDF生成：日時印字の修正 ＋ フォント拡大
+     PDF精密生成ロジック (マルチページ対応 ＋ 配置修正)
      ========================================== */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
@@ -90,44 +90,65 @@ window.lzModal = (function() {
       var qrUrl = window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(cardId);
       var clone = element.cloneNode(true);
       clone.querySelector(".lz-actions").remove();
-      clone.style.maxHeight = "none"; clone.style.width = "800px";
+      clone.style.maxHeight = "none"; clone.style.height = "auto"; clone.style.width = "800px";
+      clone.querySelectorAll("img").forEach(function(img){ img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); });
       document.body.appendChild(clone);
 
       var qrDiv = document.createElement("div"); 
       new QRCode(qrDiv, { text: qrUrl, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L });
       var qrCanvas = qrDiv.querySelector("canvas");
+      var qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
 
       var canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
       document.body.removeChild(clone);
 
-      var pdf = new window.jspdf.jsPDF("p", "mm", "a4");
-      var margin = 12, pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight();
-      var imgWmm = pageW - margin * 2, imgHmm = canvas.height * imgWmm / canvas.width;
+      var { jsPDF } = window.jspdf;
+      var pdf = new jsPDF("p", "mm", "a4");
+      var margin = 12, pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight(), innerW = pageW - margin * 2, innerH = pageH - margin * 2;
       
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", margin, margin, imgWmm, imgHmm);
+      var imgData = canvas.toDataURL("image/png");
+      var imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
       
-      if(qrCanvas) {
-        var qSize = 20; 
-        pdf.addImage(qrCanvas.toDataURL("image/png"), "PNG", pageW - margin - qSize, pageH - margin - qSize - 10, qSize, qSize);
-      }
+      var totalPages = Math.max(1, Math.ceil(imgHmm / innerH));
+      var heightLeft = imgHmm, position = margin, pageCount = 1;
       
-      var now = new Date();
-      var ts = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + " " + now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
-      
-      /* ★修正：日時の印字位置を内側に寄せ、サイズを一回り大きく調整 */
-      pdf.setFontSize(10);
-      pdf.text(ts + " / 1-1", pageW - margin - 5, pageH - 12, {align:"right"});
+      while(heightLeft > 0) {
+        pdf.addImage(imgData, "PNG", margin, position, imgWmm, imgHmm);
+        
+        // QRコード
+        if(qrData){
+          var qSize = 22;
+          pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize, qSize, qSize);
+        }
 
-      /* ★修正：日本語フッターの画像サイズを一回り大きく調整 */
-      var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 16, "#000");
-      pdf.addImage(jpImg.data, "PNG", margin, pageH - 16, 5 / jpImg.ar, 5);
+        // ★修正：日時の精密配置（左欠け防止 ＋ フォント拡大）
+        var now = new Date();
+        var ts = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + " " + now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
+        var tsFull = ts + " / " + pageCount + "/" + totalPages;
+        pdf.setFontSize(11); // 一回り大きく
+        var tsWidth = pdf.getTextWidth(tsFull);
+        // 右端マージンから文字幅分を引いた位置（絶対座標）に描画することで欠けを防止
+        pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin);
+
+        // ★修正：日本語フッター画像（一回り大きく）
+        var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 18, "#000");
+        var footerH = 5;
+        pdf.addImage(jpImg.data, "PNG", margin, pageH - margin - 2, footerH / jpImg.ar, footerH);
+
+        heightLeft -= innerH;
+        if(heightLeft > 0) {
+          pdf.addPage();
+          position = margin - (imgHmm - heightLeft);
+          pageCount++;
+        }
+      }
       
       window.open(pdf.output("bloburl"), "_blank");
     } catch(e) { console.error(e); alert("PDF生成に失敗しました。"); }
   }
 
   /* ==========================================
-     モーダル制御 ＋ 【復活】ディープリンク
+     モーダル制御 ＋ ディープリンク
      ========================================== */
   var HOST, SHELL, MODAL, CARDS = [], IDX = 0;
 
@@ -244,22 +265,24 @@ window.lzModal = (function() {
     history.replaceState(null, "", url.toString());
   }
 
-  /* ★【復活】独自URLでの自動起動ロジック */
+  /* ★独自URLでの自動起動ロジック：より厳密なデコード比較 ＋ 監視 */
   var checkDeepLink = function() {
-    var urlId = new URLSearchParams(location.search).get('id');
-    if (!urlId) return;
+    var rawId = new URLSearchParams(location.search).get('id');
+    if (!rawId) return;
+    var urlId = decodeURIComponent(rawId).trim();
     var attempts = 0;
     var timer = setInterval(function() {
       var cards = document.querySelectorAll(".lz-card");
       for(var i=0; i<cards.length; i++){
-        if(cards[i].dataset.id === urlId){
+        var cardId = decodeURIComponent(cards[i].dataset.id).trim();
+        if(cardId === urlId){
           clearInterval(timer);
           window.lzModal.open(cards[i]);
           return;
         }
       }
       if (++attempts > 100) clearInterval(timer);
-    }, 100);
+    }, 150);
   };
 
   injectStyles();
