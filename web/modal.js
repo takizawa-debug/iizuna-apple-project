@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (優先順位色分け & 検索ハイライト Edition)
- * 役割: 既存機能を100%維持。全データ(window.LZ_DATA)から検索。赤(直通)を最優先、緑(検索)を次点として表示。
+ * modal.js - 詳細表示・機能コンポーネント (グローバル検索 & 優先順位色分け Edition)
+ * 役割: window.LZ_DATA(全データ)から多言語検索。赤(直通)を最優先、緑(検索)を次点として表示。
  */
 window.lzModal = (function() {
   "use strict";
@@ -95,27 +95,31 @@ window.lzModal = (function() {
     document.head.appendChild(style);
   };
 
+  function getLangText(data, key, targetLang) {
+    if (targetLang === 'ja') return data[key] || "";
+    if (data[targetLang] && data[targetLang][key]) return data[targetLang][key];
+    return data[key] || "";
+  }
+
   function getTranslation(key, targetLang) {
     var dict = window.LZ_CONFIG.LANG.I18N[targetLang] || window.LZ_CONFIG.LANG.I18N['ja'];
     return dict[key] || key;
   }
 
-  /* 検索機能: window.LZ_DATAを対象に、タイトル・リード・本文を精密に検索。 */
+  /* 検索機能: window.LZ_DATAを現在の言語階層まで掘り下げて検索 */
   function renderSearchResults(keyword, targetLang) {
     var allData = window.LZ_DATA || [];
     var results = [];
-    var seenIds = new Set();
+    var seenIds = new Set(); 
     var currentArticleId = CURRENT_CARD ? CURRENT_CARD.dataset.id : "";
 
     allData.forEach(function(item) {
       if (item.id === currentArticleId || seenIds.has(item.id)) return;
 
-      // システム標準 C.L を使用して、現在の言語(ja, en, zh)に合わせたテキストを抽出
-      var title = C.L(item, 'title', targetLang) || "";
-      var lead = C.L(item, 'lead', targetLang) || "";
-      var body = C.L(item, 'body', targetLang) || "";
-      var l1 = C.L(item, 'l1', targetLang) || "";
-      var l2 = C.L(item, 'l2', targetLang) || "";
+      // 言語階層に合わせてテキストを取得
+      var title = getLangText(item, 'title', targetLang);
+      var lead = getLangText(item, 'lead', targetLang);
+      var body = getLangText(item, 'body', targetLang);
       var tags = (item.tags || "").toString();
 
       if (title.includes(keyword) || lead.includes(keyword) || body.includes(keyword) || tags.includes(keyword)) {
@@ -124,16 +128,16 @@ window.lzModal = (function() {
         var idx = combined.indexOf(keyword);
         var start = Math.max(0, idx - 25);
         var snippet = (start > 0 ? "..." : "") + combined.substring(start, start + 70) + (combined.length > start + 70 ? "..." : "");
-        results.push({ id: item.id, title: title, body: snippet, cat: (l1 + " / " + l2), l1: item.l1 });
+        results.push({ id: item.id, title: title, body: snippet, cat: item.l3 || "" });
       }
     });
 
     var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
 
     var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
-    if(results.length === 0) html += '<div style="padding:20px; color:#888;">見つかりませんでした。</div>';
+    if(results.length === 0) html += '<div>見つかりませんでした。</div>';
     else results.forEach(function(res) {
-      html += '<div class="lz-s-item" data-goto-id="' + res.id + '" data-l1="' + res.l1 + '">';
+      html += '<div class="lz-s-item" data-goto-id="' + res.id + '">';
       html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
       html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
     });
@@ -143,29 +147,22 @@ window.lzModal = (function() {
     MODAL.querySelectorAll('.lz-s-item').forEach(function(item) {
       item.onclick = function() {
         var cardInDom = document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]');
-        if(cardInDom) {
-          render(cardInDom, targetLang);
-        } else {
-          // 他ページにある場合は遷移
-          var menuUrl = window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin;
-          location.href = menuUrl + "?lang=" + targetLang + "&id=" + encodeURIComponent(item.dataset.gotoId);
-        }
+        if(cardInDom) render(cardInDom, targetLang);
+        else alert("詳細を表示するには該当のセクションへ移動してください。");
       };
     });
     MODAL.scrollTop = 0;
   }
 
-  /* オートリンク機能: 赤(直行)を優先。トークナイザーによりバグを回避。 */
+  /* オートリンク機能: 全データのタイトルを対象とし、赤(直通)を最優先 */
   function applyAutoLinks(text, currentId, targetLang) {
     var allData = window.LZ_DATA || [];
     var map = {}; 
 
-    // 1. キーワード(緑)を登録
     MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
 
-    // 2. 他記事タイトル(赤)を登録（被った場合はこちらで上書き＝赤優先）
     allData.forEach(function(item) {
-      var title = C.L(item, 'title', targetLang);
+      var title = getLangText(item, 'title', targetLang);
       if (title && title.length > 1 && item.id !== currentId) {
         map[title] = { word: title, id: item.id, type: 'direct' };
       }
@@ -252,12 +249,9 @@ window.lzModal = (function() {
     MODAL_ACTIVE_LANG = targetLang || MODAL_ACTIVE_LANG || window.LZ_CURRENT_LANG;
     var rawData = {};
     try { rawData = JSON.parse(d.item || "{}"); } catch(e) { rawData = { title: d.title, lead: d.lead, body: d.body, l3: d.group }; }
-    
-    // 表示データの取得にも C.L を使用
-    var title = C.L(rawData, 'title', MODAL_ACTIVE_LANG);
-    var lead = C.L(rawData, 'lead', MODAL_ACTIVE_LANG);
-    var bodyText = C.L(rawData, 'body', MODAL_ACTIVE_LANG);
-    
+    var title = getLangText(rawData, 'title', MODAL_ACTIVE_LANG);
+    var lead = getLangText(rawData, 'lead', MODAL_ACTIVE_LANG);
+    var bodyText = getLangText(rawData, 'body', MODAL_ACTIVE_LANG);
     var linkedBody = applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
     var url = new URL(window.location.href);
     url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id);
@@ -294,15 +288,7 @@ window.lzModal = (function() {
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
       el.onclick = function() { if(el.dataset.gotoId) {
         var cardInDom = document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]');
-        if(cardInDom) render(cardInDom, MODAL_ACTIVE_LANG); else {
-           // 他ページへ遷移
-           var targetId = el.dataset.gotoId;
-           var targetData = (window.LZ_DATA || []).find(function(it){ return it.id === targetId; });
-           if(targetData) {
-             var menuUrl = window.LZ_CONFIG.MENU_URL[targetData.l1] || location.origin;
-             location.href = menuUrl + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(targetId);
-           }
-        }
+        if(cardInDom) render(cardInDom, MODAL_ACTIVE_LANG); else alert("該当の記事は別のセクションにあります。ページをスクロールして探してみてください。");
       } else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
     });
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
