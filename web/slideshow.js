@@ -1,11 +1,10 @@
 /**
- * slideshow.js - スライドショー・コンポーネント (Visual Logic Edition)
- * 役割: スタイルの注入、DOM構築、強力なシャドウUXの反映
+ * slideshow.js - スライドショー・コンポーネント (多言語対応版)
  */
 (function() {
   "use strict";
 
-  // 1. 強力な視認性を確保したCSSを注入
+  // 1. 強力な視認性を確保したCSSを注入 (既存デザインを完全維持)
   const injectStyles = function() {
     if (document.getElementById('lz-slideshow-styles')) return;
     const style = document.createElement('style');
@@ -28,7 +27,6 @@
         font-family: system-ui, -apple-system, sans-serif;
         font-weight: 700; line-height: 1.4;
         font-size: clamp(1.8rem, 4.5vw, 3.2rem);
-        /* ★強力な視認性：2重シャドウ */
         text-shadow: 0 0 25px rgba(0,0,0,0.9), 2px 2px 10px rgba(0,0,0,0.6);
         opacity: 0; transition: opacity .9s ease, transform .9s ease;
       }
@@ -42,13 +40,21 @@
     document.head.appendChild(style);
   };
 
-  // 2. 実行メインロジック
+  // 2. 実行メインロジック (多言語テキスト選択を追加)
   const init = function() {
     const root = document.getElementById('lz-slideshow-app');
     if (!root) return;
 
-    // データ属性から取得
-    const textContent = root.getAttribute('data-text') || "";
+    // ★言語判定 (common.js で設定された window.LZ_CURRENT_LANG を参照)
+    const lang = window.LZ_CURRENT_LANG || "ja";
+
+    // ★多言語テキストの取得
+    // 例: langが"en"なら data-text-en を優先。なければ通常の data-text を使用。
+    let textContent = root.getAttribute('data-text-' + lang);
+    if (!textContent) {
+      textContent = root.getAttribute('data-text') || "";
+    }
+    
     const images = JSON.parse(root.getAttribute('data-images') || "[]");
 
     injectStyles();
@@ -56,10 +62,10 @@
     // DOM構築
     let html = '<div class="lz-ss-container">';
     
-    // テキスト
-    html += `<div class="lz-ss-text">${textContent}</div>`;
+    // テキスト (改行コード \n がある場合は <br> に変換して反映)
+    html += `<div class="lz-ss-text">${textContent.replace(/\n/g, '<br>')}</div>`;
 
-    // 画像スライド（逆順に重なるのを防ぐため、delayを計算）
+    // 画像スライド
     images.forEach((img, i) => {
       const delay = i * 5;
       html += `<div class="lz-ss-item" style="background-image: url('${img}'); animation-delay: ${delay}s;"></div>`;
