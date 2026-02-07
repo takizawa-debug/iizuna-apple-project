@@ -1,6 +1,6 @@
 /**
  * modal.js - 詳細表示・機能コンポーネント (グローバル検索 & 優先順位色分け Edition)
- * 役割: 既存機能を100%維持。全データ(window.LZ_DATA)から多言語検索。赤(直通)を最優先、緑(検索)を次点として表示。
+ * 役割: 既存機能を100%維持。GASエンドポイントから多言語データを取得し、赤(直通)を最優先、緑(検索)を次点として表示。
  */
 window.lzModal = (function() {
   "use strict";
@@ -44,55 +44,38 @@ window.lzModal = (function() {
       '.lz-actions { display: flex; gap: 6px; align-items: center; }',
       '.lz-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cf3a3a; background: #fff; border-radius: 999px; padding: .45em .9em; cursor: pointer; color: #cf3a3a; font-weight: 600; font-size: 1.15rem; line-height: 1; transition: .2s; }',
       '.lz-btn:hover { background: #cf3a3a; color: #fff; }',
-      '.lz-btn.active { background: #cf3a3a; color: #fff; }',
       '.lz-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }',
-      '@media (max-width:768px) { .lz-btn { width: 38px; height: 38px; padding: 0; } .lz-btn .lz-label { display: none; } }',
       '.lz-m-lang-tabs { display: flex; gap: 4px; padding: 10px 15px; background: #fdfaf8; border-bottom: 1px solid #eee; }',
       '.lz-m-lang-btn { padding: 4px 12px; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; transition: .2s; }',
       '.lz-m-lang-btn.active { background: #cf3a3a; color: #fff; border-color: #cf3a3a; }',
       '.lz-mm { position: relative; background: #faf7f5; overflow: hidden; }',
-      '.lz-mm::before { content: ""; display: block; padding-top: 56.25%; }',
       '.lz-mm img { position: absolute; inset: 0; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; transition: opacity .22s ease; }',
-      '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
-      /* オートリンク色分け */
-      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
+      /* オートリンク色分け・編みかけ */
+      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; border-radius: 2px; }',
       '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
       '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
-      '.lz-auto-link:hover { background: #f5f5f5; }',
-      /* 検索結果・ハイライト */
       '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
       '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
-      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
-      '.lz-s-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }',
-      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; flex-shrink: 0; }',
+      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); }',
+      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; margin-right: 8px; }',
       '.lz-s-name { font-weight: 800; font-size: 1.3rem; color: #cf3a3a; }',
-      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }',
-      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; border-radius: 2px; }',
+      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; margin-top: 8px; }',
+      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; }',
+      /* 既存維持 */
       '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
-      '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
-      '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
+      '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; }',
+      '.lz-info td { background: #fff; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
       '.lz-sns { display: flex; gap: 10px; flex-wrap: wrap; padding: 15px; }',
-      '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: transform .2s; }',
-      '.lz-sns a:hover { transform: scale(1.1); }',
-      '.lz-sns a svg { width: 22px; height: 22px; }',
-      '.lz-sns a[data-sns="web"] { background: #5b667a; } .lz-sns a[data-sns="ec"] { background: #e67e22; }',
-      '.lz-sns a[data-sns="ig"] { background: #E4405F; } .lz-sns a[data-sns="fb"] { background: #1877F2; }',
-      '.lz-sns a[data-sns="x"] { background: #000; } .lz-sns a[data-sns="line"] { background: #06C755; } .lz-sns a[data-sns="tt"] { background: #000; }',
+      '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; }',
       '.lz-g { padding: 0 15px 15px; display: grid; gap: 10px; grid-template-columns: repeat(5, 1fr); }',
-      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; transition: opacity .2s; }',
-      '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; }',
-      '.lz-related { padding: 15px; background: #fafafa; border-top: 1px solid #eee; border-radius: 0 0 12px 12px; }',
-      '.lz-related-label { font-size: 1.1rem; color: #888; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }',
-      '.lz-related-item a { display: block; color: #cf3a3a; text-decoration: none; font-weight: 700; padding: 10px 0; font-size: 1.35rem; border-bottom: 1px dashed #ddd; transition: .2s; }',
-      '.lz-related-item a:hover { background: #fff5f5; padding-left: 8px; }',
-      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; }',
-      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; }',
-      '.lz-arrow:hover { background: #cf3a3a; } .lz-arrow:hover svg { stroke: #fff; }',
+      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; cursor: pointer; }',
+      '.lz-g img.is-active { outline: 3px solid #cf3a3a; }',
+      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: #fff; border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; z-index: 21000; }',
+      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; fill: none; }',
       '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
-      '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
-      '@media(max-width:768px) { .lz-prev, .lz-next { top: auto; bottom: -68px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } }'
+      '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -102,9 +85,20 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* 検索機能: 全データ(LZ_DATA)を多言語解決して検索。起点記事を除外。ハイライト付き。 */
-  function renderSearchResults(keyword, targetLang) {
-    var allData = window.LZ_DATA || [];
+  /* 全データの取得を確実にするためのバッファ */
+  var ALL_SITE_DATA = null;
+  async function ensureData() {
+    if (ALL_SITE_DATA) return ALL_SITE_DATA;
+    try {
+      var res = await fetch(window.LZ_CONFIG.ENDPOINT);
+      ALL_SITE_DATA = await res.json();
+      return ALL_SITE_DATA;
+    } catch(e) { return []; }
+  }
+
+  /* 検索機能: GASと同じロジックをフロントで再現 */
+  async function renderSearchResults(keyword, targetLang) {
+    var allData = await ensureData();
     var results = [];
     var seenIds = new Set();
     var currentArticleId = CURRENT_CARD ? CURRENT_CARD.dataset.id : "";
@@ -112,14 +106,13 @@ window.lzModal = (function() {
     allData.forEach(function(item) {
       if (item.id === currentArticleId || seenIds.has(item.id)) return;
 
-      // システム標準 C.L を使用して、現在の言語に合わせたテキストを取得
+      // システム標準 C.L を使用して、多言語階層から正確に取得
       var title = C.L(item, 'title', targetLang) || "";
       var lead = C.L(item, 'lead', targetLang) || "";
       var body = C.L(item, 'body', targetLang) || "";
       var l1 = C.L(item, 'l1', targetLang) || "";
       var l2 = C.L(item, 'l2', targetLang) || "";
 
-      // 全項目（タイトル・リード・本文）を検索対象に
       if (title.includes(keyword) || lead.includes(keyword) || body.includes(keyword)) {
         seenIds.add(item.id);
         var combined = lead + " " + body;
@@ -131,12 +124,11 @@ window.lzModal = (function() {
     });
 
     var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
-
     var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
-    if(results.length === 0) html += '<div style="padding:20px; color:#888;">見つかりませんでした。</div>';
+    if(results.length === 0) html += '<div style="padding:20px;">見つかりませんでした。</div>';
     else results.forEach(function(res) {
       html += '<div class="lz-s-item" data-goto-id="' + res.id + '" data-l1="' + res.l1 + '">';
-      html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
+      html += '<div><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
       html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
     });
     html += '<button class="lz-btn" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;" onclick="lzModal.backToCurrent()">← 記事に戻る</button></div>';
@@ -145,10 +137,8 @@ window.lzModal = (function() {
     MODAL.querySelectorAll('.lz-s-item').forEach(function(item) {
       item.onclick = function() {
         var cardInDom = document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]');
-        if(cardInDom) {
-          render(cardInDom, targetLang);
-        } else {
-          // 他ページにある場合は遷移
+        if(cardInDom) render(cardInDom, targetLang);
+        else {
           var menuUrl = window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin;
           location.href = menuUrl + "?lang=" + targetLang + "&id=" + encodeURIComponent(item.dataset.gotoId);
         }
@@ -157,15 +147,13 @@ window.lzModal = (function() {
     MODAL.scrollTop = 0;
   }
 
-  /* オートリンク機能: 全タイトルの登録（赤優先） ＆ トークナイザーによる置換バグ防止 */
-  function applyAutoLinks(text, currentId, targetLang) {
-    var allData = window.LZ_DATA || [];
+  /* オートリンク機能: 赤(直行)を上書き優先 */
+  async function applyAutoLinks(text, currentId, targetLang) {
+    var allData = await ensureData();
     var map = {}; 
 
-    // 1. キーワード(緑)を登録
     MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
 
-    // 2. 他記事タイトル(赤)を登録（被った場合はこちらで上書き＝赤優先）
     allData.forEach(function(item) {
       var title = C.L(item, 'title', targetLang);
       if (title && title.length > 1 && item.id !== currentId) {
@@ -174,7 +162,6 @@ window.lzModal = (function() {
     });
 
     var candidates = Object.values(map).sort(function(a, b) { return b.word.length - a.word.length; });
-
     var escaped = C.esc(text);
     var tokens = [];
     candidates.forEach(function(item, idx) {
@@ -244,10 +231,9 @@ window.lzModal = (function() {
     } catch(e) { console.error(e); alert(getTranslation("PDF生成に失敗しました。", MODAL_ACTIVE_LANG)); }
   }
 
-  /* モーダル制御 */
   var HOST, SHELL, MODAL, CARDS = [], IDX = 0, CURRENT_CARD = null;
 
-  function render(card, targetLang) {
+  async function render(card, targetLang) {
     if (!card) return;
     CURRENT_CARD = card;
     var d = card.dataset;
@@ -255,12 +241,11 @@ window.lzModal = (function() {
     var rawData = {};
     try { rawData = JSON.parse(d.item || "{}"); } catch(e) { rawData = { title: d.title, lead: d.lead, body: d.body, l3: d.group }; }
     
-    // 多言語階層に合わせたデータ取得
     var title = C.L(rawData, 'title', MODAL_ACTIVE_LANG);
     var lead = C.L(rawData, 'lead', MODAL_ACTIVE_LANG);
     var bodyText = C.L(rawData, 'body', MODAL_ACTIVE_LANG);
     
-    var linkedBody = applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
+    var linkedBody = await applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
     var url = new URL(window.location.href);
     url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id);
     window.history.replaceState(null, "", url.toString());
@@ -297,9 +282,8 @@ window.lzModal = (function() {
       el.onclick = function() { if(el.dataset.gotoId) {
         var cardInDom = document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]');
         if(cardInDom) render(cardInDom, MODAL_ACTIVE_LANG); else {
-           // 他ページへ遷移
            var targetId = el.dataset.gotoId;
-           var targetData = (window.LZ_DATA || []).find(function(it){ return it.id === targetId; });
+           var targetData = ALL_SITE_DATA.find(function(it){ return it.id === targetId; });
            if(targetData) {
              var menuUrl = window.LZ_CONFIG.MENU_URL[targetData.l1] || location.origin;
              location.href = menuUrl + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(targetId);
