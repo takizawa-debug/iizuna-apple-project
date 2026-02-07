@@ -1,6 +1,5 @@
 /**
- * section.js - 記事一覧コンポーネント (Manual Infinity Edition - Spacing Optimized)
- * 役割: 左右双方向ループ(手動専用)、中項目書式復元、黄金比ロードアニメ、余韻UX
+ * section.js - 記事一覧コンポーネント (多言語・Manual Infinity Edition)
  */
 (function() {
   "use strict";
@@ -9,7 +8,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (ロード表示の微調整 & 既存デザイン維持)
+     1. CSS (既存デザインを完全維持)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-section-styles')) return;
@@ -18,27 +17,18 @@
     style.textContent = [
       '.lz-section { margin: 20px 0; position: relative; visibility: visible; min-height: 400px; }',
       '.lz-section.lz-ready { min-height: auto; }',
-      
       '.lz-head { margin: 0 0 20px; position: relative; z-index: 10; }',
       '.lz-titlewrap { position: relative; display: inline-flex; align-items: center; padding: 12px 36px 12px 20px; box-sizing: border-box; background: linear-gradient(135deg, rgba(207, 58, 58, 0.04) 0%, rgba(255, 255, 255, 0.9) 100%); border-left: 5px solid var(--apple-red); border-radius: 0 40px 40px 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }',
       '.lz-title { margin: 0; font-weight: 800; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
-
       '.lz-l3head { display: flex; align-items: center; gap: .55em; margin: 24px 2px 10px; }',
       '.lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border-radius: 3px; flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3, 1.85rem); color: var(--apple-brown); line-height: 1.25; }',
-
       '.lz-loading { position: relative; display: flex; align-items: center; justify-content: center; height: 360px; border: none; background: transparent; }',
-      /* ★文字色を薄いグレーに変更 */
       '.lz-loading-inner { display: flex; flex-direction: column; align-items: center; gap: 10px; color: #ccc; }',
-      
-      /* ★サイズを100pxに適正化、中央揃えに固定 */
       '.lz-logo { width: 100px; height: 100px; display: block; }',
-      
-      /* ★アイコンの線を薄いグレーに変更 */
       '.lz-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-draw 2.4s ease-in-out infinite alternate; }',
       '@keyframes lz-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }',
       '.lz-loading-label { font-weight: 550; font-size: 1.4rem; letter-spacing: .1em; }',
-
       '.lz-track-outer { position: relative; width: 100%; overflow: hidden; }',
       '.lz-track {',
       '  display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 24px;',
@@ -49,7 +39,6 @@
       '.lz-track:active { cursor: grabbing; }',
       '.lz-track::-webkit-scrollbar { display: none; }',
       '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.25); gap: 16px; } }',
-
       '.lz-card { border: 1px solid rgba(231, 211, 200, 0.4); border-radius: var(--card-radius); background: #fff; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease; overflow: hidden; }',
       '.lz-card:hover, .lz-card.is-active { transform: translateY(-8px) scale(1.005); border-color: var(--apple-red); box-shadow: 0 20px 40px -10px rgba(207, 58, 58, 0.12); }',
       '.lz-body { padding: 18px 14px; display: grid; gap: 8px; }',
@@ -57,7 +46,6 @@
       '.lz-card:hover .lz-title-sm, .lz-card.is-active .lz-title-sm { padding-left: 22px; color: var(--apple-red); }',
       '.lz-title-sm::before { content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%) rotate(-15deg); width: 14px; height: 14px; background: var(--apple-green); border-radius: 0 80% 0 80%; opacity: 0; transition: opacity 0.3s ease; }',
       '.lz-card:hover .lz-title-sm::before, .lz-card.is-active .lz-title-sm::before { opacity: 1; }',
-
       '.lz-media { position: relative; background: #fdfaf8; overflow: hidden; }',
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 56.25%); }',
       '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }',
@@ -67,51 +55,31 @@
   };
 
   /* ==========================================
-     2. ロジック: 双方向無限手動ループ
+     2. ロジック: 無限ループ・ロゴ処理 (維持)
      ========================================== */
   function setupInfinityTrack(track) {
     if (!track) return;
     if (track.scrollWidth <= track.clientWidth) return;
-
     var originalHTML = track.innerHTML;
     track.innerHTML = originalHTML + originalHTML + originalHTML;
-
-    var isMouseDown = false;
-    var startX, scrollLeftInitial;
-
-    var resetToCenter = function() {
-      var singleWidth = track.scrollWidth / 3;
-      track.scrollLeft = singleWidth;
-    };
+    var isMouseDown = false, startX, scrollLeftInitial;
+    var resetToCenter = function() { var singleWidth = track.scrollWidth / 3; track.scrollLeft = singleWidth; };
     setTimeout(resetToCenter, 50);
-
     track.addEventListener('scroll', function() {
       var singleWidth = track.scrollWidth / 3;
-      if (track.scrollLeft >= singleWidth * 2) {
-        track.scrollLeft -= singleWidth;
-      } else if (track.scrollLeft <= 0) {
-        track.scrollLeft += singleWidth;
-      }
+      if (track.scrollLeft >= singleWidth * 2) track.scrollLeft -= singleWidth;
+      else if (track.scrollLeft <= 0) track.scrollLeft += singleWidth;
     }, { passive: true });
-
-    track.addEventListener('mousedown', function(e) {
-      isMouseDown = true;
-      startX = e.pageX - track.offsetLeft;
-      scrollLeftInitial = track.scrollLeft;
-    });
+    track.addEventListener('mousedown', function(e) { isMouseDown = true; startX = e.pageX - track.offsetLeft; scrollLeftInitial = track.scrollLeft; });
     window.addEventListener('mouseup', function() { isMouseDown = false; });
     track.addEventListener('mousemove', function(e) {
       if (!isMouseDown || e.buttons !== 1) return;
       e.preventDefault();
-      var x = e.pageX - track.offsetLeft;
-      var walk = (x - startX) * 1.5; 
+      var x = e.pageX - track.offsetLeft, walk = (x - startX) * 1.5; 
       track.scrollLeft = scrollLeftInitial - walk;
     });
   }
 
-  /* ==========================================
-     3. ユーティリティ: SVGセンター精密計算
-     ========================================== */
   function lzCenterLogoSVG(svg){
     try {
       var path = svg.querySelector('path, .lz-logo-path');
@@ -124,26 +92,32 @@
     } catch(e){}
   }
 
-  /* ★修正：modal.jsが必要とするデータをすべてカードに埋め込む */
+  /* ==========================================
+     3. 多言語対応レンダリングロジック
+     ========================================== */
   function cardHTML(it, pad, groupKey) {
-    var title = it.title || "(無題)";
+    // コンテンツ言語に応じてデータを取得
+    var title = C.L(it, "title") || (window.LZ_CURRENT_LANG === 'ja' ? "(無題)" : "(Untitled)");
+    var lead  = C.L(it, "lead")  || "";
+    var body  = C.L(it, "body")  || "";
     var subs = it.subImages || [];
     var sns = it.sns || {};
     var related = it.relatedArticles || [];
 
+    // モーダルが参照する data 属性にも翻訳済みの値をセット
     return [
       '<article class="lz-card" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
-      '  data-lead="' + C.esc(it.lead || "") + '" data-body="' + C.esc(it.body || "") + '" data-main="' + C.esc(it.mainImage || "") + '"',
+      '  data-lead="' + C.esc(lead) + '" data-body="' + C.esc(body) + '" data-main="' + C.esc(it.mainImage || "") + '"',
       '  data-sub=\'' + C.esc(JSON.stringify(subs)) + '\' data-sns=\'' + C.esc(JSON.stringify(sns)) + '\'',
-      '  data-related=\'' + C.esc(JSON.stringify(related)) + '\'', // ★関連記事を同期
+      '  data-related=\'' + C.esc(JSON.stringify(related)) + '\'', 
       '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
       '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '"',
-      '  data-ec="' + C.esc(it.ec || "") + '" data-target="' + C.esc(it.target || "") + '" data-org="' + C.esc(it.organizer || "") + '"', // ★EC/対象/主催を追加
+      '  data-ec="' + C.esc(it.ec || "") + '" data-target="' + C.esc(it.target || "") + '" data-org="' + C.esc(it.organizer || "") + '"', 
       '  data-group="' + C.esc(groupKey) + '">',
       '  <div class="lz-media ' + (it.mainImage ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
       it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async" onerror="this.parentElement.classList.add(\'is-empty\'); this.remove();">' : '',
       '  </div>',
-      '  <div class="lz-body"><h3 class="lz-title-sm">' + C.esc(title) + '</h3><div class="lz-lead">' + C.esc(it.lead || "") + '</div></div>',
+      '  <div class="lz-body"><h3 class="lz-title-sm">' + C.esc(title) + '</h3><div class="lz-lead">' + C.esc(lead) + '</div></div>',
       '</article>'
     ].join('');
   }
@@ -153,7 +127,10 @@
     var config = window.LZ_CONFIG, l1 = root.dataset.l1 || config.L1, l2 = root.dataset.l2 || "";
     if (!l2) return;
 
-    var heading = root.dataset.heading || l2, imageRatio = root.dataset.imageRatio || "16:9";
+    // ヘッダータイトルのローカライズ
+    var translatedL2 = C.T(l2);
+    var heading = root.dataset.heading || translatedL2;
+    var imageRatio = root.dataset.imageRatio || "16:9";
     var mql = window.matchMedia("(max-width:768px)");
     root.style.setProperty("--ratio", C.ratio(imageRatio));
 
@@ -164,7 +141,7 @@
       '    <svg class="lz-logo" viewBox="-60 -60 720 720" aria-hidden="true" style="overflow:visible">',
       '      <path class="lz-logo-path" pathLength="1000" d="M287.04,32.3c.29.17,1.01.63,1.46,1.55.57,1.19.29,2.29.2,2.57-7.08,18.09-14.18,36.17-21.26,54.26,5.96-.91,14.77-2.45,25.28-5.06,17.98-4.45,22.46-7.44,33.44-9.85,18.59-4.08,33.88-1.67,44.51,0,21.1,3.32,37.42,10.74,47.91,16.6-4.08,8.59-11.1,20.05-23.06,29.99-18.47,15.35-38.46,18.54-52.07,20.7-7.55,1.21-21.61,3.32-39.12.24-13.71-2.41-11-4.76-30.72-9.36-6.73-1.56-12.82-2.64-17.98-7.87-3.73-3.77-4.92-7.63-6.74-7.3-2.44.43-1.84,7.58-4.5,16.85-.98,3.46-5.56,19.45-14.05,21.35-5.5,1.23-9.85-4.07-17.02-9.79-17.52-13.96-36.26-17.94-45.91-19.99-7.62-1.62-25.33-5.16-45.19,1.36-6.6,2.17-19.57,7.82-35.2,23.74-48.04,48.93-49.39,127.17-49.69,143.97-.08,5-.47,48.18,16.56,90.06,6.63,16.3,14.21,28.27,24.85,38.3,4.2,3.97,12.19,11.37,24.85,16.56,13.72,5.63,26.8,6.15,31.06,6.21,8.06.12,9.06-1.03,14.49,0,10.22,1.95,13.47,7.33,22.77,12.42,10.16,5.56,19.45,6.3,30.02,7.25,8.15.73,18.56,1.67,31.15-1.99,9.83-2.85,16.44-7.18,25.24-12.93,2.47-1.61,9.94-6.61,20.55-16.18,12.76-11.51,21.35-21.79,25.53-26.87,26.39-32.12,39.71-48.12,50.73-71.43,12.87-27.23,17.2-49.56,18.63-57.97,3.23-18.95,5.82-35.27,0-54.87-2.24-7.54-6.98-23.94-21.74-37.27-5.26-4.76-12.9-11.66-24.85-13.46-17.04-2.58-30.24,7.19-33.13,9.32-9.71,7.17-13.91,16.56-21.93,35.04-1.81,4.19-8.26,19.38-14.31,43.63-2.82,11.32-6.43,25.97-8.28,45.55-1.47,15.61-3.27,34.6,1.04,59.01,4.92,27.9,15.01,47.01,17.6,51.76,5.58,10.26,12.02,21.83,24.85,33.13,6.45,5.69,17.55,15.24,35.2,19.77,19.17,4.92,34.7.98,38.3,0,14.29-3.9,24.02-11.27,28.99-15.63"></path>',
       '    </svg>',
-      '    <div class="lz-loading-label">記事読み込み中…</div></div></div></div>',
+      '    <div class="lz-loading-label">' + C.T("読み込み中...") + '</div></div></div></div>',
       '</div>'
     ].join('');
 
@@ -175,11 +152,14 @@
       var json = await C.NET.json(config.ENDPOINT + "?l1=" + encodeURIComponent(l1) + "&l2=" + encodeURIComponent(l2));
       if (!json || !json.ok) throw new Error("no data");
       var items = json.items || [], groups = new Map();
+      
       items.forEach(function(it) {
-        var k = (it.l3 || "").trim();
+        // 小カテゴリ(L3)も翻訳したラベルを使用してグルーピング
+        var k = (C.L(it, "l3") || "").trim();
         if (!groups.has(k)) groups.set(k, []);
         groups.get(k).push(it);
       });
+
       var html = "", pad = C.ratio(imageRatio);
       groups.forEach(function(arr, key) {
         if (key) html += '<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">' + C.esc(key) + '</h3></div>';
@@ -202,7 +182,9 @@
         var card = e.target.closest(".lz-card");
         if (card && window.lzModal) { e.preventDefault(); window.lzModal.open(card); }
       });
-    } catch(e) { root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">読み込みに失敗しました</div>'; }
+    } catch(e) { 
+      root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">' + C.T("読み込みに失敗しました") + '</div>'; 
+    }
   };
 
   var boot = function() {
