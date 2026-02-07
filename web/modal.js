@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (優先順位色分け & 検索ハイライト Edition)
- * 役割: 既存機能を維持しつつ、赤(タイトル直通)を最優先、緑(タグ検索)を次点として色分け。検索時に文脈を表示。
+ * modal.js - 詳細表示・機能コンポーネント (グローバル検索 & 優先順位色分け Edition)
+ * 役割: 全記事データ(window.LZ_DATA)から関連ワードを検索。赤(直通)を最優先、緑(検索)を次点として表示。
  */
 window.lzModal = (function() {
   "use strict";
@@ -58,10 +58,10 @@ window.lzModal = (function() {
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
       /* オートリンク色分け */
       '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
-      '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
-      '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
-      '.lz-auto-link:hover { background: #f5f5f5; }',
-      /* 検索結果・ハイライト */
+      '.lz-auto-link.direct { color: #cf3a3a; } /* 直通：赤 */',
+      '.lz-auto-link.search { color: #27ae60; } /* 検索：緑 */',
+      '.lz-auto-link:hover { background: #f0f0f0; }',
+      /* 検索結果デザイン */
       '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
       '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
@@ -108,37 +108,36 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* 検索機能: 重複排除 ＆ ハイライト表示 */
+  /* 検索機能: 全記事(window.LZ_DATA)を対象にタイトル・リード・本文を検索。きっかけ記事を除外。 */
   function renderSearchResults(keyword, targetLang) {
-    var cards = document.querySelectorAll('.lz-card');
+    var allData = window.LZ_DATA || [];
     var results = [];
-    var seenIds = new Set(); 
+    var seenIds = new Set();
+    var currentArticleId = CURRENT_CARD ? CURRENT_CARD.dataset.id : "";
 
-    cards.forEach(function(c) {
-      if (seenIds.has(c.dataset.id)) return;
-      try {
-        var data = JSON.parse(c.dataset.item || "{}");
-        var title = getLangText(data, 'title', targetLang);
-        var body = getLangText(data, 'body', targetLang);
-        var cat = c.dataset.group || "";
+    allData.forEach(function(item) {
+      if (item.id === currentArticleId || seenIds.has(item.id)) return;
 
-        if (title.includes(keyword) || body.includes(keyword) || (c.dataset.tags && c.dataset.tags.includes(keyword))) {
-          seenIds.add(c.dataset.id);
-          var idx = body.indexOf(keyword);
-          var start = Math.max(0, idx - 25);
-          var snippet = (start > 0 ? "..." : "") + body.substring(start, start + 70) + (body.length > start + 70 ? "..." : "");
-          results.push({ card: c, title: title, body: snippet, cat: cat });
-        }
-      } catch(e){}
+      var title = getLangText(item, 'title', targetLang);
+      var lead = getLangText(item, 'lead', targetLang);
+      var body = getLangText(item, 'body', targetLang);
+      var tags = (item.tags || "").toString();
+
+      if (title.includes(keyword) || lead.includes(keyword) || body.includes(keyword) || tags.includes(keyword)) {
+        seenIds.add(item.id);
+        var combined = lead + " " + body;
+        var idx = combined.indexOf(keyword);
+        var start = Math.max(0, idx - 25);
+        var snippet = (start > 0 ? "..." : "") + combined.substring(start, start + 70) + (combined.length > start + 70 ? "..." : "");
+        results.push({ id: item.id, title: title, body: snippet, cat: item.l3 || "" });
+      }
     });
 
-    // キーワード箇所を編みかけにするヘルパー
     var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
-
     var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
     if(results.length === 0) html += '<div>見つかりませんでした。</div>';
     else results.forEach(function(res) {
-      html += '<div class="lz-s-item" data-goto-id="' + res.card.dataset.id + '">';
+      html += '<div class="lz-s-item" data-goto-id="' + res.id + '">';
       html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
       html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
     });
@@ -146,35 +145,35 @@ window.lzModal = (function() {
 
     MODAL.innerHTML = html;
     MODAL.querySelectorAll('.lz-s-item').forEach(function(item) {
-      item.onclick = function() { render(document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]')); };
+      item.onclick = function() {
+        var cardInDom = document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]');
+        if(cardInDom) render(cardInDom, targetLang);
+        else alert("詳細を表示するには該当のセクションへ移動してください。");
+      };
     });
     MODAL.scrollTop = 0;
   }
 
-  /* オートリンク機能: 赤(直行)優先 ＆ トークンによる多重置換防止 */
+  /* オートリンク機能: 全記事タイトルを優先(赤)。二重置換防止。 */
   function applyAutoLinks(text, currentId, targetLang) {
-    var cards = document.querySelectorAll('.lz-card');
-    var map = {}; // ハッシュマップで優先順位管理
+    var allData = window.LZ_DATA || [];
+    var map = {};
 
-    // 1. まずキーワード（検索用）を登録
+    // 1. キーワード(緑)を登録
     MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
 
-    // 2. 他記事のタイトルを登録（同じ単語があれば direct が上書き＝優先される）
-    cards.forEach(function(card) {
-      try {
-        var data = JSON.parse(card.dataset.item || "{}");
-        var title = getLangText(data, 'title', targetLang);
-        if (title && title.length > 1 && card.dataset.id !== currentId) {
-          map[title] = { word: title, id: card.dataset.id, type: 'direct' };
-        }
-      } catch(e) {}
+    // 2. 他記事タイトル(赤)を登録（被った場合はこちらで上書き＝赤優先）
+    allData.forEach(function(item) {
+      var title = getLangText(item, 'title', targetLang);
+      if (title && title.length > 1 && item.id !== currentId) {
+        map[title] = { word: title, id: item.id, type: 'direct' };
+      }
     });
 
-    // 長い単語から順にソート（「飯綱町」より「飯綱町産りんご」を優先）
     var candidates = Object.values(map).sort(function(a, b) { return b.word.length - a.word.length; });
-
     var escaped = C.esc(text);
     var tokens = [];
+
     candidates.forEach(function(item, idx) {
       var regex = new RegExp(item.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
       escaped = escaped.replace(regex, function(match) {
@@ -185,6 +184,7 @@ window.lzModal = (function() {
         return token;
       });
     });
+
     tokens.forEach(function(html, idx) { if(html) escaped = escaped.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
     return escaped;
   }
@@ -289,7 +289,10 @@ window.lzModal = (function() {
     ].join('');
 
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
-      el.onclick = function() { if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]')); else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
+      el.onclick = function() { if(el.dataset.gotoId) {
+        var cardInDom = document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]');
+        if(cardInDom) render(cardInDom, MODAL_ACTIVE_LANG); else alert("該当の記事は別のセクションにあります。ページをスクロールして探してみてください。");
+      } else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
     });
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
