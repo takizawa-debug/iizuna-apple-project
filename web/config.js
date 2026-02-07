@@ -2,7 +2,7 @@
 window.LZ_CONFIG = {
   // ① GASエンドポイント
   ENDPOINT: "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec",
-  SEARCH_ENDPOINT: "https://script.google.com/macros/s/AKfycbzpisDW6hyUhU-bE8-lYbhAusRUtbiU2sw4d39te38CWS6Q4TsxHvslIdNDulMiZ03c/exec",
+  SEARCH_ENDPOINT: "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec",
 
   // ② アナリティクス
   ANALYTICS: {
