@@ -1,18 +1,15 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (UIブラッシュアップ版)
- * 役割: サイト全体の検索機能を維持しつつ、画像プレースホルダーとボタンのアクセシビリティを最適化。
+ * modal-search.js - モーダル内広域検索エンジン (キーワード動的取得版)
+ * 役割: スプレッドシートの「キーワード定義」シートから多言語ワードを取得してリンク化。
  */
 window.lzSearchEngine = (function() {
   "use strict";
   var C = window.LZ_COMMON;
 
-  var MASTER_TAGS = [
-    "8月", "9月", "10月", "11月", "12月", "1月", "2月", "3月", "4月", "5月", "6月", "7月",
-    "北信五岳", "移住", "子育て", "ふじ", "高坂りんご", "ブラムリー", "サンふじ",
-    "シードル", "アップルミュージアム", "アクセス", "歴史", "機能性成分", "プロシアニジン", "甘みと酸味のバランス"
-  ];
+  // 固定リストを廃止し、動的格納用の変数を用意
+  var DYNAMIC_KEYWORDS = [];
 
-  // 検索画面専用の追加スタイル (ホバー時のアクセシビリティ確保)
+  // 検索画面専用の追加スタイル (維持)
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
@@ -27,14 +24,43 @@ window.lzSearchEngine = (function() {
     document.head.appendChild(style);
   };
 
+  /**
+   * 【新規追加】スプレッドシートからキーワードを取得
+   */
+  async function prefetchKeywords() {
+    try {
+      // mode=keywords パラメーターでGASを叩く
+      var res = await fetch(window.LZ_CONFIG.ENDPOINT + "?mode=keywords");
+      var json = await res.json();
+      if (json.ok) {
+        DYNAMIC_KEYWORDS = json.items || [];
+        // データ取得完了時にモーダルが開いていればリンクを更新
+        if (window.lzModal && window.lzModal.refreshLinks) {
+          window.lzModal.refreshLinks();
+        }
+      }
+    } catch(e) { console.error("Keywords fetch failed", e); }
+  }
+  prefetchKeywords();
+
   return {
     /**
-     * オートリンク生成ロジック (同期)
+     * オートリンク生成ロジック (キーワード部分を動的に修正)
      */
     applyLinks: function(text, currentId, targetLang) {
       var cardsInDom = document.querySelectorAll('.lz-card');
       var map = {};
-      MASTER_TAGS.forEach(function(tag) { map[tag] = { word: tag, type: 'search' }; });
+      
+      // 1. スプレッドシートから取得したキーワード(緑)を現在の言語に合わせて登録
+      DYNAMIC_KEYWORDS.forEach(function(kw) {
+        var word = kw[targetLang] || kw['ja']; // 指定言語がなければ日本語を優先
+        if (word && word.length > 1) {
+          // data-keywordには常に日本語(ja)をセットして、検索の正確性を担保
+          map[word] = { word: word, originalJa: kw.ja, type: 'search' };
+        }
+      });
+
+      // 2. ページ内のカード(赤)を登録 (維持：同ページのみ)
       cardsInDom.forEach(function(card) {
         try {
           var d = JSON.parse(card.dataset.item || "{}");
@@ -44,6 +70,7 @@ window.lzSearchEngine = (function() {
           }
         } catch(e){}
       });
+
       var candidates = Object.values(map).sort(function(a,b){ return b.word.length - a.word.length; });
       var escaped = C.esc(text), tokens = [];
       candidates.forEach(function(item, idx) {
@@ -52,7 +79,7 @@ window.lzSearchEngine = (function() {
           var token = "###LZT_" + idx + "###";
           tokens[idx] = item.type === 'direct' 
             ? '<span class="lz-auto-link direct" data-goto-id="'+item.id+'">'+match+'</span>'
-            : '<span class="lz-auto-link search" data-keyword="'+item.word+'">'+match+'</span>';
+            : '<span class="lz-auto-link search" data-keyword="'+(item.originalJa || item.word)+'">'+match+'</span>';
           return token;
         });
       });
@@ -61,7 +88,7 @@ window.lzSearchEngine = (function() {
     },
 
     /**
-     * 広域検索実行
+     * 広域検索実行 (維持)
      */
     run: async function(keyword, targetLang, modalEl, backFunc) {
       injectSearchStyles(); // スタイルの注入
@@ -107,7 +134,7 @@ window.lzSearchEngine = (function() {
             var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
             var idx = combinedText.indexOf(keyword);
             var start = Math.max(0, idx - 20);
-            var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 80) + "...";
+            var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 70) + "...";
 
             html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px; margin-bottom:12px;">';
             html += '  <div style="display:flex; gap:15px; align-items:center;">';
