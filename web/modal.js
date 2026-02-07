@@ -1,6 +1,5 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (DeepLink & PDF Precision Edition)
- * 役割: モーダル構築、関連記事、前後ナビ、ディープリンク自動起動、マルチページ対応印刷
+ * modal.js - 詳細表示・機能コンポーネント (多言語対応・DeepLink & PDF Edition)
  */
 window.lzModal = (function() {
   "use strict";
@@ -68,7 +67,7 @@ window.lzModal = (function() {
   };
 
   /* ==========================================
-     PDF精密生成ロジック (マルチページ対応 ＋ 配置修正)
+     PDF精密生成ロジック (多言語対応)
      ========================================== */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
@@ -81,13 +80,13 @@ window.lzModal = (function() {
   }
 
   async function generatePdf(element, title, cardId) {
-    if(!confirm("PDFを作成して新しいタブで開きます。よろしいですか？")) return;
+    if(!confirm(C.T("PDFを作成して新しいタブで開きます。よろしいですか？"))) return;
     try {
       if (!window.jspdf) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
       if (!window.html2canvas) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
       if (!window.QRCode) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
 
-      var qrUrl = window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(cardId);
+      var qrUrl = window.location.origin + window.location.pathname + "?lang=" + window.LZ_CURRENT_LANG + "&id=" + encodeURIComponent(cardId);
       var clone = element.cloneNode(true);
       clone.querySelector(".lz-actions").remove();
       clone.style.maxHeight = "none"; clone.style.height = "auto"; clone.style.width = "800px";
@@ -115,23 +114,22 @@ window.lzModal = (function() {
       while(heightLeft > 0) {
         pdf.addImage(imgData, "PNG", margin, position, imgWmm, imgHmm);
         
-        // QRコード
         if(qrData){
           var qSize = 22;
           pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize - 3, qSize, qSize);
         }
-        // ★修正：日本語フッター画像（一回り大きく）
-        var jpImg = renderFooterImagePx("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", 18, "#000");
+        
+        // ★フッターの多言語化
+        var footerText = C.T("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。");
+        var jpImg = renderFooterImagePx(footerText, 18, "#000");
         var footerH = 8;
         pdf.addImage(jpImg.data, "PNG", margin, pageH - margin - 2, footerH / jpImg.ar, footerH);
 
-        // ★修正：日時の精密配置（左欠け防止 ＋ フォント拡大）
         var now = new Date();
         var ts = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + " " + now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
         var tsFull = ts + " / " + pageCount + "/" + totalPages;
-        pdf.setFontSize(11); // 一回り大きく
+        pdf.setFontSize(11);
         var tsWidth = pdf.getTextWidth(tsFull);
-        // 右端マージンから文字幅分を引いた位置（絶対座標）に描画することで欠けを防止
         pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin +4);
 
         heightLeft -= innerH;
@@ -143,11 +141,11 @@ window.lzModal = (function() {
       }
       
       window.open(pdf.output("bloburl"), "_blank");
-    } catch(e) { console.error(e); alert("PDF生成に失敗しました。"); }
+    } catch(e) { console.error(e); alert(C.T("PDF生成に失敗しました。")); }
   }
 
   /* ==========================================
-     モーダル制御 ＋ ディープリンク
+     モーダル制御 (多言語対応)
      ========================================== */
   var HOST, SHELL, MODAL, CARDS = [], IDX = 0;
 
@@ -157,6 +155,7 @@ window.lzModal = (function() {
     var title = d.title;
 
     var url = new URL(window.location.href);
+    url.searchParams.set('lang', window.LZ_CURRENT_LANG);
     url.searchParams.set('id', d.id);
     window.history.replaceState(null, "", url.toString());
     document.title = title + " | " + C.originalTitle;
@@ -166,18 +165,19 @@ window.lzModal = (function() {
     var sns = {}; try { sns = JSON.parse(d.sns || "{}"); } catch(e){}
 
     var rows = [];
+    // ★テーブル項目の多言語化 (C.Tを使用)
     var fields = [
-      {k:'address', l:'住所'}, {k:'bizDays', l:'営業曜日'}, {k:'holiday', l:'定休日'},
-      {k:'hoursCombined', l:'営業時間'}, {k:'eventDate', l:'開催日'}, {k:'eventTime', l:'開催時間'},
-      {k:'fee', l:'参加費'}, {k:'bring', l:'もちもの'}, {k:'target', l:'対象'}, 
-      {k:'apply', l:'申し込み方法'}, {k:'org', l:'主催者名'}, {k:'venueNote', l:'会場注意事項'}, {k:'note', l:'備考'}
+      {k:'address', l:C.T('住所')}, {k:'bizDays', l:C.T('営業曜日')}, {k:'holiday', l:C.T('定休日')},
+      {k:'hoursCombined', l:C.T('営業時間')}, {k:'eventDate', l:C.T('開催日')}, {k:'eventTime', l:C.T('開催時間')},
+      {k:'fee', l:C.T('参加費')}, {k:'bring', l:C.T('もちもの')}, {k:'target', l:C.T('対象')}, 
+      {k:'apply', l:C.T('申し込み方法')}, {k:'org', l:C.T('主催者名')}, {k:'venueNote', l:C.T('会場注意事項')}, {k:'note', l:C.T('備考')}
     ];
     for(var i=0; i<fields.length; i++) {
       if(d[fields[i].k] && d[fields[i].k].trim() !== "") {
         rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
       }
     }
-    if (d.tel) rows.push('<tr><th>問い合わせ</th><td><a href="tel:'+C.esc(d.tel)+'">'+C.esc(d.tel)+'</a></td></tr>');
+    if (d.tel) rows.push('<tr><th>' + C.T('問い合わせ') + '</th><td><a href="tel:'+C.esc(d.tel)+'">'+C.esc(d.tel)+'</a></td></tr>');
 
     var snsHtml = [];
     var addSns = function(url, key) { if(url && url.trim() !== "") snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
@@ -189,23 +189,23 @@ window.lzModal = (function() {
     try {
       var rel = JSON.parse(d.related || "[]").filter(function(x){ return x && (x.title || x.url); });
       if (rel.length) {
-        relatedBlock = '<div class="lz-related"><div class="lz-related-label">関連記事</div>' + 
+        relatedBlock = '<div class="lz-related"><div class="lz-related-label">' + C.T('関連記事') + '</div>' + 
           rel.map(function(a){
             return '<div class="lz-related-item"><a href="' + C.esc(a.url || "#") + '" target="_blank" rel="noopener">' + C.esc(a.title || a.url) + '</a></div>';
           }).join("") + '</div>';
       }
     } catch(e) {}
 
-    var dlBtn = (d.dl && d.dl.trim() !== "") ? '<a class="lz-btn" href="'+C.esc(d.dl)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">保存</span></a>' : "";
+    var dlBtn = (d.dl && d.dl.trim() !== "") ? '<a class="lz-btn" href="'+C.esc(d.dl)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">' + C.T('保存') + '</span></a>' : "";
 
     MODAL.innerHTML = [
       '<div class="lz-mh">',
       '  <h2 class="lz-mt">' + C.esc(title) + '</h2>',
       '  <div class="lz-actions">',
-      '    <button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">共有</span></button>',
+      '    <button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">' + C.T('共有') + '</span></button>',
       dlBtn,
-      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">印刷</span></button>' : ''),
-      '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">閉じる</span></button>',
+      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + C.T('印刷') + '</span></button>' : ''),
+      '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + C.T('閉じる') + '</span></button>',
       '  </div>',
       '</div>',
       '<div>',
@@ -223,10 +223,10 @@ window.lzModal = (function() {
     if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
 
     MODAL.querySelector(".lz-share").onclick = function() {
-      var shareUrl = window.location.origin + window.location.pathname + "?id=" + encodeURIComponent(d.id);
-      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (d.lead || "") + "\nーーー\n詳しくはこちら\n" + shareUrl + "\n\n#いいづなりんご #飯綱町";
+      var shareUrl = window.location.origin + window.location.pathname + "?lang=" + window.LZ_CURRENT_LANG + "&id=" + encodeURIComponent(d.id);
+      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (d.lead || "") + "\nーーー\n" + C.T('詳しくはこちら') + "\n" + shareUrl + "\n\n#いいづなりんご #飯綱町";
       if(navigator.share) navigator.share({ text: payload });
-      else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("共有テキストをコピーしました！"); }
+      else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(C.T("共有テキストをコピーしました！")); }
     };
 
     var mainImg = MODAL.querySelector("#lz-mainimg");
@@ -264,7 +264,6 @@ window.lzModal = (function() {
     history.replaceState(null, "", url.toString());
   }
 
-  /* ★独自URLでの自動起動ロジック：より厳密なデコード比較 ＋ 監視 */
   var checkDeepLink = function() {
     var rawId = new URLSearchParams(location.search).get('id');
     if (!rawId) return;
