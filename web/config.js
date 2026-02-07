@@ -61,7 +61,11 @@ window.LZ_CONFIG = {
         "共有テキストをコピーしました！": "共有テキストをコピーしました！",
         "PDFを作成して新しいタブで開きます。よろしいですか？": "PDFを作成して新しいタブで開きます。よろしいですか？",
         "PDF生成に失敗しました。": "PDF生成に失敗しました。",
-        "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。": "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。"
+        "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。": "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。",
+        "search_res_title": "「{0}」に関連する情報",
+        "back_to_article": "← 記事に戻る",
+        "searching": "検索しています...",
+        "not_found": "見つかりませんでした"
       },
       en: {
         "知る": "Discover", "味わう": "Savor", "体験する": "Experience", "働く・住む": "Live", "販売・発信する": "Promote",
@@ -76,7 +80,11 @@ window.LZ_CONFIG = {
         "共有テキストをコピーしました！": "Copied sharing text!",
         "PDFを作成して新しいタブで開きます。よろしいですか？": "Create PDF and open in a new tab. Are you sure?",
         "PDF生成に失敗しました。": "Failed to generate PDF.",
-        "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。": "This PDF data was created as part of the Iizuna Town apple PR project."
+        "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。": "This PDF data was created as part of the Iizuna Town apple PR project.",
+        "search_res_title": "Information related to \"{0}\"",
+        "back_to_article": "← Back to Article",
+        "searching": "Searching...",
+        "not_found": "No results found."
       },
       zh: {
         "知る": "探索", "味わう": "品味", "体験する": "體驗", "働く・住む": "定居", "販売・発信する": "推廣",
@@ -91,7 +99,11 @@ window.LZ_CONFIG = {
         "共有テキストをコピーしました！": "已複製分享文字！",
         "PDFを作成して新しいタブで開きます。よろしいですか？": "將建立 PDF 並在全分頁開啟。確定嗎？",
         "PDF生成に失敗しました。": "PDF 建立失敗。",
-        "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。": "本 PDF 資料為飯綱町蘋果推廣事業的一環。"
+        "本PDFデータは飯綱町産りんごPR事業の一環で作成されました。": "本 PDF 資料為飯綱町蘋果推廣事業的一環。",
+        "search_res_title": "与“{0}”相关的信息",
+        "back_to_article": "← 返回文章",
+        "searching": "正在搜索...",
+        "not_found": "未找到相关内容"
       }
     }
   }

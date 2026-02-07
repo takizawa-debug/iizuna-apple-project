@@ -1,30 +1,24 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (多言語 ＆ 視認性強化版)
- * 役割: スプレッドシートから多言語ワードを取得。検索結果の文字サイズを拡大し、タイトルとボタンを多言語化。
+ * modal-search.js - モーダル内広域検索エンジン (多言語 ＆ 視認性完成版)
+ * 役割: 既存の1:1サムネイル、文字拡大、大文字小文字無視を完全維持し、翻訳の文法不備を解消。
  */
 window.lzSearchEngine = (function() {
   "use strict";
   var C = window.LZ_COMMON;
-
   var DYNAMIC_KEYWORDS = [];
 
-  // 検索画面専用のスタイル (文字サイズを大きく調整)
+  // 検索画面専用のスタイル (現在の拡大サイズを完全に維持)
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
       '.lz-s-wrap { padding: 25px; }',
-      /* リスト全体のタイトル：1.65remに拡大 */
       '.lz-s-title { font-size: 1.65rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 5px solid #27ae60; padding-left: 12px; line-height: 1.4; }',
-      /* 各記事のタイトル：1.45remに拡大 */
       '.lz-s-name { font-size: 1.45rem; font-weight: 800; color: #cf3a3a; margin-bottom: 6px; line-height: 1.4; }',
-      /* 本文抜粋：1.15remに拡大 */
       '.lz-s-body { font-size: 1.15rem; color: #555; line-height: 1.6; -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
-      /* カテゴリバッジ：0.85remに拡大 */
       '.lz-s-cat { font-size: 0.85rem; background: #27ae60; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: 800; }',
-      /* 戻るボタン：1.2remに拡大 */
-      '.lz-btn-search-back { margin-top:25px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.2rem; padding: 12px 0; cursor: pointer; border-radius: 999px; }',
+      '.lz-btn-search-back { margin-top:25px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.2rem; padding: 12px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
       '.lz-btn-search-back:hover { background:#27ae60 !important; color:#fff !important; }',
       '.lz-s-item { display:block; text-decoration:none; color:inherit; }',
       '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
@@ -33,6 +27,14 @@ window.lzSearchEngine = (function() {
     ].join('\n');
     document.head.appendChild(style);
   };
+
+  /**
+   * 辞書から翻訳を取得するヘルパー
+   */
+  function getMsg(key, lang) {
+    var dict = window.LZ_CONFIG.LANG.I18N[lang] || window.LZ_CONFIG.LANG.I18N['ja'];
+    return dict[key] || key;
+  }
 
   async function prefetchKeywords() {
     try {
@@ -100,8 +102,9 @@ window.lzSearchEngine = (function() {
         displayWord = window.event.currentTarget.dataset.display;
       }
       
+      // 「検索しています...」の多言語表示
       modalEl.innerHTML = '<div style="padding:60px; text-align:center;">' + 
-        '<p style="font-weight:bold; color:#cf3a3a;">' + (C.T('検索しています...') || 'Searching...') + '</p>' +
+        '<p style="font-weight:bold; color:#cf3a3a;">' + getMsg('searching', targetLang) + '</p>' +
         '</div>';
       
       try {
@@ -115,21 +118,20 @@ window.lzSearchEngine = (function() {
         var currentId = new URLSearchParams(location.search).get('id');
         results = results.filter(function(it){ return it.title !== currentId; });
 
+        // ハイライト：大文字小文字を無視しつつ元の表記を崩さない
         var hl = function(text) {
           if (!displayWord) return text;
           var r = new RegExp(displayWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
           return text.replace(r, function(m){ return '<mark>' + m + '</mark>'; });
         };
 
-        // 検索結果タイトルの多言語化
-        var resTitle = (targetLang === 'en' ? 'Information about ' : '') + 
-                       '「' + C.esc(displayWord) + '」' + 
-                       (C.T('に関連する情報') || 'に関連する情報');
+        // タイトルの組み立て：辞書の「{0}」を検索ワードに置換
+        var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
 
         var html = '<div class="lz-s-wrap"><div class="lz-s-title">' + resTitle + '</div>';
         
         if(results.length === 0) {
-          html += '<div style="padding:30px; border:2px dashed #eee; border-radius:12px; text-align:center; color:#888;">' + (C.T('見つかりませんでした') || '見つかりませんでした') + '</div>';
+          html += '<div style="padding:30px; border:2px dashed #eee; border-radius:12px; text-align:center; color:#888;">' + getMsg('not_found', targetLang) + '</div>';
         } else {
           results.forEach(function(it) {
             var l1 = C.L(it, 'l1', targetLang), l2 = C.L(it, 'l2', targetLang), title = C.L(it, 'title', targetLang);
@@ -150,7 +152,7 @@ window.lzSearchEngine = (function() {
 
             html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:15px; margin-bottom:15px; cursor:pointer; background:#fff; border-radius:12px; border:1px solid #eee;">';
             html += '  <div style="display:flex; gap:18px; align-items:center;">';
-            // サムネイルを90pxに微増
+            // サムネイル 90px 拡大を維持
             html += '    <div style="flex:0 0 90px; width:90px; height:90px; border-radius:12px; overflow:hidden; border:1px solid #eee; background:#fff;">' + thumbHtml + '</div>';
             html += '    <div style="flex:1; min-width:0;">';
             html += '      <div style="margin-bottom:6px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
@@ -163,8 +165,7 @@ window.lzSearchEngine = (function() {
         }
         
         // 戻るボタンの多言語化
-        var backLabel = '← ' + (C.T('記事に戻る') || '記事に戻る');
-        html += '<button class="lz-btn lz-btn-search-back">' + backLabel + '</button></div>';
+        html += '<button class="lz-btn lz-btn-search-back">' + getMsg('back_to_article', targetLang) + '</button></div>';
 
         modalEl.innerHTML = html;
         modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
