@@ -1,6 +1,6 @@
 /**
  * modal.js - 詳細表示・機能コンポーネント (グローバル検索 & 優先順位色分け Edition)
- * 役割: 既存機能を100%維持。GASエンドポイントから多言語データを取得し、赤(直通)を最優先、緑(検索)を次点として表示。
+ * 役割: 既存機能を100%維持。モーダル起動は即座に行い、キーワードクリック時のみ全データから多言語検索を行う。
  */
 window.lzModal = (function() {
   "use strict";
@@ -44,38 +44,54 @@ window.lzModal = (function() {
       '.lz-actions { display: flex; gap: 6px; align-items: center; }',
       '.lz-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cf3a3a; background: #fff; border-radius: 999px; padding: .45em .9em; cursor: pointer; color: #cf3a3a; font-weight: 600; font-size: 1.15rem; line-height: 1; transition: .2s; }',
       '.lz-btn:hover { background: #cf3a3a; color: #fff; }',
+      '.lz-btn.active { background: #cf3a3a; color: #fff; }',
       '.lz-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }',
+      '@media (max-width:768px) { .lz-btn { width: 38px; height: 38px; padding: 0; } .lz-btn .lz-label { display: none; } }',
       '.lz-m-lang-tabs { display: flex; gap: 4px; padding: 10px 15px; background: #fdfaf8; border-bottom: 1px solid #eee; }',
       '.lz-m-lang-btn { padding: 4px 12px; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; transition: .2s; }',
       '.lz-m-lang-btn.active { background: #cf3a3a; color: #fff; border-color: #cf3a3a; }',
       '.lz-mm { position: relative; background: #faf7f5; overflow: hidden; }',
       '.lz-mm img { position: absolute; inset: 0; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; transition: opacity .22s ease; }',
+      '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
-      /* オートリンク色分け・編みかけ */
-      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; border-radius: 2px; }',
-      '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
-      '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
+      /* オートリンク色分け */
+      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
+      '.lz-auto-link.direct { color: #cf3a3a; } /* 赤：タイトル直行 */',
+      '.lz-auto-link.search { color: #27ae60; } /* 緑：キーワード検索 */',
+      '.lz-auto-link:hover { background: #f5f5f5; }',
+      /* 検索結果・ハイライトデザイン */
       '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
       '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
-      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); }',
-      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; margin-right: 8px; }',
+      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
+      '.lz-s-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }',
+      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; flex-shrink: 0; }',
       '.lz-s-name { font-weight: 800; font-size: 1.3rem; color: #cf3a3a; }',
-      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; margin-top: 8px; }',
-      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; }',
-      /* 既存維持 */
+      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }',
+      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; border-radius: 2px; }',
       '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
-      '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; }',
-      '.lz-info td { background: #fff; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
+      '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
+      '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
       '.lz-sns { display: flex; gap: 10px; flex-wrap: wrap; padding: 15px; }',
-      '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; }',
+      '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: transform .2s; }',
+      '.lz-sns a:hover { transform: scale(1.1); }',
+      '.lz-sns a svg { width: 22px; height: 22px; }',
+      '.lz-sns a[data-sns="web"] { background: #5b667a; } .lz-sns a[data-sns="ec"] { background: #e67e22; }',
+      '.lz-sns a[data-sns="ig"] { background: #E4405F; } .lz-sns a[data-sns="fb"] { background: #1877F2; }',
+      '.lz-sns a[data-sns="x"] { background: #000; } .lz-sns a[data-sns="line"] { background: #06C755; } .lz-sns a[data-sns="tt"] { background: #000; }',
       '.lz-g { padding: 0 15px 15px; display: grid; gap: 10px; grid-template-columns: repeat(5, 1fr); }',
-      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; cursor: pointer; }',
-      '.lz-g img.is-active { outline: 3px solid #cf3a3a; }',
-      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: #fff; border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; z-index: 21000; }',
-      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; fill: none; }',
+      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; transition: opacity .2s; }',
+      '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; }',
+      '.lz-related { padding: 15px; background: #fafafa; border-top: 1px solid #eee; border-radius: 0 0 12px 12px; }',
+      '.lz-related-label { font-size: 1.1rem; color: #888; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }',
+      '.lz-related-item a { display: block; color: #cf3a3a; text-decoration: none; font-weight: 700; padding: 10px 0; font-size: 1.35rem; border-bottom: 1px dashed #ddd; transition: .2s; }',
+      '.lz-related-item a:hover { background: #fff5f5; padding-left: 8px; }',
+      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; }',
+      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; }',
+      '.lz-arrow:hover { background: #cf3a3a; } .lz-arrow:hover svg { stroke: #fff; }',
       '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
-      '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }'
+      '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
+      '@media(max-width:768px) { .lz-prev, .lz-next { top: auto; bottom: -68px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -85,34 +101,31 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* 全データの取得を確実にするためのバッファ */
-  var ALL_SITE_DATA = null;
-  async function ensureData() {
-    if (ALL_SITE_DATA) return ALL_SITE_DATA;
-    try {
-      var res = await fetch(window.LZ_CONFIG.ENDPOINT);
-      ALL_SITE_DATA = await res.json();
-      return ALL_SITE_DATA;
-    } catch(e) { return []; }
-  }
-
-  /* 検索機能: GASと同じロジックをフロントで再現 */
+  /* 検索機能: 全データ(window.LZ_DATA)を多言語解決(C.L)して検索。起点記事を除外。 */
   async function renderSearchResults(keyword, targetLang) {
-    var allData = await ensureData();
+    MODAL.innerHTML = '<div style="padding:40px; text-align:center;">'+getTranslation('検索しています...', targetLang)+'</div>';
+    
+    // データがなければ取得を試みる
+    if (!window.LZ_DATA) {
+      try { window.LZ_DATA = await C.NET.json(window.LZ_CONFIG.ENDPOINT); } catch(e) { console.error(e); }
+    }
+    
+    var allData = window.LZ_DATA || [];
     var results = [];
-    var seenIds = new Set();
+    var seenIds = new Set(); 
     var currentArticleId = CURRENT_CARD ? CURRENT_CARD.dataset.id : "";
 
     allData.forEach(function(item) {
-      if (item.id === currentArticleId || seenIds.has(item.id)) return;
+      if (item.id === currentArticleId || seenIds.has(item.id)) return; // 起点記事と重複を除外
 
-      // システム標準 C.L を使用して、多言語階層から正確に取得
+      // システム標準 C.L を使用して言語を解決
       var title = C.L(item, 'title', targetLang) || "";
       var lead = C.L(item, 'lead', targetLang) || "";
       var body = C.L(item, 'body', targetLang) || "";
       var l1 = C.L(item, 'l1', targetLang) || "";
       var l2 = C.L(item, 'l2', targetLang) || "";
 
+      // 検索対象: タイトル・リード・本文
       if (title.includes(keyword) || lead.includes(keyword) || body.includes(keyword)) {
         seenIds.add(item.id);
         var combined = lead + " " + body;
@@ -124,11 +137,12 @@ window.lzModal = (function() {
     });
 
     var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
+
     var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
-    if(results.length === 0) html += '<div style="padding:20px;">見つかりませんでした。</div>';
+    if(results.length === 0) html += '<div style="padding:20px;">' + getTranslation('見つかりませんでした', targetLang) + '</div>';
     else results.forEach(function(res) {
       html += '<div class="lz-s-item" data-goto-id="' + res.id + '" data-l1="' + res.l1 + '">';
-      html += '<div><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
+      html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
       html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
     });
     html += '<button class="lz-btn" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;" onclick="lzModal.backToCurrent()">← 記事に戻る</button></div>';
@@ -139,6 +153,7 @@ window.lzModal = (function() {
         var cardInDom = document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]');
         if(cardInDom) render(cardInDom, targetLang);
         else {
+          // 他ページにある場合は遷移
           var menuUrl = window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin;
           location.href = menuUrl + "?lang=" + targetLang + "&id=" + encodeURIComponent(item.dataset.gotoId);
         }
@@ -147,18 +162,23 @@ window.lzModal = (function() {
     MODAL.scrollTop = 0;
   }
 
-  /* オートリンク機能: 赤(直行)を上書き優先 */
-  async function applyAutoLinks(text, currentId, targetLang) {
-    var allData = await ensureData();
+  /* オートリンク機能: 赤(直行)優先 ＆ トークナイザーによる多重置換防止 */
+  function applyAutoLinks(text, currentId, targetLang) {
+    var cardsInDom = document.querySelectorAll('.lz-card');
     var map = {}; 
 
+    // 1. まずキーワード(緑)を登録
     MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
 
-    allData.forEach(function(item) {
-      var title = C.L(item, 'title', targetLang);
-      if (title && title.length > 1 && item.id !== currentId) {
-        map[title] = { word: title, id: item.id, type: 'direct' };
-      }
+    // 2. DOM上の他記事タイトル(赤)を登録（被った場合はこちらで上書き＝赤優先）
+    cardsInDom.forEach(function(card) {
+      try {
+        var data = JSON.parse(card.dataset.item || "{}");
+        var title = C.L(data, 'title', targetLang);
+        if (title && title.length > 1 && card.dataset.id !== currentId) {
+          map[title] = { word: title, id: card.dataset.id, type: 'direct' };
+        }
+      } catch(e) {}
     });
 
     var candidates = Object.values(map).sort(function(a, b) { return b.word.length - a.word.length; });
@@ -178,7 +198,7 @@ window.lzModal = (function() {
     return escaped;
   }
 
-  /* PDF・共有・基本機能を維持 */
+  /* PDF・基本機能 (既存維持) */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
     var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
@@ -231,9 +251,10 @@ window.lzModal = (function() {
     } catch(e) { console.error(e); alert(getTranslation("PDF生成に失敗しました。", MODAL_ACTIVE_LANG)); }
   }
 
+  /* モーダル制御 */
   var HOST, SHELL, MODAL, CARDS = [], IDX = 0, CURRENT_CARD = null;
 
-  async function render(card, targetLang) {
+  function render(card, targetLang) {
     if (!card) return;
     CURRENT_CARD = card;
     var d = card.dataset;
@@ -241,11 +262,13 @@ window.lzModal = (function() {
     var rawData = {};
     try { rawData = JSON.parse(d.item || "{}"); } catch(e) { rawData = { title: d.title, lead: d.lead, body: d.body, l3: d.group }; }
     
+    // システム標準 C.L を使用して、多言語階層から正確に取得
     var title = C.L(rawData, 'title', MODAL_ACTIVE_LANG);
     var lead = C.L(rawData, 'lead', MODAL_ACTIVE_LANG);
     var bodyText = C.L(rawData, 'body', MODAL_ACTIVE_LANG);
     
-    var linkedBody = await applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
+    // モーダルを開く処理は同期(即座)に行い、リンク生成だけを差し込む
+    var linkedBody = applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
     var url = new URL(window.location.href);
     url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id);
     window.history.replaceState(null, "", url.toString());
@@ -279,17 +302,10 @@ window.lzModal = (function() {
     ].join('');
 
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
-      el.onclick = function() { if(el.dataset.gotoId) {
-        var cardInDom = document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]');
-        if(cardInDom) render(cardInDom, MODAL_ACTIVE_LANG); else {
-           var targetId = el.dataset.gotoId;
-           var targetData = ALL_SITE_DATA.find(function(it){ return it.id === targetId; });
-           if(targetData) {
-             var menuUrl = window.LZ_CONFIG.MENU_URL[targetData.l1] || location.origin;
-             location.href = menuUrl + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(targetId);
-           }
-        }
-      } else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
+      el.onclick = function() { 
+        if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]'), MODAL_ACTIVE_LANG); 
+        else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); 
+      };
     });
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
@@ -310,8 +326,8 @@ window.lzModal = (function() {
     if (CARDS.length > 1) {
       var p = SHELL.appendChild(document.createElement("button")); p.className = "lz-arrow lz-prev"; p.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>';
       var n = SHELL.appendChild(document.createElement("button")); n.className = "lz-arrow lz-next"; n.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
-      p.onclick = function(e){ e.stopPropagation(); IDX = (IDX - 1 + CARDS.length) % CARDS.length; render(CARDS[IDX]); };
-      n.onclick = function(e){ e.stopPropagation(); IDX = (IDX + 1) % CARDS.length; render(CARDS[IDX]); };
+      p.onclick = function(e){ e.stopPropagation(); IDX = (IDX - 1 + CARDS.length) % CARDS.length; render(CARDS[IDX], MODAL_ACTIVE_LANG); };
+      n.onclick = function(e){ e.stopPropagation(); IDX = (IDX + 1) % CARDS.length; render(CARDS[IDX], MODAL_ACTIVE_LANG); };
     }
     HOST.classList.add("open"); MODAL.scrollTop = 0;
   }
@@ -342,9 +358,9 @@ window.lzModal = (function() {
       }
       ORIGINAL_SITE_LANG = window.LZ_CURRENT_LANG; MODAL_ACTIVE_LANG = ORIGINAL_SITE_LANG;
       var track = card.closest(".lz-track"); CARDS = track ? Array.from(track.querySelectorAll(".lz-card")) : [card];
-      IDX = CARDS.indexOf(card); render(card);
+      IDX = CARDS.indexOf(card); render(card, MODAL_ACTIVE_LANG);
     },
     close: close,
-    backToCurrent: function() { render(CURRENT_CARD); }
+    backToCurrent: function() { render(CURRENT_CARD, MODAL_ACTIVE_LANG); }
   };
 })();
