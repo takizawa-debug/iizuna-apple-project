@@ -260,19 +260,6 @@ window.lzModal = (function() {
       IDX = CARDS.indexOf(card); render(card, MODAL_ACTIVE_LANG);
     },
     close: close,
-/* ★新規：全データが届いた後に、今の表示を塗り替えるパッチ機能 */
-    refreshLinks: function() {
-      var textEl = document.getElementById('lz-modal-text-body');
-      if (!textEl || !CURRENT_CARD || !window.lzSearchEngine) return;
-      var rawBody = "";
-      try { 
-        var data = JSON.parse(CURRENT_CARD.dataset.item || "{}"); 
-        rawBody = C.L(data, 'body', MODAL_ACTIVE_LANG);
-      } catch(e) { rawBody = CURRENT_CARD.dataset.body || ""; }
-      // 最新のLZ_DATAを考慮してリンクを再生成
-      textEl.innerHTML = window.lzSearchEngine.applyLinks(rawBody, CURRENT_CARD.dataset.id, MODAL_ACTIVE_LANG);
-      bindEvents(); // イベントを再付与
-    },
     backToCurrent: function() { render(CURRENT_CARD, MODAL_ACTIVE_LANG); }
   };
 })();
