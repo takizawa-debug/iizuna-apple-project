@@ -16,14 +16,8 @@ window.lzSearchEngine = (function() {
     style.textContent = [
       '.lz-s-wrap { padding: 25px !important; }',
       
-      /* ① リスト全体のメイン見出し：2.1remへ最大化 ＆ 強制適用 */
-      '.lz-s-title { font-size: 2.1rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 25px !important; border-left: 7px solid #27ae60 !important; padding-left: 15px !important; line-height: 1.3 !important; display: block !important; }',
-      
-      /* ② 記事詳細内の自動リンクスタイル (modal.jsから完全移設) */
-      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
-      '.lz-auto-link.direct { color: #cf3a3a; }',
-      '.lz-auto-link.search { color: #27ae60; }',
-      '.lz-auto-link:hover { background: #f5f5f5; }',
+      /* ① リスト全体のメイン見出し：1.8remへ最大化 ＆ 強制適用 */
+      '.lz-s-title { font-size: 1.8rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 25px !important; border-left: 7px solid #27ae60 !important; padding-left: 15px !important; line-height: 1.3 !important; display: block !important; }',
 
       /* 各記事の表示スタイル (維持) */
       '.lz-s-name { font-size: 1.45rem; font-weight: 800; color: #cf3a3a; margin-bottom: 6px; line-height: 1.4; }',
