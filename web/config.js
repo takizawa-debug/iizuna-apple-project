@@ -19,13 +19,13 @@ window.LZ_CONFIG = {
   },
 
   // ④ ナビゲーション設定
-  MENU_ORDER: ["知る","味わう","体験する","働く・住む","販売・発信する"],
+  MENU_ORDER: ["知る","味わう","体験する","暮らす","営む"],
   MENU_URL: {
-    "知る":"https://appletown-iizuna.com/learn",
-    "味わう":"https://appletown-iizuna.com/taste",
+    "知る":"https://appletown-iizuna.com/discover",
+    "味わう":"https://appletown-iizuna.com/savor",
     "体験する":"https://appletown-iizuna.com/experience",
-    "働く・住む":"https://appletown-iizuna.com/live-work",
-    "販売・発信する":"https://appletown-iizuna.com/sell-promote"
+    "働く・住む":"https://appletown-iizuna.com/lifestyle",
+    "販売・発信する":"https://appletown-iizuna.com/business"
   },
 
   // ⑤ フッター用設定
@@ -49,7 +49,7 @@ window.LZ_CONFIG = {
 // 固定文言の辞書データ（検索・モーダル・全ラベル統合版）
     I18N: {
       ja: {
-        "知る": "知る", "味わう": "味わう", "体験する": "体験する", "働く・住む": "働く・住む", "販売・発信する": "販売・発信する",
+        "知る": "知る", "味わう": "味わう", "体験する": "体験する", "暮らす": "暮らす", "営む": "営む",
         "お問い合わせ": "お問い合わせ", "サイトマップ": "サイトマップ", "サイトポリシー": "サイトポリシー", "個人情報保護方針": "個人情報保護方針",
         "一覧へ戻る": "一覧へ戻る", "詳しく見る": "詳しく見る", "詳しくはこちら": "詳しくはこちら",
         "サイト内記事検索": "サイト内記事検索", "何をお探しですか？": "何をお探しですか？", "おすすめキーワード": "おすすめキーワード",
@@ -68,7 +68,7 @@ window.LZ_CONFIG = {
         "not_found": "見つかりませんでした"
       },
       en: {
-        "知る": "Discover", "味わう": "Savor", "体験する": "Experience", "働く・住む": "Live", "販売・発信する": "Promote",
+        "知る": "Discover", "味わう": "Savor", "体験する": "Experience", "暮らす": "Lifestyle", "営む": "Business",
         "お問い合わせ": "Contact Us", "サイトマップ": "Sitemap", "サイトポリシー": "Site Policy", "個人情報保護方針": "Privacy Policy",
         "一覧へ戻る": "Back to List", "詳しく見る": "Read More", "詳しくはこちら": "Click here for details",
         "サイト内記事検索": "Article Search", "何をお探しですか？": "What are you looking for?", "おすすめキーワード": "Recommended Keywords",
@@ -87,7 +87,7 @@ window.LZ_CONFIG = {
         "not_found": "No results found."
       },
       zh: {
-        "知る": "探索", "味わう": "品味", "体験する": "體驗", "働く・住む": "定居", "販売・発信する": "推廣",
+        "知る": "探索", "味わう": "品味", "体験する": "體驗", "暮らす": "生活", "営む": "經營",
         "お問い合わせ": "聯絡我們", "サイトマップ": "網站地圖", "サイトポリシー": "網站政策", "個人情報保護方針": "隱私政策",
         "一覧へ戻る": "回到列表", "詳しく見る": "查看詳情", "詳しくはこちら": "詳情請點此",
         "サイト内記事検索": "站內文章搜尋", "何をお探しですか？": "您在尋找什麼？", "おすすめキーワード": "推薦關鍵字",
