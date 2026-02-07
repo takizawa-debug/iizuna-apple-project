@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (グローバル検索 & 優先順位色分け Edition)
- * 役割: window.LZ_DATA(全データ)から多言語検索。赤(直通)を最優先、緑(検索)を次点として表示。
+ * modal.js - 詳細表示・機能コンポーネント (優先順位色分け & 検索ハイライト Edition)
+ * 役割: 既存機能を維持しつつ、赤(タイトル直通)を最優先、緑(タグ検索)を次点として色分け。検索時に文脈を表示。
  */
 window.lzModal = (function() {
   "use strict";
@@ -56,10 +56,12 @@ window.lzModal = (function() {
       '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
+      /* オートリンク色分け */
       '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
-      '.lz-auto-link.direct { color: #cf3a3a; }',
-      '.lz-auto-link.search { color: #27ae60; }',
+      '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
+      '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
       '.lz-auto-link:hover { background: #f5f5f5; }',
+      /* 検索結果・ハイライト */
       '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
       '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
@@ -106,38 +108,37 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* 検索機能: window.LZ_DATAを現在の言語階層まで掘り下げて検索 */
+  /* 検索機能: 重複排除 ＆ ハイライト表示 */
   function renderSearchResults(keyword, targetLang) {
-    var allData = window.LZ_DATA || [];
+    var cards = document.querySelectorAll('.lz-card');
     var results = [];
     var seenIds = new Set(); 
-    var currentArticleId = CURRENT_CARD ? CURRENT_CARD.dataset.id : "";
 
-    allData.forEach(function(item) {
-      if (item.id === currentArticleId || seenIds.has(item.id)) return;
+    cards.forEach(function(c) {
+      if (seenIds.has(c.dataset.id)) return;
+      try {
+        var data = JSON.parse(c.dataset.item || "{}");
+        var title = getLangText(data, 'title', targetLang);
+        var body = getLangText(data, 'body', targetLang);
+        var cat = c.dataset.group || "";
 
-      // 言語階層に合わせてテキストを取得
-      var title = getLangText(item, 'title', targetLang);
-      var lead = getLangText(item, 'lead', targetLang);
-      var body = getLangText(item, 'body', targetLang);
-      var tags = (item.tags || "").toString();
-
-      if (title.includes(keyword) || lead.includes(keyword) || body.includes(keyword) || tags.includes(keyword)) {
-        seenIds.add(item.id);
-        var combined = lead + " " + body;
-        var idx = combined.indexOf(keyword);
-        var start = Math.max(0, idx - 25);
-        var snippet = (start > 0 ? "..." : "") + combined.substring(start, start + 70) + (combined.length > start + 70 ? "..." : "");
-        results.push({ id: item.id, title: title, body: snippet, cat: item.l3 || "" });
-      }
+        if (title.includes(keyword) || body.includes(keyword) || (c.dataset.tags && c.dataset.tags.includes(keyword))) {
+          seenIds.add(c.dataset.id);
+          var idx = body.indexOf(keyword);
+          var start = Math.max(0, idx - 25);
+          var snippet = (start > 0 ? "..." : "") + body.substring(start, start + 70) + (body.length > start + 70 ? "..." : "");
+          results.push({ card: c, title: title, body: snippet, cat: cat });
+        }
+      } catch(e){}
     });
 
+    // キーワード箇所を編みかけにするヘルパー
     var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
 
     var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
     if(results.length === 0) html += '<div>見つかりませんでした。</div>';
     else results.forEach(function(res) {
-      html += '<div class="lz-s-item" data-goto-id="' + res.id + '">';
+      html += '<div class="lz-s-item" data-goto-id="' + res.card.dataset.id + '">';
       html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
       html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
     });
@@ -145,29 +146,31 @@ window.lzModal = (function() {
 
     MODAL.innerHTML = html;
     MODAL.querySelectorAll('.lz-s-item').forEach(function(item) {
-      item.onclick = function() {
-        var cardInDom = document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]');
-        if(cardInDom) render(cardInDom, targetLang);
-        else alert("詳細を表示するには該当のセクションへ移動してください。");
-      };
+      item.onclick = function() { render(document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]')); };
     });
     MODAL.scrollTop = 0;
   }
 
-  /* オートリンク機能: 全データのタイトルを対象とし、赤(直通)を最優先 */
+  /* オートリンク機能: 赤(直行)優先 ＆ トークンによる多重置換防止 */
   function applyAutoLinks(text, currentId, targetLang) {
-    var allData = window.LZ_DATA || [];
-    var map = {}; 
+    var cards = document.querySelectorAll('.lz-card');
+    var map = {}; // ハッシュマップで優先順位管理
 
+    // 1. まずキーワード（検索用）を登録
     MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
 
-    allData.forEach(function(item) {
-      var title = getLangText(item, 'title', targetLang);
-      if (title && title.length > 1 && item.id !== currentId) {
-        map[title] = { word: title, id: item.id, type: 'direct' };
-      }
+    // 2. 他記事のタイトルを登録（同じ単語があれば direct が上書き＝優先される）
+    cards.forEach(function(card) {
+      try {
+        var data = JSON.parse(card.dataset.item || "{}");
+        var title = getLangText(data, 'title', targetLang);
+        if (title && title.length > 1 && card.dataset.id !== currentId) {
+          map[title] = { word: title, id: card.dataset.id, type: 'direct' };
+        }
+      } catch(e) {}
     });
 
+    // 長い単語から順にソート（「飯綱町」より「飯綱町産りんご」を優先）
     var candidates = Object.values(map).sort(function(a, b) { return b.word.length - a.word.length; });
 
     var escaped = C.esc(text);
@@ -186,7 +189,7 @@ window.lzModal = (function() {
     return escaped;
   }
 
-  /* PDF・共有・基本機能を維持 */
+  /* PDF精密生成ロジック (既存維持) */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
     var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
@@ -286,10 +289,7 @@ window.lzModal = (function() {
     ].join('');
 
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
-      el.onclick = function() { if(el.dataset.gotoId) {
-        var cardInDom = document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]');
-        if(cardInDom) render(cardInDom, MODAL_ACTIVE_LANG); else alert("該当の記事は別のセクションにあります。ページをスクロールして探してみてください。");
-      } else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
+      el.onclick = function() { if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]')); else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
     });
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
