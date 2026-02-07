@@ -8,25 +8,35 @@ window.lzSearchEngine = (function() {
   var C = window.LZ_COMMON;
   var DYNAMIC_KEYWORDS = [];
 
-  // 検索画面専用スタイル (見出しのさらなる拡大 ＆ アニメーション定義)
+// 検索画面専用スタイル (見出し最大化 ＆ リンクスタイル統合 ＆ アニメーション)
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
-      '.lz-s-wrap { padding: 25px; }',
-      /* リスト全体のメイン見出し：1.85remにさらに拡大 */
-      '.lz-s-title { font-size: 1.85rem; font-weight: 800; color: #333; margin-bottom: 25px; border-left: 6px solid #27ae60; padding-left: 15px; line-height: 1.4; }',
+      '.lz-s-wrap { padding: 25px !important; }',
+      
+      /* ① リスト全体のメイン見出し：2.1remへ最大化 ＆ 強制適用 */
+      '.lz-s-title { font-size: 2.1rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 25px !important; border-left: 7px solid #27ae60 !important; padding-left: 15px !important; line-height: 1.3 !important; display: block !important; }',
+      
+      /* ② 記事詳細内の自動リンクスタイル (modal.jsから完全移設) */
+      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
+      '.lz-auto-link.direct { color: #cf3a3a; }',
+      '.lz-auto-link.search { color: #27ae60; }',
+      '.lz-auto-link:hover { background: #f5f5f5; }',
+
+      /* 各記事の表示スタイル (維持) */
       '.lz-s-name { font-size: 1.45rem; font-weight: 800; color: #cf3a3a; margin-bottom: 6px; line-height: 1.4; }',
       '.lz-s-body { font-size: 1.15rem; color: #555; line-height: 1.6; -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
       '.lz-s-cat { font-size: 0.85rem; background: #27ae60; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: 800; }',
       '.lz-btn-search-back { margin-top:25px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.2rem; padding: 12px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
       '.lz-btn-search-back:hover { background:#27ae60 !important; color:#fff !important; }',
-      '.lz-s-img-p { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
-      '.lz-s-img-p img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
+      '.lz-s-item { display:block; text-decoration:none; color:inherit; }',
+      '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
+      '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
       
-      /* 🍎 検索中アニメーションスタイル (section.js準拠) */
+      /* 🍎 検索中アニメーション (維持) */
       '.lz-s-loading { padding: 80px 20px; text-align: center; }',
       '.lz-s-logo { width: 100px; height: 100px; margin: 0 auto 20px; display: block; overflow: visible; }',
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 2.5s ease-in-out infinite; }',
