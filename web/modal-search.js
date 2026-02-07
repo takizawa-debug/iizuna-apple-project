@@ -1,21 +1,22 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (アニメーション ＆ 視認性極大版)
- * 役割: スプレッドシート連携・多言語対応を維持し、検索タイトル拡大とロード用アニメーションを追加。
+ * modal-search.js - モーダル内広域検索エンジン (最終ブラッシュアップ版)
+ * 役割: 検索結果のメイン見出しを最大化し、リンゴの描画アニメーションによる快適な待機画面を提供。
+ * 　　　既存の多言語・1:1画像・大文字小文字無視機能はすべて維持。
  */
 window.lzSearchEngine = (function() {
   "use strict";
   var C = window.LZ_COMMON;
   var DYNAMIC_KEYWORDS = [];
 
-  // 検索画面専用のスタイル
+  // 検索画面専用スタイル (見出しのさらなる拡大 ＆ アニメーション定義)
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
       '.lz-s-wrap { padding: 25px; }',
-      /* リスト全体のタイトル：1.65rem -> 1.9rem に極大化 */
-      '.lz-s-title { font-size: 1.9rem; font-weight: 800; color: #333; margin-bottom: 25px; border-left: 6px solid #27ae60; padding-left: 15px; line-height: 1.4; }',
+      /* リスト全体のメイン見出し：1.85remにさらに拡大 */
+      '.lz-s-title { font-size: 1.85rem; font-weight: 800; color: #333; margin-bottom: 25px; border-left: 6px solid #27ae60; padding-left: 15px; line-height: 1.4; }',
       '.lz-s-name { font-size: 1.45rem; font-weight: 800; color: #cf3a3a; margin-bottom: 6px; line-height: 1.4; }',
       '.lz-s-body { font-size: 1.15rem; color: #555; line-height: 1.6; -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
       '.lz-s-cat { font-size: 0.85rem; background: #27ae60; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: 800; }',
@@ -24,10 +25,13 @@ window.lzSearchEngine = (function() {
       '.lz-s-img-p { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-p img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
-      /* りんごアニメーション用CSS */
-      '.lz-s-loading { padding: 80px 0; text-align: center; }',
-      '.lz-s-loading-apple { width: 60px; height: 60px; margin: 0 auto 20px; animation: lzApplePulse 1.5s ease-in-out infinite; opacity: 0.3; color: #888; }',
-      '@keyframes lzApplePulse { 0% { transform: scale(0.9); opacity: 0.2; } 50% { transform: scale(1.1); opacity: 0.5; } 100% { transform: scale(0.9); opacity: 0.2; } }'
+      
+      /* 🍎 検索中アニメーションスタイル (section.js準拠) */
+      '.lz-s-loading { padding: 80px 20px; text-align: center; }',
+      '.lz-s-logo { width: 100px; height: 100px; margin: 0 auto 20px; display: block; overflow: visible; }',
+      '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 2.5s ease-in-out infinite; }',
+      '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1000; } }',
+      '.lz-s-loading-label { font-size: 1.3rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -87,7 +91,7 @@ window.lzSearchEngine = (function() {
     },
 
     /**
-     * 広域検索実行 (アニメーション ＆ タイトル極大対応)
+     * 広域検索実行 (アニメーション対応)
      */
     run: async function(keyword, targetLang, modalEl, backFunc) {
       injectSearchStyles();
@@ -96,13 +100,13 @@ window.lzSearchEngine = (function() {
         displayWord = window.event.currentTarget.dataset.display;
       }
       
-      // りんごのアニメーション（グレー）を伴う「検索中」画面
+      // 🍎 リンゴ図形描写アニメーション (グレー) による待機画面
       modalEl.innerHTML = [
         '<div class="lz-s-loading">',
-        '  <div class="lz-s-loading-apple">',
-        '    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5,12c0,0.55-0.45,1-1,1s-1-0.45-1-1s0.45-1,1-1S17.5,11.45,17.5,12z M12,2C9.24,2,7,4.24,7,7c0,1.21,0.44,2.3,1.16,3.15 C6.3,10.6,5,12.15,5,14c0,2.21,1.79,4,4,4c0.33,0,0.65-0.04,0.96-0.12C10.51,19.12,12,20,12,20s1.49-0.88,2.04-2.12 C14.35,17.96,14.67,18,15,18c2.21,0,4-1.79,4-4c0-1.85-1.3-3.4-3.16-3.85C16.56,9.3,17,8.21,17,7C17,4.24,14.76,2,12,2z M12,4 c1.65,0,3,1.35,3,3c0,0.38-0.08,0.73-0.21,1.06C14.15,7.43,13.15,7,12,7s-2.15,0.43-2.79,1.06C9.08,7.73,9,7.38,9,7C9,5.35,10.35,4,12,4 z M15,16c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S16.1,16,15,16z M9,16c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2S10.1,16,9,16z"/></svg>',
-        '  </div>',
-        '  <p style="font-weight:bold; color:#888;">' + getMsg('searching', targetLang) + '</p>',
+        '  <svg class="lz-s-logo" viewBox="-60 -60 720 720" aria-hidden="true">',
+        '    <path class="lz-s-logo-path" pathLength="1000" d="M287.04,32.3c.29.17,1.01.63,1.46,1.55.57,1.19.29,2.29.2,2.57-7.08,18.09-14.18,36.17-21.26,54.26,5.96-.91,14.77-2.45,25.28-5.06,17.98-4.45,22.46-7.44,33.44-9.85,18.59-4.08,33.88-1.67,44.51,0,21.1,3.32,37.42,10.74,47.91,16.6-4.08,8.59-11.1,20.05-23.06,29.99-18.47,15.35-38.46,18.54-52.07,20.7-7.55,1.21-21.61,3.32-39.12.24-13.71-2.41-11-4.76-30.72-9.36-6.73-1.56-12.82-2.64-17.98-7.87-3.73-3.77-4.92-7.63-6.74-7.3-2.44.43-1.84,7.58-4.5,16.85-.98,3.46-5.56,19.45-14.05,21.35-5.5,1.23-9.85-4.07-17.02-9.79-17.52-13.96-36.26-17.94-45.91-19.99-7.62-1.62-25.33-5.16-45.19,1.36-6.6,2.17-19.57,7.82-35.2,23.74-48.04,48.93-49.39,127.17-49.69,143.97-.08,5-.47,48.18,16.56,90.06,6.63,16.3,14.21,28.27,24.85,38.3,4.2,3.97,12.19,11.37,24.85,16.56,13.72,5.63,26.8,6.15,31.06,6.21,8.06.12,9.06-1.03,14.49,0,10.22,1.95,13.47,7.33,22.77,12.42,10.16,5.56,19.45,6.3,30.02,7.25,8.15.73,18.56,1.67,31.15-1.99,9.83-2.85,16.44-7.18,25.24-12.93,2.47-1.61,9.94-6.61,20.55-16.18,12.76-11.51,21.35-21.79,25.53-26.87,26.39-32.12,39.71-48.12,50.73-71.43,12.87-27.23,17.2-49.56,18.63-57.97,3.23-18.95,5.82-35.27,0-54.87-2.24-7.54-6.98-23.94-21.74-37.27-5.26-4.76-12.9-11.66-24.85-13.46-17.04-2.58-30.24,7.19-33.13,9.32-9.71,7.17-13.91,16.56-21.93,35.04-1.81,4.19-8.26,19.38-14.31,43.63-2.82,11.32-6.43,25.97-8.28,45.55-1.47,15.61-3.27,34.6,1.04,59.01,4.92,27.9,15.01,47.01,17.6,51.76,5.58,10.26,12.02,21.83,24.85,33.13,6.45,5.69,17.55,15.24,35.2,19.77,19.17,4.92,34.7.98,38.3,0,14.29-3.9,24.02-11.27,28.99-15.63"></path>',
+        '  </svg>',
+        '  <div class="lz-s-loading-label">' + getMsg('searching', targetLang) + '</div>',
         '</div>'
       ].join('');
       
@@ -119,7 +123,6 @@ window.lzSearchEngine = (function() {
           return text.replace(r, function(m){ return '<mark>' + m + '</mark>'; });
         };
 
-        // タイトル組み立て ＆ 検索結果タイトルの極大化反映
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
         var html = '<div class="lz-s-wrap"><div class="lz-s-title">' + resTitle + '</div>';
         
@@ -152,7 +155,6 @@ window.lzSearchEngine = (function() {
         }
         
         html += '<button class="lz-btn lz-btn-search-back">' + getMsg('back_to_article', targetLang) + '</button></div>';
-
         modalEl.innerHTML = html;
         modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
         
