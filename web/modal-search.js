@@ -1,6 +1,6 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (フィードバック強化版)
- * 役割: search.js と同じGAS検索ロジックを使いつつ、エラー原因を詳細に表示する。
+ * modal-search.js - モーダル内広域検索エンジン (高機能表示版)
+ * 役割: search.js と同じGAS検索ロジックを使用。リード文も検索・表示対象にし、1:1のサムネイル画像を追加。
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -14,8 +14,7 @@ window.lzSearchEngine = (function() {
 
   return {
     /**
-     * オートリンク生成ロジック (同期実行)
-     * DOM上のカードタイトルとMASTER_TAGSからリンクタグを作成。
+     * オートリンク生成ロジック (同期)
      */
     applyLinks: function(text, currentId, targetLang) {
       var cardsInDom = document.querySelectorAll('.lz-card');
@@ -42,67 +41,69 @@ window.lzSearchEngine = (function() {
           return token;
         });
       });
-      tokens.forEach(function(html, idx){ if(html) escaped = escaped.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
+      tokens.forEach(function(html, idx){ escaped = escaped.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
       return escaped;
     },
 
     /**
-     * 広域検索実行 (非同期実行・詳細フィードバック付)
+     * 広域検索実行 (非同期・リード文・画像表示対応)
      */
     run: async function(keyword, targetLang, modalEl, backFunc) {
-      // 1. 検索開始メッセージの表示
       modalEl.innerHTML = '<div style="padding:60px; text-align:center;">' + 
         '<p style="font-weight:bold; color:#cf3a3a;">' + (C.T('検索しています...') || 'Searching...') + '</p>' +
-        '<p style="font-size:0.9rem; color:#888; margin-top:10px;">接続先: GASサーバーエンジン</p>' + 
         '</div>';
       
       try {
-        // 2. GASエンドポイントへのリクエスト
         var endpoint = window.LZ_CONFIG.SEARCH_ENDPOINT + "?q=" + encodeURIComponent(keyword) + "&limit=50";
         var res = await fetch(endpoint);
-        
-        if (!res.ok) throw new Error("通信エラー: HTTP " + res.status);
-
+        if (!res.ok) throw new Error("HTTP " + res.status);
         var json = await res.json();
-        
-        // 3. サーバー側での処理成功フラグの確認
-        if (!json.ok) {
-          throw new Error("サーバーエラー: " + (json.error || "データ取得に失敗しました"));
-        }
+        if (!json.ok) throw new Error(json.error || "Server Error");
 
         var results = json.items || [];
-        
-        // 4. 起点となった記事をタイトル(ID)で除外
         var currentId = new URLSearchParams(location.search).get('id');
         results = results.filter(function(it){ return it.title !== currentId; });
 
-        // 5. 結果の描画ロジック
         var hl = function(text){ return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
         var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
         
         if(results.length === 0) {
-          html += '<div style="padding:30px; border:2px dashed #eee; border-radius:12px; text-align:center; color:#888;">' + 
-            '<p style="font-size:1.4rem; font-weight:800;">' + (C.T('見つかりませんでした') || 'No results found.') + '</p>' +
-            '<p style="margin-top:10px; font-size:1rem;">全記事データベースを検索しましたが、一致する項目がありませんでした。</p>' +
-            '</div>';
+          html += '<div style="padding:30px; border:2px dashed #eee; border-radius:12px; text-align:center; color:#888;">' + (C.T('見つかりませんでした') || 'No results found.') + '</div>';
         } else {
           results.forEach(function(it) {
-            // ID(タイトル)・カテゴリ・本文・リードを多言語解決して表示
             var l1 = C.L(it, 'l1', targetLang), l2 = C.L(it, 'l2', targetLang), title = C.L(it, 'title', targetLang);
-            var snippet = C.L(it, 'body', targetLang) || C.L(it, 'lead', targetLang) || "";
-            
-            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '">';
-            html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span><span class="lz-s-name">' + hl(C.esc(title)) + '</span></div>';
-            html += '<div class="lz-s-body">' + hl(C.esc(snippet.substring(0, 80))) + '...</div></div>';
+            var lead = C.L(it, 'lead', targetLang) || "";
+            var body = C.L(it, 'body', targetLang) || "";
+            var img = it.mainImage || window.LZ_CONFIG.ASSETS.LOGO_RED; // 代替画像
+
+            // リード文と本文を統合してスニペットを作成
+            var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
+            var idx = combinedText.indexOf(keyword);
+            var start = Math.max(0, idx - 20);
+            var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 80) + "...";
+
+            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px;">';
+            html += '  <div style="display:flex; gap:15px; align-items:flex-start;">';
+            // サムネイル画像 (1:1)
+            html += '    <div style="flex:0 0 80px; width:80px; height:80px; border-radius:8px; overflow:hidden; background:#f5f5f5; border:1px solid #eee;">';
+            html += '      <img src="' + C.esc(img) + '" style="width:100%; height:100%; object-fit:cover;">';
+            html += '    </div>';
+            // コンテンツエリア
+            html += '    <div style="flex:1; min-width:0;">';
+            html += '      <div style="margin-bottom:4px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
+            html += '      <div class="lz-s-name" style="font-size:1.2rem; margin-bottom:6px;">' + hl(C.esc(title)) + '</div>';
+            html += '      <div class="lz-s-body" style="font-size:0.95rem; color:#666; -webkit-line-clamp:2;">' + hl(C.esc(snippet)) + '</div>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '</div>';
           });
         }
         
-        html += '<button class="lz-btn lz-s-back" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;">← 記事に戻る</button></div>';
+        html += '<button class="lz-btn lz-s-back" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;">' + (targetLang === 'ja' ? '← 記事に戻る' : '← Back to Article') + '</button></div>';
 
         modalEl.innerHTML = html;
         modalEl.querySelector('.lz-s-back').onclick = backFunc;
         
-        // 6. クリック時の挙動判定 (ページ内遷移 or 別ページ遷移)
         modalEl.querySelectorAll('.lz-s-item').forEach(function(item) {
           item.onclick = function() {
             var targetId = item.dataset.gotoId;
@@ -118,13 +119,7 @@ window.lzSearchEngine = (function() {
         modalEl.scrollTop = 0;
 
       } catch(e) {
-        // ❌ エラー原因のフィードバック表示
-        modalEl.innerHTML = '<div class="lz-s-wrap" style="border:2px solid #cf3a3a; background:#fffafa; border-radius:12px; padding:20px;">' +
-          '<h3 style="color:#cf3a3a; margin-bottom:10px;">⚠️ 検索エラーが発生しました</h3>' +
-          '<p style="font-size:1.1rem; color:#333;">原因: ' + C.esc(e.message) + '</p>' +
-          '<p style="font-size:0.9rem; color:#666; margin-top:10px;">・サーバーの同時接続制限にかかっている可能性があります。<br>・ネットワーク接続を確認し、数秒後にもう一度「← 記事に戻る」から試してください。</p>' +
-          '<button class="lz-btn lz-s-back" style="margin-top:20px; width:100%;" onclick="location.reload()">ページをリロードする</button>' +
-          '</div>';
+        modalEl.innerHTML = '<div class="lz-s-wrap" style="padding:20px; text-align:center; color:#cf3a3a;">⚠️ エラー: ' + C.esc(e.message) + '</div>';
       }
     }
   };
