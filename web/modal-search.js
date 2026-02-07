@@ -23,7 +23,7 @@ window.lzSearchEngine = (function() {
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-1px); }',
       '.lz-s-name { font-size: 1.3rem; font-weight: 800; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; }',
       '.lz-s-body { font-size: 1.05rem; color: #666; line-height: 1.5; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
-      '.lz-s-cat { font-size: 0.95rem; background: #27ae60; color: #fff; padding: 3px 10px; border-radius: 4px; font-weight: 800; display: inline-block; }',
+      '.lz-s-cat { font-size: 0.95rem; background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; display: inline-block; }',
       
       /* ③ 戻るボタンの余白調整 */
       '.lz-btn-search-back { margin-top:12px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.1rem; padding: 8px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
