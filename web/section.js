@@ -135,7 +135,7 @@
     var config = window.LZ_CONFIG, l1 = root.dataset.l1 || config.L1, l2 = root.dataset.l2 || "";
     if (!l2) return;
 
-    // 見出しの多言語対応 (C.Tを使用)
+    // 初期表示用の見出し (C.Tを使用)
     var heading = root.dataset.heading || C.T(l2);
     var imageRatio = root.dataset.imageRatio || "16:9";
     var mql = window.matchMedia("(max-width:768px)");
@@ -162,6 +162,14 @@
       var json = await C.NET.json(config.ENDPOINT + "?l1=" + encodeURIComponent(l1) + "&l2=" + encodeURIComponent(l2));
       if (!json || !json.ok) throw new Error("no data");
       var items = json.items || [], groups = new Map();
+      
+      /* ★修正：大項目(L2)のタイトルを翻訳後のデータで上書き */
+      if (items.length > 0) {
+        var l2Title = C.L(items[0], "l2");
+        var titleEl = root.querySelector(".lz-title");
+        if (titleEl && l2Title) titleEl.textContent = l2Title;
+      }
+
       items.forEach(function(it) {
         // グループキーは内部管理用に元のテキストを維持
         var k = (it.l3 || "").trim();
