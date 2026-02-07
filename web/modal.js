@@ -15,7 +15,7 @@ window.lzModal = (function() {
   var ICON = {
     web:`<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
     ec:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20 8H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>`,
-    ig:`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7z"/><path fill="currentColor" d="M12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>`,
+    ig:`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7z"/><path fill="currentColor" d="M12 7a5 5 1 1 1 0 10 5 5 0 0 1 0-10zm0 2.2a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6z"/><circle cx="17.2" cy="6.8" r="1.2" fill="currentColor"/></svg>`,
     fb:`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13 22v-8h3l1-4h-4V7c0-1.1.9-2 2-2h2V1h-3a5 5 0 0 0-5 5v3H6v4h3v8h4z"/></svg>`,
     x:`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 3l8.5 9.7L3.8 21H7l5.2-6.6L17.6 21H21l-9-10.3L20.2 3H17L12 9.2 7.6 3H3z"/></svg>`,
     line:`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M6.2 3.5H17.8c2.6 0 4.7 2 4.7 4.6v6.2c0 2.6-2.1 4.6-4.7 4.6H12c-.3 0 -.6.1 -.8.3l-2.9 2.4c-.3.2 -.7 0 -.7 -.4l.2 -2.5c0 -.3 -.2 -.6 -.5 -.7C5.3 17.7 3.5 15.7 3.5 14.3V8.1c0 -2.6 2.1 -4.6 4.7 -4.6Z"/></svg>`,
@@ -39,7 +39,6 @@ window.lzModal = (function() {
       '.lz-btn.active { background: #cf3a3a; color: #fff; }',
       '.lz-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }',
       '@media (max-width:768px) { .lz-btn { width: 38px; height: 38px; padding: 0; } .lz-btn .lz-label { display: none; } }',
-      /* モーダル内言語スイッチャー */
       '.lz-m-lang-tabs { display: flex; gap: 4px; padding: 10px 15px; background: #fdfaf8; border-bottom: 1px solid #eee; }',
       '.lz-m-lang-btn { padding: 4px 12px; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; transition: .2s; }',
       '.lz-m-lang-btn.active { background: #cf3a3a; color: #fff; border-color: #cf3a3a; }',
@@ -49,6 +48,8 @@ window.lzModal = (function() {
       '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
+      /* ↓追加スタイル: オートリンク用 */
+      '.lz-auto-link { color: #cf3a3a; text-decoration: underline; font-weight: 700; cursor: pointer; }',
       '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
       '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
       '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
@@ -76,13 +77,10 @@ window.lzModal = (function() {
     document.head.appendChild(style);
   };
 
-  /* ==========================================
-     ヘルパー: 言語ごとのテキスト取得
-     ========================================== */
   function getLangText(data, key, targetLang) {
     if (targetLang === 'ja') return data[key] || "";
     if (data[targetLang] && data[targetLang][key]) return data[targetLang][key];
-    return data[key] || ""; // フォールバック
+    return data[key] || "";
   }
 
   function getTranslation(key, targetLang) {
@@ -90,9 +88,36 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* ==========================================
-     PDF精密生成ロジック (PDFは現在のモーダル表示言語で出す)
-     ========================================== */
+  /* ↓追加関数: 本文内の特定ワードに他記事へのオートリンクを貼る */
+  function applyAutoLinks(text, currentId, targetLang) {
+    var allCards = document.querySelectorAll('.lz-card');
+    var map = [];
+    allCards.forEach(function(card) {
+      if (card.dataset.id === currentId) return; // 自分自身のタイトルは除外
+      try {
+        var cardData = JSON.parse(card.dataset.item || "{}");
+        var cardTitle = getLangText(cardData, 'title', targetLang);
+        if (cardTitle && cardTitle.length > 1) {
+          map.push({ title: cardTitle, id: card.dataset.id });
+        }
+      } catch(e) {}
+    });
+    // 文字列の長い順にソート（「飯綱町」より「飯綱町産りんご」を先にマッチさせるため）
+    map.sort(function(a, b) { return b.title.length - a.title.length; });
+    
+    var escaped = C.esc(text);
+    map.forEach(function(item) {
+      // 既にリンク化した部分は飛ばすため、単純置換ではなく正規表現を使用
+      var escapedTitle = item.title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var regex = new RegExp(escapedTitle, 'g');
+      // 一時的なマーカーを使用して置換し、後で本物のHTMLにする（二重置換防止）
+      escaped = escaped.replace(regex, function(match) {
+        return '<span class="lz-auto-link" data-goto-id="' + item.id + '">' + match + '</span>';
+      });
+    });
+    return escaped;
+  }
+
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
     var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
@@ -174,19 +199,20 @@ window.lzModal = (function() {
     var d = card.dataset;
     MODAL_ACTIVE_LANG = targetLang || MODAL_ACTIVE_LANG || window.LZ_CURRENT_LANG;
 
-    // JSONデータのパース（これが必要。cardHTML側で data-item を持たせる前提）
     var rawData = {};
     try { rawData = JSON.parse(d.item || "{}"); } catch(e) { 
-      // 万が一JSONがなければdatasetからフォールバック
       rawData = { title: d.title, lead: d.lead, body: d.body, l3: d.group };
     }
 
     var title = getLangText(rawData, 'title', MODAL_ACTIVE_LANG);
     var lead = getLangText(rawData, 'lead', MODAL_ACTIVE_LANG);
-    var body = getLangText(rawData, 'body', MODAL_ACTIVE_LANG);
+    var bodyText = getLangText(rawData, 'body', MODAL_ACTIVE_LANG);
+
+    /* ↓変更点: bodyをエスケープ表示する代わりに、オートリンク関数を通したHTMLを表示 */
+    var linkedBody = applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
 
     var url = new URL(window.location.href);
-    url.searchParams.set('lang', MODAL_ACTIVE_LANG); // モーダル表示中はURLも一時的にその言語にする
+    url.searchParams.set('lang', MODAL_ACTIVE_LANG);
     url.searchParams.set('id', d.id);
     window.history.replaceState(null, "", url.toString());
     document.title = title + " | " + C.originalTitle;
@@ -237,7 +263,6 @@ window.lzModal = (function() {
 
     var dlBtn = (d.dl && d.dl.trim() !== "") ? '<a class="lz-btn" href="'+C.esc(d.dl)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">' + getTranslation('保存', MODAL_ACTIVE_LANG) + '</span></a>' : "";
 
-    // モーダル内言語切り替えタブ
     var langTabs = '<div class="lz-m-lang-tabs">' + 
       window.LZ_CONFIG.LANG.SUPPORTED.map(function(l){
         var label = window.LZ_CONFIG.LANG.LABELS[l];
@@ -258,7 +283,7 @@ window.lzModal = (function() {
       '<div>',
       gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : '',
       lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : '',
-      body ? '  <div class="lz-txt">' + C.esc(body) + '</div>' : '',
+      bodyText ? '  <div class="lz-txt">' + linkedBody + '</div>' : '',
       gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : '',
       rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : '',
       snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : '',
@@ -266,7 +291,17 @@ window.lzModal = (function() {
       '</div>'
     ].join('');
 
-    // 言語切り替えボタンのイベント登録
+    /* ↓追加処理: モーダル内のオートリンク（span.lz-auto-link）をクリックした際の挙動を設定 */
+    MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
+      el.onclick = function() {
+        var targetId = el.dataset.gotoId;
+        var targetCard = document.querySelector('.lz-card[data-id="' + targetId + '"]');
+        if (targetCard) {
+          render(targetCard, MODAL_ACTIVE_LANG);
+        }
+      };
+    });
+
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){
       btn.onclick = function(){ render(card, btn.dataset.lang); };
     });
@@ -312,14 +347,11 @@ window.lzModal = (function() {
   function close() { 
     if(HOST) HOST.classList.remove("open"); 
     document.title = C.originalTitle;
-    
-    // モーダルを閉じる際、URLの言語を「サイトの元々の言語」に戻す
     var url = new URL(location.href); 
     url.searchParams.delete('id');
     url.searchParams.set('lang', ORIGINAL_SITE_LANG);
     window.history.replaceState(null, "", url.toString());
-    
-    MODAL_ACTIVE_LANG = null; // リセット
+    MODAL_ACTIVE_LANG = null; 
   }
 
   var checkDeepLink = function() {
@@ -355,10 +387,8 @@ window.lzModal = (function() {
         HOST.onclick = function(e){ if(e.target === HOST) close(); };
         document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
       }
-      // 開いた瞬間の言語設定を記憶
       ORIGINAL_SITE_LANG = window.LZ_CURRENT_LANG;
       MODAL_ACTIVE_LANG = ORIGINAL_SITE_LANG;
-
       var track = card.closest(".lz-track");
       CARDS = track ? Array.from(track.querySelectorAll(".lz-card")) : [card];
       IDX = CARDS.indexOf(card);
