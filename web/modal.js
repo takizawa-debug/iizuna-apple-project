@@ -1,12 +1,21 @@
 /**
- * modal.js - 詳細表示コンポーネント (UI安定版)
- * 役割: 既存の画像表示・PDF・設定を100%維持。検索が必要な時だけ modal-search.js を呼び出す。
+ * modal.js - 詳細表示・機能コンポーネント (優先順位色分け & 検索ハイライト Edition)
+ * 役割: 既存機能を維持しつつ、赤(タイトル直通)を最優先、緑(タグ検索)を次点として色分け。検索時に文脈を表示。
  */
 window.lzModal = (function() {
   "use strict";
 
   var C = window.LZ_COMMON;
   if (!C) return;
+
+  // ==========================================
+  // 【共通設定】自動でリンクを有効にしたい単語リスト
+  // ==========================================
+  var MASTER_TAGS = [
+    "8月", "9月", "10月", "11月", "12月", "1月", "2月", "3月", "4月", "5月", "6月", "7月",
+    "北信五岳", "移住", "子育て", "ふじ", "高坂りんご", "ブラムリー", "サンふじ",
+    "シードル", "アップルミュージアム", "アクセス", "歴史", "機能性成分", "プロシアニジン", "甘みと酸味のバランス"
+  ];
 
   var MODAL_ACTIVE_LANG = null;
   var ORIGINAL_SITE_LANG = null;
@@ -42,6 +51,7 @@ window.lzModal = (function() {
       '.lz-m-lang-btn { padding: 4px 12px; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; transition: .2s; }',
       '.lz-m-lang-btn.active { background: #cf3a3a; color: #fff; border-color: #cf3a3a; }',
       '.lz-mm { position: relative; background: #faf7f5; overflow: hidden; }',
+      '.lz-mm::before { content: ""; display: block; padding-top: 56.25%; }',
       '.lz-mm img { position: absolute; inset: 0; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; transition: opacity .22s ease; }',
       '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
@@ -51,16 +61,32 @@ window.lzModal = (function() {
       '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
       '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
       '.lz-auto-link:hover { background: #f5f5f5; }',
-      /* 安定版維持スタイル */
+      /* 検索結果・ハイライト */
+      '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
+      '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
+      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
+      '.lz-s-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }',
+      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; flex-shrink: 0; }',
+      '.lz-s-name { font-weight: 800; font-size: 1.3rem; color: #cf3a3a; }',
+      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }',
+      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; border-radius: 2px; }',
       '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
       '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
       '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
       '.lz-sns { display: flex; gap: 10px; flex-wrap: wrap; padding: 15px; }',
       '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: transform .2s; }',
+      '.lz-sns a:hover { transform: scale(1.1); }',
       '.lz-sns a svg { width: 22px; height: 22px; }',
+      '.lz-sns a[data-sns="web"] { background: #5b667a; } .lz-sns a[data-sns="ec"] { background: #e67e22; }',
+      '.lz-sns a[data-sns="ig"] { background: #E4405F; } .lz-sns a[data-sns="fb"] { background: #1877F2; }',
+      '.lz-sns a[data-sns="x"] { background: #000; } .lz-sns a[data-sns="line"] { background: #06C755; } .lz-sns a[data-sns="tt"] { background: #000; }',
       '.lz-g { padding: 0 15px 15px; display: grid; gap: 10px; grid-template-columns: repeat(5, 1fr); }',
-      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; }',
+      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; transition: opacity .2s; }',
       '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; }',
+      '.lz-related { padding: 15px; background: #fafafa; border-top: 1px solid #eee; border-radius: 0 0 12px 12px; }',
+      '.lz-related-label { font-size: 1.1rem; color: #888; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }',
+      '.lz-related-item a { display: block; color: #cf3a3a; text-decoration: none; font-weight: 700; padding: 10px 0; font-size: 1.35rem; border-bottom: 1px dashed #ddd; transition: .2s; }',
+      '.lz-related-item a:hover { background: #fff5f5; padding-left: 8px; }',
       '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; }',
       '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; }',
       '.lz-arrow:hover { background: #cf3a3a; } .lz-arrow:hover svg { stroke: #fff; }',
@@ -71,9 +97,149 @@ window.lzModal = (function() {
     document.head.appendChild(style);
   };
 
+  function getLangText(data, key, targetLang) {
+    if (targetLang === 'ja') return data[key] || "";
+    if (data[targetLang] && data[targetLang][key]) return data[targetLang][key];
+    return data[key] || "";
+  }
+
   function getTranslation(key, targetLang) {
     var dict = window.LZ_CONFIG.LANG.I18N[targetLang] || window.LZ_CONFIG.LANG.I18N['ja'];
     return dict[key] || key;
+  }
+
+  /* 検索機能: 重複排除 ＆ ハイライト表示 */
+  function renderSearchResults(keyword, targetLang) {
+    var cards = document.querySelectorAll('.lz-card');
+    var results = [];
+    var seenIds = new Set(); 
+
+    cards.forEach(function(c) {
+      if (seenIds.has(c.dataset.id)) return;
+      try {
+        var data = JSON.parse(c.dataset.item || "{}");
+        var title = getLangText(data, 'title', targetLang);
+        var body = getLangText(data, 'body', targetLang);
+        var cat = c.dataset.group || "";
+
+        if (title.includes(keyword) || body.includes(keyword) || (c.dataset.tags && c.dataset.tags.includes(keyword))) {
+          seenIds.add(c.dataset.id);
+          var idx = body.indexOf(keyword);
+          var start = Math.max(0, idx - 25);
+          var snippet = (start > 0 ? "..." : "") + body.substring(start, start + 70) + (body.length > start + 70 ? "..." : "");
+          results.push({ card: c, title: title, body: snippet, cat: cat });
+        }
+      } catch(e){}
+    });
+
+    // キーワード箇所を編みかけにするヘルパー
+    var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
+
+    var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
+    if(results.length === 0) html += '<div>見つかりませんでした。</div>';
+    else results.forEach(function(res) {
+      html += '<div class="lz-s-item" data-goto-id="' + res.card.dataset.id + '">';
+      html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
+      html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
+    });
+    html += '<button class="lz-btn" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;" onclick="lzModal.backToCurrent()">← 記事に戻る</button></div>';
+
+    MODAL.innerHTML = html;
+    MODAL.querySelectorAll('.lz-s-item').forEach(function(item) {
+      item.onclick = function() { render(document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]')); };
+    });
+    MODAL.scrollTop = 0;
+  }
+
+  /* オートリンク機能: 赤(直行)優先 ＆ トークンによる多重置換防止 */
+  function applyAutoLinks(text, currentId, targetLang) {
+    var cards = document.querySelectorAll('.lz-card');
+    var map = {}; // ハッシュマップで優先順位管理
+
+    // 1. まずキーワード（検索用）を登録
+    MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
+
+    // 2. 他記事のタイトルを登録（同じ単語があれば direct が上書き＝優先される）
+    cards.forEach(function(card) {
+      try {
+        var data = JSON.parse(card.dataset.item || "{}");
+        var title = getLangText(data, 'title', targetLang);
+        if (title && title.length > 1 && card.dataset.id !== currentId) {
+          map[title] = { word: title, id: card.dataset.id, type: 'direct' };
+        }
+      } catch(e) {}
+    });
+
+    // 長い単語から順にソート（「飯綱町」より「飯綱町産りんご」を優先）
+    var candidates = Object.values(map).sort(function(a, b) { return b.word.length - a.word.length; });
+
+    var escaped = C.esc(text);
+    var tokens = [];
+    candidates.forEach(function(item, idx) {
+      var regex = new RegExp(item.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+      escaped = escaped.replace(regex, function(match) {
+        var token = "###LZT_" + idx + "###";
+        tokens[idx] = item.type === 'direct' 
+          ? '<span class="lz-auto-link direct" data-goto-id="'+item.id+'">'+match+'</span>'
+          : '<span class="lz-auto-link search" data-keyword="'+item.word+'">'+match+'</span>';
+        return token;
+      });
+    });
+    tokens.forEach(function(html, idx) { if(html) escaped = escaped.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
+    return escaped;
+  }
+
+  /* PDF精密生成ロジック (既存維持) */
+  function renderFooterImagePx(text, px, color) {
+    var scale = 2, w = 1200, h = Math.round(px * 2.4);
+    var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
+    var ctx = canvas.getContext("2d"); ctx.scale(scale, scale);
+    ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = color; ctx.font = px + "px 'Noto Sans JP',sans-serif"; ctx.textBaseline = "middle";
+    ctx.fillText(text, 2, h / 2);
+    return { data: canvas.toDataURL("image/png"), ar: h / w };
+  }
+
+  async function generatePdf(element, title, cardId) {
+    var confirmMsg = getTranslation("PDFを作成して新しいタブで開きます。よろしいですか？", MODAL_ACTIVE_LANG);
+    if(!confirm(confirmMsg)) return;
+    try {
+      if (!window.jspdf) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+      if (!window.html2canvas) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+      if (!window.QRCode) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
+      var qrUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(cardId);
+      var clone = element.cloneNode(true);
+      clone.querySelector(".lz-actions").remove();
+      if(clone.querySelector(".lz-m-lang-tabs")) clone.querySelector(".lz-m-lang-tabs").remove();
+      clone.style.maxHeight = "none"; clone.style.height = "auto"; clone.style.width = "800px";
+      clone.querySelectorAll("img").forEach(function(img){ img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); });
+      document.body.appendChild(clone);
+      var qrDiv = document.createElement("div"); 
+      new QRCode(qrDiv, { text: qrUrl, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.L });
+      var qrCanvas = qrDiv.querySelector("canvas");
+      var qrData = qrCanvas ? qrCanvas.toDataURL("image/png") : "";
+      var canvas = await html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      document.body.removeChild(clone);
+      var { jsPDF } = window.jspdf;
+      var pdf = new jsPDF("p", "mm", "a4");
+      var margin = 12, pageW = pdf.internal.pageSize.getWidth(), pageH = pdf.internal.pageSize.getHeight(), innerW = pageW - margin * 2, innerH = pageH - margin * 2;
+      var imgData = canvas.toDataURL("image/png");
+      var imgWmm = innerW, imgHmm = canvas.height * imgWmm / canvas.width;
+      var totalPages = Math.max(1, Math.ceil(imgHmm / innerH));
+      var heightLeft = imgHmm, position = margin, pageCount = 1;
+      while(heightLeft > 0) {
+        pdf.addImage(imgData, "PNG", margin, position, imgWmm, imgHmm);
+        if(qrData){ var qSize = 22; pdf.addImage(qrData, "PNG", pageW - margin - qSize, pageH - margin - qSize - 3, qSize, qSize); }
+        var footerText = getTranslation("本PDFデータは飯綱町産りんごPR事業の一環で作成されました。", MODAL_ACTIVE_LANG);
+        var jpImg = renderFooterImagePx(footerText, 18, "#000");
+        var footerH = 8; pdf.addImage(jpImg.data, "PNG", margin, pageH - margin - 2, footerH / jpImg.ar, footerH);
+        var now = new Date(); var ts = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate() + " " + now.getHours() + ":" + ("0" + now.getMinutes()).slice(-2);
+        var tsFull = ts + " / " + pageCount + "/" + totalPages;
+        pdf.setFontSize(11); var tsWidth = pdf.getTextWidth(tsFull); pdf.text(tsFull, pageW - margin - tsWidth, pageH - margin +4);
+        heightLeft -= innerH; if(heightLeft > 0) { pdf.addPage(); position = margin - (imgHmm - heightLeft); pageCount++; }
+      }
+      window.open(pdf.output("bloburl"), "_blank");
+    } catch(e) { console.error(e); alert(getTranslation("PDF生成に失敗しました。", MODAL_ACTIVE_LANG)); }
   }
 
   /* モーダル制御 */
@@ -84,28 +250,23 @@ window.lzModal = (function() {
     CURRENT_CARD = card;
     var d = card.dataset;
     MODAL_ACTIVE_LANG = targetLang || MODAL_ACTIVE_LANG || window.LZ_CURRENT_LANG;
-
     var rawData = {};
     try { rawData = JSON.parse(d.item || "{}"); } catch(e) { rawData = { title: d.title, lead: d.lead, body: d.body, l3: d.group }; }
-    
-    var title = C.L(rawData, 'title', MODAL_ACTIVE_LANG);
-    var lead = C.L(rawData, 'lead', MODAL_ACTIVE_LANG);
-    var bodyText = C.L(rawData, 'body', MODAL_ACTIVE_LANG);
-    
-    // リンク生成（脳：lzSearchEngineに依頼）
-    var linkedBody = window.lzSearchEngine ? window.lzSearchEngine.applyLinks(bodyText, d.id, MODAL_ACTIVE_LANG) : bodyText;
-    
+    var title = getLangText(rawData, 'title', MODAL_ACTIVE_LANG);
+    var lead = getLangText(rawData, 'lead', MODAL_ACTIVE_LANG);
+    var bodyText = getLangText(rawData, 'body', MODAL_ACTIVE_LANG);
+    var linkedBody = applyAutoLinks(bodyText, d.id, MODAL_ACTIVE_LANG);
     var url = new URL(window.location.href);
     url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id);
     window.history.replaceState(null, "", url.toString());
     document.title = title + " | " + C.originalTitle;
-
     var gallery = [d.main].concat(JSON.parse(d.sub || "[]")).filter(Boolean);
     var rows = [];
     var fields = [
       {k:'address', l:getTranslation('住所', MODAL_ACTIVE_LANG)}, {k:'bizDays', l:getTranslation('営業曜日', MODAL_ACTIVE_LANG)}, 
       {k:'holiday', l:getTranslation('定休日', MODAL_ACTIVE_LANG)}, {k:'hoursCombined', l:getTranslation('営業時間', MODAL_ACTIVE_LANG)}, 
-      {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)}, {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
+      {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)}, {k:'eventTime', l:getTranslation('開催時間', MODAL_ACTIVE_LANG)},
+      {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)}, {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
     ];
     for(var i=0; i<fields.length; i++) if(d[fields[i].k] && d[fields[i].k].trim() !== "") rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
     var sns = JSON.parse(d.sns || "{}");
@@ -128,16 +289,14 @@ window.lzModal = (function() {
     ].join('');
 
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
-      el.onclick = function() { 
-        if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]'), MODAL_ACTIVE_LANG); 
-        else if(window.lzSearchEngine) window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function(){ render(card, MODAL_ACTIVE_LANG); });
-      };
+      el.onclick = function() { if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]')); else if(el.dataset.keyword) renderSearchResults(el.dataset.keyword, MODAL_ACTIVE_LANG); };
     });
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
     MODAL.querySelector(".lz-share").onclick = function() {
-      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (lead || "") + "\n" + window.location.href;
-      if(navigator.share) navigator.share({ text: payload }); else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(getTranslation("共有テキストをコピーしました！", MODAL_ACTIVE_LANG)); }
+      var shareUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(d.id);
+      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (lead || "") + "\nーーー\n" + getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG) + "\n" + shareUrl;
+      if(navigator.share) navigator.share({ text: payload }); else { var ta=document.body.appendChild(document.createElement("textarea")); ta.value=payload; ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("共有テキストをコピーしました！"); }
     };
     var mainImg = MODAL.querySelector("#lz-mainimg"); var thumbs = MODAL.querySelector(".lz-g");
     if(thumbs && mainImg) {
@@ -151,24 +310,10 @@ window.lzModal = (function() {
     if (CARDS.length > 1) {
       var p = SHELL.appendChild(document.createElement("button")); p.className = "lz-arrow lz-prev"; p.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>';
       var n = SHELL.appendChild(document.createElement("button")); n.className = "lz-arrow lz-next"; n.innerHTML = '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
-      p.onclick = function(e){ e.stopPropagation(); IDX = (IDX - 1 + CARDS.length) % CARDS.length; render(CARDS[IDX], MODAL_ACTIVE_LANG); };
-      n.onclick = function(e){ e.stopPropagation(); IDX = (IDX + 1) % CARDS.length; render(CARDS[IDX], MODAL_ACTIVE_LANG); };
+      p.onclick = function(e){ e.stopPropagation(); IDX = (IDX - 1 + CARDS.length) % CARDS.length; render(CARDS[IDX]); };
+      n.onclick = function(e){ e.stopPropagation(); IDX = (IDX + 1) % CARDS.length; render(CARDS[IDX]); };
     }
     HOST.classList.add("open"); MODAL.scrollTop = 0;
-  }
-
-  async function generatePdf(element, title, cardId) {
-    if(!confirm(getTranslation("PDFを作成して新しいタブで開きます。よろしいですか？", MODAL_ACTIVE_LANG))) return;
-    try {
-      if (!window.jspdf) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
-      if (!window.html2canvas) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
-      if (!window.QRCode) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
-      var canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-      var { jsPDF } = window.jspdf;
-      var pdf = new jsPDF("p", "mm", "a4");
-      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 12, 12, 186, canvas.height * 186 / canvas.width);
-      window.open(pdf.output("bloburl"), "_blank");
-    } catch(e) { alert(getTranslation("PDF生成に失敗しました。", MODAL_ACTIVE_LANG)); }
   }
 
   function close() { if(HOST) HOST.classList.remove("open"); document.title = C.originalTitle; var url = new URL(location.href); url.searchParams.delete('id'); url.searchParams.set('lang', ORIGINAL_SITE_LANG); window.history.replaceState(null, "", url.toString()); MODAL_ACTIVE_LANG = null; }
@@ -197,9 +342,9 @@ window.lzModal = (function() {
       }
       ORIGINAL_SITE_LANG = window.LZ_CURRENT_LANG; MODAL_ACTIVE_LANG = ORIGINAL_SITE_LANG;
       var track = card.closest(".lz-track"); CARDS = track ? Array.from(track.querySelectorAll(".lz-card")) : [card];
-      IDX = CARDS.indexOf(card); render(card, MODAL_ACTIVE_LANG);
+      IDX = CARDS.indexOf(card); render(card);
     },
     close: close,
-    backToCurrent: function() { render(CURRENT_CARD, MODAL_ACTIVE_LANG); }
+    backToCurrent: function() { render(CURRENT_CARD); }
   };
 })();
