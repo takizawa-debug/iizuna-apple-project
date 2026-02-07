@@ -1,6 +1,6 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (UIブラッシュアップ版)
- * 役割: サイト全体の検索機能を維持しつつ、画像プレースホルダーとボタンのアクセシビリティを最適化。
+ * modal-search.js - モーダル内広域検索エンジン (赤リンク全記事対応版)
+ * 役割: サイト全体の記事タイトルを自動検知して赤リンク化。検索UIとアクセシビリティを維持。
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -12,7 +12,6 @@ window.lzSearchEngine = (function() {
     "シードル", "アップルミュージアム", "アクセス", "歴史", "機能性成分", "プロシアニジン", "甘みと酸味のバランス"
   ];
 
-  // 検索画面専用の追加スタイル (ホバー時のアクセシビリティ確保)
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
@@ -29,21 +28,25 @@ window.lzSearchEngine = (function() {
 
   return {
     /**
-     * オートリンク生成ロジック (同期)
+     * オートリンク生成ロジック (全記事データ参照版)
      */
     applyLinks: function(text, currentId, targetLang) {
-      var cardsInDom = document.querySelectorAll('.lz-card');
       var map = {};
+      
+      // 1. まずキーワード(緑)を登録
       MASTER_TAGS.forEach(function(tag) { map[tag] = { word: tag, type: 'search' }; });
-      cardsInDom.forEach(function(card) {
-        try {
-          var d = JSON.parse(card.dataset.item || "{}");
-          var title = C.L(d, 'title', targetLang);
-          if (title && title.length > 1 && card.dataset.id !== currentId) {
-            map[title] = { word: title, id: card.dataset.id, type: 'direct' };
-          }
-        } catch(e){}
+
+      // 2. サイト全体のデータからタイトル(赤)を登録
+      // currentId は現在表示中の記事のタイトル(ID)
+      var allData = window.LZ_DATA || []; 
+      allData.forEach(function(item) {
+        var title = C.L(item, 'title', targetLang);
+        // ID(item.title)が一致しない、かつ有効なタイトルの場合のみ登録
+        if (title && title.length > 1 && item.title !== currentId) {
+          map[title] = { word: title, id: item.title, type: 'direct' };
+        }
       });
+
       var candidates = Object.values(map).sort(function(a,b){ return b.word.length - a.word.length; });
       var escaped = C.esc(text), tokens = [];
       candidates.forEach(function(item, idx) {
@@ -61,11 +64,10 @@ window.lzSearchEngine = (function() {
     },
 
     /**
-     * 広域検索実行
+     * 広域検索実行 (非同期)
      */
     run: async function(keyword, targetLang, modalEl, backFunc) {
-      injectSearchStyles(); // スタイルの注入
-      
+      injectSearchStyles();
       modalEl.innerHTML = '<div style="padding:60px; text-align:center;">' + 
         '<p style="font-weight:bold; color:#cf3a3a;">' + (C.T('検索しています...') || 'Searching...') + '</p>' +
         '</div>';
@@ -92,18 +94,13 @@ window.lzSearchEngine = (function() {
             var lead = C.L(it, 'lead', targetLang) || "";
             var body = C.L(it, 'body', targetLang) || "";
             
-            // サムネイル画像エリアの構築
             var thumbHtml = '';
             if (it.mainImage && it.mainImage.trim() !== "") {
               thumbHtml = '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">';
             } else {
-              // 画像がない場合の薄いグレー ＆ 余白ありの図形描写
-              thumbHtml = '<div class="lz-s-img-placeholder">' +
-                          '<img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '">' +
-                          '</div>';
+              thumbHtml = '<div class="lz-s-img-placeholder"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
             }
 
-            // スニペット生成
             var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
             var idx = combinedText.indexOf(keyword);
             var start = Math.max(0, idx - 20);
@@ -111,9 +108,7 @@ window.lzSearchEngine = (function() {
 
             html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px; margin-bottom:12px;">';
             html += '  <div style="display:flex; gap:15px; align-items:center;">';
-            // サムネイル (1:1)
             html += '    <div style="flex:0 0 80px; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #eee; background:#fff;">' + thumbHtml + '</div>';
-            // コンテンツ
             html += '    <div style="flex:1; min-width:0;">';
             html += '      <div style="margin-bottom:4px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
             html += '      <div class="lz-s-name" style="font-size:1.2rem; margin-bottom:4px;">' + hl(C.esc(title)) + '</div>';
@@ -124,7 +119,6 @@ window.lzSearchEngine = (function() {
           });
         }
         
-        // アクセシビリティを考慮した「戻る」ボタン
         html += '<button class="lz-btn lz-btn-search-back">' + (targetLang === 'ja' ? '← 記事に戻る' : '← Back to Article') + '</button></div>';
 
         modalEl.innerHTML = html;
