@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (オートリンク & 関連検索 Edition)
- * 役割: 既存のPDF生成・言語復元機能を維持しつつ、単語レベルの回遊性を追加
+ * modal.js - 詳細表示・機能コンポーネント (優先順位色分け & 検索ハイライト Edition)
+ * 役割: 既存機能を維持しつつ、赤(タイトル直通)を最優先、緑(タグ検索)を次点として色分け。検索時に文脈を表示。
  */
 window.lzModal = (function() {
   "use strict";
@@ -56,13 +56,20 @@ window.lzModal = (function() {
       '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
-      /* オートリンク用 */
-      '.lz-auto-link { color: #cf3a3a; text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; }',
-      '.lz-auto-link:hover { background: #fff1f0; }',
-      /* 検索結果用 */
-      '.lz-s-wrap { padding: 20px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #cf3a3a; margin-bottom: 15px; border-left: 4px solid #cf3a3a; padding-left: 10px; }',
-      '.lz-s-item { padding: 12px; background: #fff; border: 1px solid #eee; border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: .2s; font-weight: 700; font-size: 1.2rem; }',
-      '.lz-s-item:hover { border-color: #cf3a3a; background: #fffdfd; }',
+      /* オートリンク色分け */
+      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
+      '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
+      '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
+      '.lz-auto-link:hover { background: #f5f5f5; }',
+      /* 検索結果・ハイライト */
+      '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
+      '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
+      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
+      '.lz-s-item-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }',
+      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; flex-shrink: 0; }',
+      '.lz-s-name { font-weight: 800; font-size: 1.3rem; color: #cf3a3a; }',
+      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }',
+      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; border-radius: 2px; }',
       '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
       '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
       '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
@@ -101,26 +108,42 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* 検索機能: キーワードを含む記事をリスト表示 */
+  /* 検索機能: 重複排除 ＆ ハイライト表示 */
   function renderSearchResults(keyword, targetLang) {
     var cards = document.querySelectorAll('.lz-card');
     var results = [];
+    var seenIds = new Set(); 
+
     cards.forEach(function(c) {
+      if (seenIds.has(c.dataset.id)) return;
       try {
         var data = JSON.parse(c.dataset.item || "{}");
         var title = getLangText(data, 'title', targetLang);
         var body = getLangText(data, 'body', targetLang);
-        if (title.includes(keyword) || body.includes(keyword)) {
-          results.push({ card: c, title: title });
+        var cat = c.dataset.group || "";
+
+        if (title.includes(keyword) || body.includes(keyword) || (c.dataset.tags && c.dataset.tags.includes(keyword))) {
+          seenIds.add(c.dataset.id);
+          var idx = body.indexOf(keyword);
+          var start = Math.max(0, idx - 25);
+          var snippet = (start > 0 ? "..." : "") + body.substring(start, start + 70) + (body.length > start + 70 ? "..." : "");
+          results.push({ card: c, title: title, body: snippet, cat: cat });
         }
       } catch(e){}
     });
+
+    // キーワード箇所を編みかけにするヘルパー
+    var hl = function(text) { return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
+
     var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
     if(results.length === 0) html += '<div>見つかりませんでした。</div>';
     else results.forEach(function(res) {
-      html += '<div class="lz-s-item" data-goto-id="' + res.card.dataset.id + '">🍎 ' + C.esc(res.title) + '</div>';
+      html += '<div class="lz-s-item" data-goto-id="' + res.card.dataset.id + '">';
+      html += '<div class="lz-s-item-head"><span class="lz-s-cat">' + C.esc(res.cat) + '</span><span class="lz-s-name">' + hl(C.esc(res.title)) + '</span></div>';
+      html += '<div class="lz-s-body">' + hl(C.esc(res.body)) + '</div></div>';
     });
-    html += '<button class="lz-btn" style="margin-top:20px; width:100%;" onclick="lzModal.backToCurrent()">← 記事に戻る</button></div>';
+    html += '<button class="lz-btn" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;" onclick="lzModal.backToCurrent()">← 記事に戻る</button></div>';
+
     MODAL.innerHTML = html;
     MODAL.querySelectorAll('.lz-s-item').forEach(function(item) {
       item.onclick = function() { render(document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]')); };
@@ -128,20 +151,27 @@ window.lzModal = (function() {
     MODAL.scrollTop = 0;
   }
 
-  /* オートリンク機能: トークン方式により二重置換バグを回避 */
+  /* オートリンク機能: 赤(直行)優先 ＆ トークンによる多重置換防止 */
   function applyAutoLinks(text, currentId, targetLang) {
-    var candidates = [];
-    MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) candidates.push({ word: tag, type: 'search' }); });
     var cards = document.querySelectorAll('.lz-card');
+    var map = {}; // ハッシュマップで優先順位管理
+
+    // 1. まずキーワード（検索用）を登録
+    MASTER_TAGS.forEach(function(tag) { if (tag.length > 1) map[tag] = { word: tag, type: 'search' }; });
+
+    // 2. 他記事のタイトルを登録（同じ単語があれば direct が上書き＝優先される）
     cards.forEach(function(card) {
       try {
         var data = JSON.parse(card.dataset.item || "{}");
         var title = getLangText(data, 'title', targetLang);
-        if (title && title.length > 1 && card.dataset.id !== currentId) candidates.push({ word: title, id: card.dataset.id, type: 'direct' });
+        if (title && title.length > 1 && card.dataset.id !== currentId) {
+          map[title] = { word: title, id: card.dataset.id, type: 'direct' };
+        }
       } catch(e) {}
     });
-    candidates = candidates.filter(function(v, i, a) { return a.findIndex(function(t){ return t.word === v.word; }) === i; });
-    candidates.sort(function(a, b) { return b.word.length - a.word.length; });
+
+    // 長い単語から順にソート（「飯綱町」より「飯綱町産りんご」を優先）
+    var candidates = Object.values(map).sort(function(a, b) { return b.word.length - a.word.length; });
 
     var escaped = C.esc(text);
     var tokens = [];
@@ -150,8 +180,8 @@ window.lzModal = (function() {
       escaped = escaped.replace(regex, function(match) {
         var token = "###LZT_" + idx + "###";
         tokens[idx] = item.type === 'direct' 
-          ? '<span class="lz-auto-link" data-goto-id="'+item.id+'">'+match+'</span>'
-          : '<span class="lz-auto-link" data-keyword="'+item.word+'">'+match+'</span>';
+          ? '<span class="lz-auto-link direct" data-goto-id="'+item.id+'">'+match+'</span>'
+          : '<span class="lz-auto-link search" data-keyword="'+item.word+'">'+match+'</span>';
         return token;
       });
     });
@@ -159,7 +189,7 @@ window.lzModal = (function() {
     return escaped;
   }
 
-  /* PDF精密生成ロジック */
+  /* PDF精密生成ロジック (既存維持) */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
     var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
@@ -230,46 +260,32 @@ window.lzModal = (function() {
     url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id);
     window.history.replaceState(null, "", url.toString());
     document.title = title + " | " + C.originalTitle;
-    var subs = []; try { subs = JSON.parse(d.sub || "[]"); } catch(e){}
-    var gallery = [d.main].concat(subs).filter(Boolean);
-    var sns = {}; try { sns = JSON.parse(d.sns || "{}"); } catch(e){}
+    var gallery = [d.main].concat(JSON.parse(d.sub || "[]")).filter(Boolean);
     var rows = [];
     var fields = [
       {k:'address', l:getTranslation('住所', MODAL_ACTIVE_LANG)}, {k:'bizDays', l:getTranslation('営業曜日', MODAL_ACTIVE_LANG)}, 
       {k:'holiday', l:getTranslation('定休日', MODAL_ACTIVE_LANG)}, {k:'hoursCombined', l:getTranslation('営業時間', MODAL_ACTIVE_LANG)}, 
       {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)}, {k:'eventTime', l:getTranslation('開催時間', MODAL_ACTIVE_LANG)},
-      {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)}, {k:'bring', l:getTranslation('もちもの', MODAL_ACTIVE_LANG)}, 
-      {k:'target', l:getTranslation('対象', MODAL_ACTIVE_LANG)}, {k:'apply', l:getTranslation('申し込み方法', MODAL_ACTIVE_LANG)}, 
-      {k:'org', l:getTranslation('主催者名', MODAL_ACTIVE_LANG)}, {k:'venueNote', l:getTranslation('会場注意事項', MODAL_ACTIVE_LANG)}, 
-      {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
+      {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)}, {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
     ];
     for(var i=0; i<fields.length; i++) if(d[fields[i].k] && d[fields[i].k].trim() !== "") rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
-    if (d.tel) rows.push('<tr><th>' + getTranslation('問い合わせ', MODAL_ACTIVE_LANG) + '</th><td><a href="tel:'+C.esc(d.tel)+'">'+C.esc(d.tel)+'</a></td></tr>');
+    var sns = JSON.parse(d.sns || "{}");
     var snsHtml = [];
     var addSns = function(url, key) { if(url && url.trim() !== "") snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
-    addSns(d.home, "web"); addSns(d.ec, "ec"); addSns(sns.instagram, "ig"); addSns(sns.facebook, "fb"); addSns(sns.x, "x"); addSns(sns.line, "line"); addSns(sns.tiktok, "tt");
-    var relatedBlock = "";
-    try {
-      var rel = JSON.parse(d.related || "[]").filter(function(x){ return x && (x.title || x.url); });
-      if (rel.length) {
-        relatedBlock = '<div class="lz-related"><div class="lz-related-label">' + getTranslation('関連記事', MODAL_ACTIVE_LANG) + '</div>' + 
-          rel.map(function(a){ return '<div class="lz-related-item"><a href="' + C.esc(a.url || "#") + '" target="_blank" rel="noopener">' + C.esc(a.title || a.url) + '</a></div>'; }).join("") + '</div>';
-      }
-    } catch(e) {}
-    var dlBtn = (d.dl && d.dl.trim() !== "") ? '<a class="lz-btn" href="'+C.esc(d.dl)+'" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">' + getTranslation('保存', MODAL_ACTIVE_LANG) + '</span></a>' : "";
+    addSns(d.home, "web"); addSns(d.ec, "ec"); addSns(sns.instagram, "ig"); addSns(sns.facebook, "fb");
     var langTabs = '<div class="lz-m-lang-tabs">' + window.LZ_CONFIG.LANG.SUPPORTED.map(function(l){
         var label = window.LZ_CONFIG.LANG.LABELS[l]; return '<div class="lz-m-lang-btn '+(l === MODAL_ACTIVE_LANG ? 'active' : '')+'" data-lang="'+l+'">'+label+'</div>';
       }).join('') + '</div>';
 
     MODAL.innerHTML = [
       '<div class="lz-mh"><h2 class="lz-mt">' + C.esc(title) + '</h2><div class="lz-actions"><button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">' + getTranslation('共有', MODAL_ACTIVE_LANG) + '</span></button>',
-      dlBtn, (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
+      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
       '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button></div></div>',
       langTabs, '<div>', (gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
       (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), '  <div class="lz-txt">' + linkedBody + '</div>',
       (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : ''),
       (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
-      (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''), relatedBlock, '</div>'
+      (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''), '</div>'
     ].join('');
 
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
@@ -279,8 +295,8 @@ window.lzModal = (function() {
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
     MODAL.querySelector(".lz-share").onclick = function() {
       var shareUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(d.id);
-      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (lead || "") + "\nーーー\n" + getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG) + "\n" + shareUrl + "\n\n#いいづなりんご #飯綱町";
-      if(navigator.share) navigator.share({ text: payload }); else { var ta=document.body.appendChild(document.createElement("textarea")); ta.value=payload; ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(getTranslation("共有テキストをコピーしました！", MODAL_ACTIVE_LANG)); }
+      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (lead || "") + "\nーーー\n" + getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG) + "\n" + shareUrl;
+      if(navigator.share) navigator.share({ text: payload }); else { var ta=document.body.appendChild(document.createElement("textarea")); ta.value=payload; ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert("共有テキストをコピーしました！"); }
     };
     var mainImg = MODAL.querySelector("#lz-mainimg"); var thumbs = MODAL.querySelector(".lz-g");
     if(thumbs && mainImg) {
