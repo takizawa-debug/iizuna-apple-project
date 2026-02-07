@@ -1,6 +1,5 @@
 /**
- * sidenav.js - サイド・ドットナビ (りんご＆葉っぱデザイン版)
- * 役割: ページ内ナビゲーション、スクロール監視、テーマに沿ったUI演出
+ * sidenav.js - サイド・ドットナビ (多言語対応版)
  */
 (function() {
   "use strict";
@@ -9,7 +8,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSS (葉っぱとりんごをコードで描画)
+     1. CSS (既存デザインを完全維持)
      ========================================== */
   var injectStyles = function() {
     if (document.getElementById('lz-sidenav-styles')) return;
@@ -30,7 +29,6 @@
       '.lz-sideitem {',
       '  position: relative; width: 14px; height: 14px;',
       '  background: var(--apple-green);',
-      '  /* 葉っぱの形に変形 */',
       '  border-radius: 0 80% 0 80%;',
       '  transform: rotate(-15deg);',
       '  cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);',
@@ -40,11 +38,10 @@
       /* --- りんご (アクティブ時) --- */
       '.lz-sideitem.is-active {',
       '  background: var(--apple-red);',
-      '  border-radius: 50% 50% 45% 45%;', /* 少し下を窄めてりんごらしく */
+      '  border-radius: 50% 50% 45% 45%;',
       '  transform: scale(1.6) rotate(0deg);',
       '  box-shadow: 0 4px 8px rgba(207, 58, 58, 0.3);',
       '}',
-      /* りんごのヘタ (アクティブ時のみ出現) */
       '.lz-sideitem.is-active::after {',
       '  content: ""; position: absolute; top: -3px; left: 50%;',
       '  width: 2px; height: 5px; background: #5b3a1e; transform: translateX(-50%);',
@@ -80,12 +77,17 @@
     for (var i = 0; i < sections.length; i++) {
       (function(idx) {
         var sec = sections[idx];
-        var label = sec.getAttribute('data-l2');
-        if (!label) return;
+        var key = sec.getAttribute('data-l2'); // 判定用の内部キー(日本語)
+        if (!key) return;
+
+        /* ★多言語対応: section.jsによって既に翻訳された見出し(.lz-title)から表示名を取得 */
+        var titleEl = sec.querySelector('.lz-title');
+        var displayLabel = titleEl ? titleEl.textContent : key;
 
         var item = document.createElement('div');
         item.className = 'lz-sideitem';
-        item.setAttribute('data-label', label);
+        item.setAttribute('data-label', displayLabel); // CSSで表示される翻訳後のラベル
+        item.setAttribute('data-key', key);           // スクロール判定用の内部キー
         
         item.onclick = function() {
           var header = document.querySelector(".pera1-header, .lz-hdr");
@@ -103,19 +105,20 @@
        ========================================== */
     var updateActive = function() {
       var scrollY = window.scrollY;
-      var currentLabel = "";
+      var currentKey = "";
 
       document.body.classList.toggle('is-scrolled', scrollY > 200);
 
       for (var j = 0; j < sections.length; j++) {
         if (scrollY >= (sections[j].offsetTop - 250)) {
-          currentLabel = sections[j].getAttribute('data-l2');
+          currentKey = sections[j].getAttribute('data-l2');
         }
       }
 
       var dotItems = sideNav.querySelectorAll('.lz-sideitem');
       for (var k = 0; k < dotItems.length; k++) {
-        dotItems[k].classList.toggle('is-active', dotItems[k].getAttribute('data-label') === currentLabel);
+        /* ★修正：内部キー(data-key)でアクティブ状態を判定 */
+        dotItems[k].classList.toggle('is-active', dotItems[k].getAttribute('data-key') === currentKey);
       }
     };
 
@@ -132,6 +135,7 @@
     var observer = new MutationObserver(function() {
       var allSections = document.querySelectorAll('.lz-section[data-l2]');
       var readySections = document.querySelectorAll('.lz-section[data-l2].lz-ready');
+      // すべてのセクションが「lz-ready（翻訳・描画完了）」になったら構築開始
       if (allSections.length > 0 && readySections.length >= allSections.length) {
         buildSideNav();
         observer.disconnect();
@@ -139,7 +143,7 @@
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(buildSideNav, 4000);
+    setTimeout(buildSideNav, 4000); // 念のためのセーフティタイマー
   };
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bootNav);
