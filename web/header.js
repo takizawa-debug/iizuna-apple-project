@@ -103,11 +103,18 @@
     }).join('');
   }
 
-  /* ==========================================
-     3. HTML構造の注入 (多言語対応)
+/* ==========================================
+     3. HTML構造の注入 (多言語・タイトル最適化版)
      ========================================== */
   const langLabelMob = window.LZ_CURRENT_LANG === 'ja' ? '日' : (window.LZ_CURRENT_LANG === 'en' ? 'EN' : '中');
   const langLabelPc = window.LZ_CONFIG.LANG.LABELS[window.LZ_CURRENT_LANG];
+
+  // タイトルとサブタイトルの多言語定義
+  const brandTitle = {
+    ja: { t1: '飯綱町産りんごポータルサイト', t2: 'りんごのまちいいづな' },
+    en: { t1: 'Iizuna Apple Portal Site', t2: 'Appletown Iizuna' },
+    zh: { t1: '飯綱町蘋果入口網站', t2: '蘋果之郷 飯綱町' }
+  }[window.LZ_CURRENT_LANG] || { t1: 'Iizuna Apple Portal Site', t2: 'Appletown Iizuna' };
 
   const headerHTML = `
   <header class="lz-hdr" id="lzHdr">
@@ -115,8 +122,8 @@
       <a class="lz-h-brand" href="https://appletown-iizuna.com?lang=${window.LZ_CURRENT_LANG}">
         <img class="lz-h-brand__img" src="${window.LZ_CONFIG.ASSETS.LOGO_WHITE}" alt="ロゴ">
         <span class="lz-h-brand__txt">
-          <span class="lz-h-t1">${window.LZ_CURRENT_LANG === 'ja' ? '飯綱町産りんごポータルサイト' : 'Iizuna Apple Portal Site'}</span>
-          <span class="lz-h-t2">Appletown Iizuna</span>
+          <span class="lz-h-t1">${brandTitle.t1}</span>
+          <span class="lz-h-t2">${brandTitle.t2}</span>
         </span>
       </a>
       <div class="lz-h-right">
