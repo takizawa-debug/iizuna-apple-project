@@ -1,6 +1,6 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (赤リンク全記事対応版)
- * 役割: サイト全体の記事タイトルを自動検知して赤リンク化。検索UIとアクセシビリティを維持。
+ * modal-search.js - モーダル内広域検索エンジン
+ * 役割: サイト全体の記事タイトルを自動検知して赤リンク化。同期・非同期の競合を解決し、確実にリンクを貼る。
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -12,6 +12,7 @@ window.lzSearchEngine = (function() {
     "シードル", "アップルミュージアム", "アクセス", "歴史", "機能性成分", "プロシアニジン", "甘みと酸味のバランス"
   ];
 
+  /* スタイル注入（マウスオーバー時の視認性確保） */
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
@@ -19,16 +20,27 @@ window.lzSearchEngine = (function() {
     style.textContent = [
       '.lz-btn-search-back { margin-top:20px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; }',
       '.lz-btn-search-back:hover { background:#27ae60 !important; color:#fff !important; }',
-      '.lz-s-item { display:block; text-decoration:none; color:inherit; }',
       '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }'
     ].join('\n');
     document.head.appendChild(style);
   };
 
+  /* 裏側でデータを先読みしておく（リンク精度向上のため） */
+  async function prefetchData() {
+    if (window.LZ_DATA) return;
+    try {
+      var res = await fetch(window.LZ_CONFIG.ENDPOINT);
+      var json = await res.json();
+      window.LZ_DATA = json.items || [];
+    } catch(e) {}
+  }
+  prefetchData();
+
   return {
     /**
-     * オートリンク生成ロジック (全記事データ参照版)
+     * オートリンク生成ロジック
+     * ページ内のカード（確実） ＋ サイト全域データ（もしあれば）を組み合わせてリンク化
      */
     applyLinks: function(text, currentId, targetLang) {
       var map = {};
@@ -36,16 +48,27 @@ window.lzSearchEngine = (function() {
       // 1. まずキーワード(緑)を登録
       MASTER_TAGS.forEach(function(tag) { map[tag] = { word: tag, type: 'search' }; });
 
-      // 2. サイト全体のデータからタイトル(赤)を登録
-      // currentId は現在表示中の記事のタイトル(ID)
-      var allData = window.LZ_DATA || []; 
-      allData.forEach(function(item) {
-        var title = C.L(item, 'title', targetLang);
-        // ID(item.title)が一致しない、かつ有効なタイトルの場合のみ登録
-        if (title && title.length > 1 && item.title !== currentId) {
-          map[title] = { word: title, id: item.title, type: 'direct' };
-        }
+      // 2. ページ内に存在するカードを優先登録（赤文字リンクの消失を防止）
+      document.querySelectorAll('.lz-card').forEach(function(card) {
+        try {
+          var d = JSON.parse(card.dataset.item || "{}");
+          var title = C.L(d, 'title', targetLang);
+          if (title && title.length > 1 && card.dataset.id !== currentId) {
+            map[title] = { word: title, id: card.dataset.id, type: 'direct' };
+          }
+        } catch(e){}
       });
+
+      // 3. 全記事データ(window.LZ_DATA)があれば、さらに別ページのタイトル(赤)も追加登録
+      if (window.LZ_DATA && Array.isArray(window.LZ_DATA)) {
+        window.LZ_DATA.forEach(function(item) {
+          var title = C.L(item, 'title', targetLang);
+          // まだmapになく、自分自身でもないタイトルを追加
+          if (title && title.length > 1 && item.title !== currentId && !map[title]) {
+            map[title] = { word: title, id: item.title, type: 'direct' };
+          }
+        });
+      }
 
       var candidates = Object.values(map).sort(function(a,b){ return b.word.length - a.word.length; });
       var escaped = C.esc(text), tokens = [];
@@ -59,29 +82,24 @@ window.lzSearchEngine = (function() {
           return token;
         });
       });
-      tokens.forEach(function(html, idx){ escaped = escaped.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
+      tokens.forEach(function(html, idx){ if(html) escaped = escaped.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
       return escaped;
     },
 
     /**
-     * 広域検索実行 (非同期)
+     * 広域検索実行
      */
     run: async function(keyword, targetLang, modalEl, backFunc) {
       injectSearchStyles();
-      modalEl.innerHTML = '<div style="padding:60px; text-align:center;">' + 
-        '<p style="font-weight:bold; color:#cf3a3a;">' + (C.T('検索しています...') || 'Searching...') + '</p>' +
-        '</div>';
+      modalEl.innerHTML = '<div style="padding:60px; text-align:center;"><p style="font-weight:bold; color:#cf3a3a;">' + (C.T('検索しています...') || 'Searching...') + '</p></div>';
       
       try {
         var endpoint = window.LZ_CONFIG.SEARCH_ENDPOINT + "?q=" + encodeURIComponent(keyword) + "&limit=50";
         var res = await fetch(endpoint);
-        if (!res.ok) throw new Error("HTTP " + res.status);
         var json = await res.json();
-        if (!json.ok) throw new Error(json.error || "Server Error");
-
-        var results = json.items || [];
-        var currentId = new URLSearchParams(location.search).get('id');
-        results = results.filter(function(it){ return it.title !== currentId; });
+        var results = (json.items || []).filter(function(it){ 
+          return it.title !== new URLSearchParams(location.search).get('id'); 
+        });
 
         var hl = function(text){ return text.split(keyword).join('<mark>' + keyword + '</mark>'); };
         var html = '<div class="lz-s-wrap"><div class="lz-s-title">「' + C.esc(keyword) + '」に関連する情報</div>';
@@ -91,24 +109,17 @@ window.lzSearchEngine = (function() {
         } else {
           results.forEach(function(it) {
             var l1 = C.L(it, 'l1', targetLang), l2 = C.L(it, 'l2', targetLang), title = C.L(it, 'title', targetLang);
-            var lead = C.L(it, 'lead', targetLang) || "";
-            var body = C.L(it, 'body', targetLang) || "";
-            
-            var thumbHtml = '';
-            if (it.mainImage && it.mainImage.trim() !== "") {
-              thumbHtml = '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">';
-            } else {
-              thumbHtml = '<div class="lz-s-img-placeholder"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
-            }
+            var lead = C.L(it, 'lead', targetLang) || "", body = C.L(it, 'body', targetLang) || "";
+            var imgHtml = it.mainImage ? '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">' : '<div class="lz-s-img-placeholder"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
 
             var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
             var idx = combinedText.indexOf(keyword);
             var start = Math.max(0, idx - 20);
             var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 80) + "...";
 
-            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px; margin-bottom:12px;">';
+            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px; margin-bottom:12px; cursor:pointer;">';
             html += '  <div style="display:flex; gap:15px; align-items:center;">';
-            html += '    <div style="flex:0 0 80px; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #eee; background:#fff;">' + thumbHtml + '</div>';
+            html += '    <div style="flex:0 0 80px; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #eee; background:#fff;">' + imgHtml + '</div>';
             html += '    <div style="flex:1; min-width:0;">';
             html += '      <div style="margin-bottom:4px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
             html += '      <div class="lz-s-name" style="font-size:1.2rem; margin-bottom:4px;">' + hl(C.esc(title)) + '</div>';
@@ -123,23 +134,16 @@ window.lzSearchEngine = (function() {
 
         modalEl.innerHTML = html;
         modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
-        
         modalEl.querySelectorAll('.lz-s-item').forEach(function(item) {
           item.onclick = function() {
-            var targetId = item.dataset.gotoId;
-            var cardInDom = document.querySelector('.lz-card[data-id="'+targetId+'"]');
-            if(cardInDom) {
-              window.lzModal.open(cardInDom);
-            } else {
-              var menuUrl = window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin;
-              location.href = menuUrl + "?lang=" + targetLang + "&id=" + encodeURIComponent(targetId);
-            }
+            var cardInDom = document.querySelector('.lz-card[data-id="'+item.dataset.gotoId+'"]');
+            if(cardInDom) window.lzModal.open(cardInDom);
+            else location.href = (window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin) + "?lang=" + targetLang + "&id=" + encodeURIComponent(item.dataset.gotoId);
           };
         });
         modalEl.scrollTop = 0;
-
       } catch(e) {
-        modalEl.innerHTML = '<div class="lz-s-wrap" style="padding:20px; text-align:center; color:#cf3a3a;">⚠️ エラー: ' + C.esc(e.message) + '</div>';
+        modalEl.innerHTML = '<div style="padding:20px; text-align:center; color:#cf3a3a;">⚠️ エラー: ' + C.esc(e.message) + '</div>';
       }
     }
   };
