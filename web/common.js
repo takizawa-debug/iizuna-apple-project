@@ -1,6 +1,5 @@
 /**
- * common.js - Appletown 基盤コンポーネント (安定・統合版)
- * 役割: 高信頼通信(NET)、共通変数(CSS/JS)、ユーティリティ
+ * common.js - Appletown 基盤コンポーネント (多言語対応版)
  */
 window.LZ_COMMON = (function() {
   "use strict";
@@ -89,10 +88,45 @@ window.LZ_COMMON = (function() {
   injectCoreStyles();
 
   /* ==========================================
-     3. ユーティリティ
+     3. 多言語管理 (Multi-language Management)
+     ========================================== */
+  var initLang = function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var lang = urlParams.get('lang');
+    // サポート外の言語ならデフォルト(ja)にする
+    if (!window.LZ_CONFIG.LANG.SUPPORTED.includes(lang)) {
+      lang = window.LZ_CONFIG.LANG.DEFAULT;
+    }
+    window.LZ_CURRENT_LANG = lang;
+  };
+  initLang();
+
+  // ① システム文言用 (T = Translate UI)
+  var T = function(key) {
+    var dict = window.LZ_CONFIG.LANG.I18N[window.LZ_CURRENT_LANG] || window.LZ_CONFIG.LANG.I18N[window.LZ_CONFIG.LANG.DEFAULT];
+    return dict[key] || key;
+  };
+
+  // ② 記事データ用 (L = Localize Content)
+  var L = function(item, key) {
+    if (!item) return "";
+    var lang = window.LZ_CURRENT_LANG;
+    // デフォルト(ja)ならそのまま返す
+    if (lang === window.LZ_CONFIG.LANG.DEFAULT) return item[key] || "";
+    // 指定言語(en/zh)のデータがあればそれを返し、なければjaをフォールバックとして返す
+    if (item[lang] && (item[lang][key] !== undefined && item[lang][key] !== "")) {
+      return item[lang][key];
+    }
+    return item[key] || "";
+  };
+
+  /* ==========================================
+     4. ユーティリティ
      ========================================== */
   return {
     NET: NET,
+    T: T, // UI文言取得関数
+    L: L, // コンテンツ取得関数
     esc: function(s){ return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); },
     ratio: function(r){ return ({"16:9":"56.25%","4:3":"75%","1:1":"100%","3:2":"66.67%"}[r] || "56.25%"); },
     loadScript: function(src){
