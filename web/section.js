@@ -114,7 +114,8 @@
     var related = it.relatedArticles || [];
 
     return [
-      '<article class="lz-card" data-id="' + C.esc(title) + '" data-title="' + C.esc(title) + '"',
+      '<article class="lz-card" data-id="' + C.esc(it.title || "") + '" data-title="' + C.esc(title) + '"',
+      '  data-item=\'' + C.esc(JSON.stringify(it)) + '\' ', // ★追加：全言語のデータをモーダルに引き継ぐ
       '  data-lead="' + C.esc(lead) + '" data-body="' + C.esc(body) + '" data-main="' + C.esc(it.mainImage || "") + '"',
       '  data-sub=\'' + C.esc(JSON.stringify(subs)) + '\' data-sns=\'' + C.esc(JSON.stringify(sns)) + '\'',
       '  data-related=\'' + C.esc(JSON.stringify(related)) + '\'', 
@@ -171,14 +172,12 @@
       }
 
       items.forEach(function(it) {
-        // グループキーは内部管理用に元のテキストを維持
         var k = (it.l3 || "").trim();
         if (!groups.has(k)) groups.set(k, []);
         groups.get(k).push(it);
       });
       var html = "", pad = C.ratio(imageRatio);
       groups.forEach(function(arr, key) {
-        // 中カテゴリ(L3)ラベルの多言語化
         var localizedL3 = C.L(arr[0], 'l3');
         if (key) html += '<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">' + C.esc(localizedL3) + '</h3></div>';
         html += '<div class="lz-track-outer"><div class="lz-track">' + arr.map(function(it){ return cardHTML(it, pad, key); }).join("") + '</div></div>';
