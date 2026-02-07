@@ -11,7 +11,7 @@
      1. CSSの注入 (既存のスタイルを維持しつつ調整)
      ========================================== */
   const cssText = `
-    :root { --lz-h-max: 1100px; --lz-h-height: 68px; --lz-h-red: #cf3a3a; }
+    :root { --lz-h-max: 1100px; --lz-h-height: 75px; --lz-h-red: #cf3a3a; }
     
     .lz-hdr { 
       position: fixed !important; inset: 0 0 auto 0 !important; height: var(--lz-h-height) !important; 
@@ -40,9 +40,9 @@
     /* PCナビ */
     .lz-h-nav { display: none; }
     @media (min-width: 1024px) { .lz-h-nav { display: block !important; } }
-    .lz-h-nav__list { display: flex !important; align-items: center !important; gap: 10px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
+    .lz-h-nav__list { display: flex !important; align-items: center !important; gap: 20px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
     .lz-h-nav__item { position: relative !important; height: var(--lz-h-height); display: flex; align-items: center; }
-    .lz-h-nav__l1 { font-weight: 600 !important; font-size: clamp(1.0rem, 1.5vw, 1.25rem) !important; color: #fff !important; text-decoration: none !important; padding: 8px 10px !important; border-radius: 10px !important; transition: background 0.3s; white-space: nowrap; }
+    .lz-h-nav__l1 { font-weight: 600 !important; font-size: clamp(1.2rem, 1.6vw, 1.4rem) !important; color: #fff !important; text-decoration: none !important; padding: 10px 18px !important; border-radius: 10px !important; transition: background 0.3s; white-space: nowrap; }
     .lz-h-nav__l1:hover { background: rgba(255, 255, 255, .15) !important; }
     
     .lz-h-panel { position: absolute !important; right: 0 !important; top: 100% !important; background: #fff !important; border-radius: 20px !important; box-shadow: 0 15px 50px rgba(0,0,0,.15) !important; padding: 10px !important; display: none; min-width: 240px !important; z-index: 10001 !important; transform-origin: top center; animation: lz-h-slide 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -55,12 +55,12 @@
     /* 言語セレクター */
     .lz-lang-pc { position: relative !important; display: none; height: var(--lz-h-height); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
-    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 36px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 44px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer; font-weight: 600; font-size: 1.1rem; padding: 0 20px !important;}
     .lz-lang-pc__btn::after { content: ""; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #fff; transition: 0.3s; }
     .lz-lang-pc__btn.is-active::after { transform: rotate(180deg); }
     .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 8px; background: #fff !important; border-radius: 16px !important; padding: 8px !important; display: none; min-width: 150px !important; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 10002; }
     .lz-lang-pc__menu.is-open { display: flex !important; }
-    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; transition: 0.2s; font-size: 0.95rem; }
+    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; transition: 0.2s; font-size: 1.15rem !important; padding: 14px 20px !important; }
     .lz-lang-pc__menu a:hover { background: #fff5f5; color: var(--lz-h-red); }
 
     .lz-lang-mob { position: relative !important; display: flex !important; }
