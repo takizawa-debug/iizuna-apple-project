@@ -1,6 +1,6 @@
 /**
- * modal.js - 詳細表示・機能コンポーネント (UI安定・完全継承版)
- * 役割: 提供された安定版の全機能を維持。検索が必要な時だけ modal-search.js を呼び出す。
+ * modal.js - 詳細表示コンポーネント (UI安定版)
+ * 役割: 既存の画像表示・PDF・設定を100%維持。検索が必要な時だけ modal-search.js を呼び出す。
  */
 window.lzModal = (function() {
   "use strict";
@@ -48,17 +48,10 @@ window.lzModal = (function() {
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
       /* オートリンク色分け */
       '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
-      '.lz-auto-link.direct { color: #cf3a3a; }',
-      '.lz-auto-link.search { color: #27ae60; }',
+      '.lz-auto-link.direct { color: #cf3a3a; } /* タイトル直行：赤 */',
+      '.lz-auto-link.search { color: #27ae60; } /* キーワード検索：緑 */',
       '.lz-auto-link:hover { background: #f5f5f5; }',
-      /* 検索結果・ハイライト (安定版スタイル) */
-      '.lz-s-wrap { padding: 25px; } .lz-s-title { font-size: 1.4rem; font-weight: 800; color: #333; margin-bottom: 20px; border-left: 4px solid #27ae60; padding-left: 10px; }',
-      '.lz-s-item { padding: 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; margin-bottom: 12px; cursor: pointer; transition: .2s; }',
-      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }',
-      '.lz-s-cat { font-size: 0.8rem; color: #fff; background: #27ae60; padding: 2px 8px; border-radius: 4px; font-weight: 800; margin-right: 8px; flex-shrink: 0; }',
-      '.lz-s-name { font-weight: 800; font-size: 1.3rem; color: #cf3a3a; }',
-      '.lz-s-body { font-size: 1rem; color: #666; line-height: 1.5; margin-top: 8px; }',
-      '.lz-s-item mark { background: #fff566; color: inherit; font-weight: 700; padding: 0 2px; border-radius: 2px; }',
+      /* 安定版維持スタイル */
       '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
       '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
       '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
@@ -70,6 +63,7 @@ window.lzModal = (function() {
       '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; }',
       '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; }',
       '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; }',
+      '.lz-arrow:hover { background: #cf3a3a; } .lz-arrow:hover svg { stroke: #fff; }',
       '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
       '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
       '@media(max-width:768px) { .lz-prev, .lz-next { top: auto; bottom: -68px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } }'
@@ -82,7 +76,7 @@ window.lzModal = (function() {
     return dict[key] || key;
   }
 
-  /* モーダル制御メイン */
+  /* モーダル制御 */
   var HOST, SHELL, MODAL, CARDS = [], IDX = 0, CURRENT_CARD = null;
 
   function render(card, targetLang) {
@@ -91,7 +85,6 @@ window.lzModal = (function() {
     var d = card.dataset;
     MODAL_ACTIVE_LANG = targetLang || MODAL_ACTIVE_LANG || window.LZ_CURRENT_LANG;
 
-    // --- 提供された「安定版」のロジックを完全再現 ---
     var rawData = {};
     try { rawData = JSON.parse(d.item || "{}"); } catch(e) { rawData = { title: d.title, lead: d.lead, body: d.body, l3: d.group }; }
     
@@ -99,7 +92,7 @@ window.lzModal = (function() {
     var lead = C.L(rawData, 'lead', MODAL_ACTIVE_LANG);
     var bodyText = C.L(rawData, 'body', MODAL_ACTIVE_LANG);
     
-    // リンク生成（modal-search.js側を同期的に呼び出す）
+    // リンク生成（脳：lzSearchEngineに依頼）
     var linkedBody = window.lzSearchEngine ? window.lzSearchEngine.applyLinks(bodyText, d.id, MODAL_ACTIVE_LANG) : bodyText;
     
     var url = new URL(window.location.href);
@@ -164,7 +157,6 @@ window.lzModal = (function() {
     HOST.classList.add("open"); MODAL.scrollTop = 0;
   }
 
-  /* PDF生成ロジック (既存維持) */
   async function generatePdf(element, title, cardId) {
     if(!confirm(getTranslation("PDFを作成して新しいタブで開きます。よろしいですか？", MODAL_ACTIVE_LANG))) return;
     try {
