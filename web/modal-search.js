@@ -1,41 +1,43 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (最終ブラッシュアップ版)
- * 役割: 検索結果のメイン見出しを最大化し、リンゴの描画アニメーションによる快適な待機画面を提供。
- * 　　　既存の多言語・1:1画像・大文字小文字無視機能はすべて維持。
+ * modal-search.js - モーダル内広域検索エンジン (UI完成版)
+ * 役割: 検索中のリンゴ線画アニメーションを実装。余白を詰め、リストの密集度を向上。
  */
 window.lzSearchEngine = (function() {
   "use strict";
   var C = window.LZ_COMMON;
   var DYNAMIC_KEYWORDS = [];
 
-// 検索画面専用スタイル (見出し最大化 ＆ リンクスタイル統合 ＆ アニメーション)
+  // 検索画面専用スタイル (アニメーション ＆ 密集レイアウト定義)
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
-      '.lz-s-wrap { padding: 25px !important; }',
+      '.lz-s-wrap { padding: 15px 20px !important; }',
       
-      /* ① リスト全体のメイン見出し：1.8remへ最大化 ＆ 強制適用 */
-      '.lz-s-title { font-size: 1.8rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 25px !important; border-left: 7px solid #27ae60 !important; padding-left: 15px !important; line-height: 1.3 !important; display: block !important; }',
-
-      /* 各記事の表示スタイル (維持) */
-      '.lz-s-name { font-size: 1.45rem; font-weight: 800; color: #cf3a3a; margin-bottom: 6px; line-height: 1.4; }',
-      '.lz-s-body { font-size: 1.15rem; color: #555; line-height: 1.6; -webkit-line-clamp: 3; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
-      '.lz-s-cat { font-size: 0.85rem; background: #27ae60; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: 800; }',
-      '.lz-btn-search-back { margin-top:25px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.2rem; padding: 12px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
-      '.lz-btn-search-back:hover { background:#27ae60 !important; color:#fff !important; }',
-      '.lz-s-item { display:block; text-decoration:none; color:inherit; }',
-      '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
+      /* ① リスト全体のメイン見出し：1.7remに縮小 ＆ 余白を極小化 */
+      '.lz-s-title { font-size: 1.7rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; }',
+      
+      /* ② 検索結果リスト：パディング ＆ アイテム間隔を極限まで詰める */
+      '.lz-s-item { display:flex; gap:12px; align-items:center; padding:10px; background:#fff; border:1px solid #eee; border-radius:10px; margin-bottom: 8px !important; cursor:pointer; transition:.2s; }',
+      '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-1px); }',
+      '.lz-s-name { font-size: 1.3rem; font-weight: 800; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; }',
+      '.lz-s-body { font-size: 1.05rem; color: #666; line-height: 1.5; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
+      '.lz-s-cat { font-size: 0.75rem; background: #27ae60; color: #fff; padding: 1px 6px; border-radius: 4px; font-weight: 800; }',
+      
+      /* ③ 戻るボタンの余白調整 */
+      '.lz-btn-search-back { margin-top:12px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.1rem; padding: 8px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
+      
+      '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
       
-      /* 🍎 検索中アニメーション (維持) */
-      '.lz-s-loading { padding: 80px 20px; text-align: center; }',
-      '.lz-s-logo { width: 100px; height: 100px; margin: 0 auto 20px; display: block; overflow: visible; }',
+      /* 🍎 検索中：グレーのリンゴ線画アニメーション (section.js準拠) */
+      '.lz-s-loading { padding: 60px 20px; text-align: center; }',
+      '.lz-s-logo { width: 90px; height: 90px; margin: 0 auto 15px; display: block; overflow: visible; }',
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 2.5s ease-in-out infinite; }',
       '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1000; } }',
-      '.lz-s-loading-label { font-size: 1.3rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
+      '.lz-s-loading-label { font-size: 1.2rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -58,9 +60,6 @@ window.lzSearchEngine = (function() {
   prefetchKeywords();
 
   return {
-    /**
-     * オートリンク生成ロジック (維持)
-     */
     applyLinks: function(text, currentId, targetLang) {
       var map = {};
       DYNAMIC_KEYWORDS.forEach(function(kw) {
@@ -94,9 +93,6 @@ window.lzSearchEngine = (function() {
       return escaped;
     },
 
-    /**
-     * 広域検索実行 (アニメーション対応)
-     */
     run: async function(keyword, targetLang, modalEl, backFunc) {
       injectSearchStyles();
       var displayWord = keyword;
@@ -104,7 +100,7 @@ window.lzSearchEngine = (function() {
         displayWord = window.event.currentTarget.dataset.display;
       }
       
-      // 🍎 リンゴ図形描写アニメーション (グレー) による待機画面
+      // 🍎 アニメーション待機画面
       modalEl.innerHTML = [
         '<div class="lz-s-loading">',
         '  <svg class="lz-s-logo" viewBox="-60 -60 720 720" aria-hidden="true">',
@@ -137,19 +133,20 @@ window.lzSearchEngine = (function() {
             var l1 = C.L(it, 'l1', targetLang), l2 = C.L(it, 'l2', targetLang), title = C.L(it, 'title', targetLang);
             var lead = C.L(it, 'lead', targetLang) || "", body = C.L(it, 'body', targetLang) || "";
             var imgHtml = it.mainImage ? '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">' 
-                                      : '<div class="lz-s-img-p"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
+                                      : '<div class="lz-s-img-placeholder"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
 
             var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
             var idx = combinedText.toLowerCase().indexOf(displayWord.toLowerCase());
             if (idx === -1) idx = 0;
-            var start = Math.max(0, idx - 20);
-            var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 100) + "...";
+            var start = Math.max(0, idx - 15);
+            var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 90) + "...";
 
-            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:15px; margin-bottom:15px; cursor:pointer; background:#fff; border-radius:12px; border:1px solid #eee; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">';
-            html += '  <div style="display:flex; gap:18px; align-items:center;">';
-            html += '    <div style="flex:0 0 90px; width:90px; height:90px; border-radius:12px; overflow:hidden; border:1px solid #eee; background:#fff;">' + imgHtml + '</div>';
+            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '">';
+            html += '  <div style="display:flex; gap:12px; align-items:center; width:100%;">';
+            // サムネイル 82px (よりコンパクトに)
+            html += '    <div style="flex:0 0 82px; width:82px; height:82px; border-radius:10px; overflow:hidden; border:1px solid #eee; background:#fff;">' + imgHtml + '</div>';
             html += '    <div style="flex:1; min-width:0;">';
-            html += '      <div style="margin-bottom:6px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
+            html += '      <div style="margin-bottom:2px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
             html += '      <div class="lz-s-name">' + hl(C.esc(title)) + '</div>';
             html += '      <div class="lz-s-body">' + hl(C.esc(snippet)) + '</div>';
             html += '    </div>';
