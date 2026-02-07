@@ -23,7 +23,7 @@ window.lzSearchEngine = (function() {
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-1px); }',
       '.lz-s-name { font-size: 1.3rem; font-weight: 800; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; }',
       '.lz-s-body { font-size: 1.05rem; color: #666; line-height: 1.5; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
-      '.lz-s-cat { font-size: 0.75rem; background: #27ae60; color: #fff; padding: 1px 6px; border-radius: 4px; font-weight: 800; }',
+      '.lz-s-cat { font-size: 0.85rem; background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; }',
       
       /* ③ 戻るボタンの余白調整 */
       '.lz-btn-search-back { margin-top:12px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.1rem; padding: 8px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
@@ -32,11 +32,12 @@ window.lzSearchEngine = (function() {
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
       
-      /* 🍎 検索中：グレーのリンゴ線画アニメーション (section.js準拠) */
+/* 🍎 往復リンゴ線画アニメーション (描いた点から戻るように消える) */
       '.lz-s-loading { padding: 60px 20px; text-align: center; }',
       '.lz-s-logo { width: 90px; height: 90px; margin: 0 auto 15px; display: block; overflow: visible; }',
-      '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 2.5s ease-in-out infinite; }',
-      '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1000; } }',
+      '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
+      /* 往復ループ設定：1000 -> 0 -> 1000 */
+      '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1000; } }',
       '.lz-s-loading-label { font-size: 1.2rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
     ].join('\n');
     document.head.appendChild(style);
