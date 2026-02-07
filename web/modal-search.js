@@ -1,6 +1,6 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (高機能表示版)
- * 役割: search.js と同じGAS検索ロジックを使用。リード文も検索・表示対象にし、1:1のサムネイル画像を追加。
+ * modal-search.js - モーダル内広域検索エンジン (UIブラッシュアップ版)
+ * 役割: サイト全体の検索機能を維持しつつ、画像プレースホルダーとボタンのアクセシビリティを最適化。
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -11,6 +11,21 @@ window.lzSearchEngine = (function() {
     "北信五岳", "移住", "子育て", "ふじ", "高坂りんご", "ブラムリー", "サンふじ",
     "シードル", "アップルミュージアム", "アクセス", "歴史", "機能性成分", "プロシアニジン", "甘みと酸味のバランス"
   ];
+
+  // 検索画面専用の追加スタイル (ホバー時のアクセシビリティ確保)
+  var injectSearchStyles = function() {
+    if (document.getElementById('lz-search-engine-styles')) return;
+    var style = document.createElement('style');
+    style.id = 'lz-search-engine-styles';
+    style.textContent = [
+      '.lz-btn-search-back { margin-top:20px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; }',
+      '.lz-btn-search-back:hover { background:#27ae60 !important; color:#fff !important; }',
+      '.lz-s-item { display:block; text-decoration:none; color:inherit; }',
+      '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:20px; box-sizing:border-box; background:#f9f9f9; }',
+      '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }'
+    ].join('\n');
+    document.head.appendChild(style);
+  };
 
   return {
     /**
@@ -46,9 +61,11 @@ window.lzSearchEngine = (function() {
     },
 
     /**
-     * 広域検索実行 (非同期・リード文・画像表示対応)
+     * 広域検索実行
      */
     run: async function(keyword, targetLang, modalEl, backFunc) {
+      injectSearchStyles(); // スタイルの注入
+      
       modalEl.innerHTML = '<div style="padding:60px; text-align:center;">' + 
         '<p style="font-weight:bold; color:#cf3a3a;">' + (C.T('検索しています...') || 'Searching...') + '</p>' +
         '</div>';
@@ -74,35 +91,44 @@ window.lzSearchEngine = (function() {
             var l1 = C.L(it, 'l1', targetLang), l2 = C.L(it, 'l2', targetLang), title = C.L(it, 'title', targetLang);
             var lead = C.L(it, 'lead', targetLang) || "";
             var body = C.L(it, 'body', targetLang) || "";
-            var img = it.mainImage || window.LZ_CONFIG.ASSETS.LOGO_RED; // 代替画像
+            
+            // サムネイル画像エリアの構築
+            var thumbHtml = '';
+            if (it.mainImage && it.mainImage.trim() !== "") {
+              thumbHtml = '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">';
+            } else {
+              // 画像がない場合の薄いグレー ＆ 余白ありの図形描写
+              thumbHtml = '<div class="lz-s-img-placeholder">' +
+                          '<img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '">' +
+                          '</div>';
+            }
 
-            // リード文と本文を統合してスニペットを作成
+            // スニペット生成
             var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
             var idx = combinedText.indexOf(keyword);
             var start = Math.max(0, idx - 20);
             var snippet = (start > 0 ? "..." : "") + combinedText.substring(start, start + 80) + "...";
 
-            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px;">';
-            html += '  <div style="display:flex; gap:15px; align-items:flex-start;">';
-            // サムネイル画像 (1:1)
-            html += '    <div style="flex:0 0 80px; width:80px; height:80px; border-radius:8px; overflow:hidden; background:#f5f5f5; border:1px solid #eee;">';
-            html += '      <img src="' + C.esc(img) + '" style="width:100%; height:100%; object-fit:cover;">';
-            html += '    </div>';
-            // コンテンツエリア
+            html += '<div class="lz-s-item" data-goto-id="' + it.title + '" data-l1="' + it.l1 + '" style="padding:12px; margin-bottom:12px;">';
+            html += '  <div style="display:flex; gap:15px; align-items:center;">';
+            // サムネイル (1:1)
+            html += '    <div style="flex:0 0 80px; width:80px; height:80px; border-radius:10px; overflow:hidden; border:1px solid #eee; background:#fff;">' + thumbHtml + '</div>';
+            // コンテンツ
             html += '    <div style="flex:1; min-width:0;">';
             html += '      <div style="margin-bottom:4px;"><span class="lz-s-cat">' + C.esc(l1 + " / " + l2) + '</span></div>';
-            html += '      <div class="lz-s-name" style="font-size:1.2rem; margin-bottom:6px;">' + hl(C.esc(title)) + '</div>';
-            html += '      <div class="lz-s-body" style="font-size:0.95rem; color:#666; -webkit-line-clamp:2;">' + hl(C.esc(snippet)) + '</div>';
+            html += '      <div class="lz-s-name" style="font-size:1.2rem; margin-bottom:4px;">' + hl(C.esc(title)) + '</div>';
+            html += '      <div class="lz-s-body" style="font-size:0.95rem; color:#666; -webkit-line-clamp:2; display:-webkit-box; -webkit-box-orient:vertical; overflow:hidden;">' + hl(C.esc(snippet)) + '</div>';
             html += '    </div>';
             html += '  </div>';
             html += '</div>';
           });
         }
         
-        html += '<button class="lz-btn lz-s-back" style="margin-top:20px; width:100%; border-color:#27ae60; color:#27ae60;">' + (targetLang === 'ja' ? '← 記事に戻る' : '← Back to Article') + '</button></div>';
+        // アクセシビリティを考慮した「戻る」ボタン
+        html += '<button class="lz-btn lz-btn-search-back">' + (targetLang === 'ja' ? '← 記事に戻る' : '← Back to Article') + '</button></div>';
 
         modalEl.innerHTML = html;
-        modalEl.querySelector('.lz-s-back').onclick = backFunc;
+        modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
         
         modalEl.querySelectorAll('.lz-s-item').forEach(function(item) {
           item.onclick = function() {
