@@ -1,5 +1,5 @@
 /**
- * search.js - サイト内記事検索 (多言語対応版)
+ * search.js - サイト内記事検索 (検索範囲拡大・多言語対応版)
  */
 (async function apzSearchBoot() {
   "use strict";
@@ -16,18 +16,10 @@
   const FALLBACK_IMG = ASSETS.LOGO_RED;
 
   const RECOMMEND_WORDS = [
-    "サンふじ", "シナノゴールド", "シナノスイート", "秋映", "紅玉", "グラニースミス", "ブラムリー", "高坂りんご", "メイポール", "ドルゴ", "和リンゴ", "ムーンルージュ", "なかののきらめき", "いろどり", "ぐんま名月", "王林", "ジョナゴールド", "つがる", "きたろう", "はるか", "あいかの香り", "千秋", "世界一", "ニュートン",
-    "直売所", "いいづなマルシェむれ", "さんちゃん", "横手販売所", "アップルパイ", "タルトタタン", "シードル", "りんごジュース", "ジャム", "ドライフルーツ", "焼きりんご", "りんご飴", "コンポート", "りんごバター", "ドレッシング",
-    "ふるさと納税", "オーナー制度", "収穫体験", "りんご狩り", "剪定", "摘花", "袋掛け", "葉取らず", "蜜入り", "完熟", "産地直送", "贈答用", "家庭用", "お徳用",
-    "飯綱町", "三水", "牟礼", "北信州", "霊仙寺湖", "飯縄山", "北信五岳", "丹霞郷", "いいづな歴史", "英国りんご", "クッキングアップル", "加工用りんご",
-    "いいづなコネクト", "廃校活用", "ワークラボ", "りんごの聖地", "1127の日", "いいづな事業部", "農家直送", "りんご並木", "雪中貯蔵", "スマート農業",
-    "レシピ", "離乳食", "簡単デザート", "お弁当", "健康", "美容", "ポリフェノール", "ビタミンC", "整腸作用", "ダイエット", "医者いらず",
-    "カフェ", "レストラン", "スイーツショップ", "観光", "散策", "サイクリング", "写真映え", "冬景色", "花見", "りんごの花", "お土産", "人気ランキング", "おすすめ", "隠れた名店"
+    "サンふじ", "シナノゴールド", "シナノスイート", "秋映", "紅玉", "グラニースミス", "ブラムリー", "直売所", "アップルパイ", "シードル", "飯綱町", "ふるさと納税"
   ];
 
-  /* ==========================================
-     1. CSS (既存デザインを完全維持)
-     ========================================== */
+  /* --- CSS (変更なし) --- */
   const style = document.createElement('style');
   style.textContent = `
     .apz-search-fab { position:fixed; right:20px; bottom:20px; width:64px; height:64px; border-radius:50%; background:#cf3a3a; color:#fff; box-shadow:0 8px 24px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:12000; transition: transform 0.2s; }
@@ -40,8 +32,7 @@
     .apz-search-card__close { width:36px; height:36px; border-radius:50%; border:none; background:#f5f5f5; cursor:pointer; font-size:24px; color:#999; display:flex; align-items:center; justify-content:center; }
     .apz-search__box { position:relative; margin-bottom:20px; }
     #apzSearchInput { width:100%; box-sizing:border-box; height:64px; border-radius:32px; border:2px solid #eee; padding:0 60px 0 24px; font-size:1.5rem; font-weight:600; outline:none; transition: all 0.3s; background:#fcfcfc; -webkit-appearance: none; }
-    #apzSearchInput::-webkit-search-cancel-button,
-    #apzSearchInput::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+    #apzSearchInput::-webkit-search-cancel-button, #apzSearchInput::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
     #apzSearchInput:focus { border-color: #cf3a3a; background:#fff; }
     .apz-search__clear { position:absolute; right:16px; top:50%; transform:translateY(-50%); width:32px; height:32px; border:none; border-radius:50%; background:#ddd; color:#666; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:18px; z-index: 5; }
     .apz-search-suggest { margin-bottom: 20px; padding: 16px; background: #fafafa; border-radius: 20px; border: 1px dashed #ddd; }
@@ -69,9 +60,7 @@
   `;
   document.head.appendChild(style);
 
-  /* ==========================================
-     2. HTML構造 (多言語対応：C.Tを使用)
-     ========================================== */
+  /* --- HTML構造 (C.Tを使用して多言語化) --- */
   const searchHTML = `
     <div class="apz-search-fab" id="apzSearchFab" role="button">
       <svg viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="apz-search-fab__icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -103,9 +92,6 @@
   `;
   document.body.insertAdjacentHTML('beforeend', searchHTML);
 
-  /* ==========================================
-     3. ユーティリティ
-     ========================================== */
   const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
 
   function highlight(text, query) {
@@ -126,9 +112,6 @@
     return highlight(snippet, q);
   }
 
-  /* ==========================================
-     4. 検索・レコメンドロジック (多言語対応版)
-     ========================================== */
   const D = document, fab = D.getElementById("apzSearchFab"), float = D.getElementById("apzSearchFloat");
   const input = D.getElementById("apzSearchInput"), clearBt = D.getElementById("apzSearchClear");
   const listEl = D.getElementById("apzSearchList"), emptyEl = D.getElementById("apzSearchEmpty");
@@ -138,10 +121,12 @@
   let lastResults = [];
 
   function refreshRecommendations() {
-    // ※RECOMMEND_WORDS自体は日本語のままですが、クリックで検索は走ります。
     const shuffled = [...RECOMMEND_WORDS].sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 5);
-    tagArea.innerHTML = selected.map(word => `<span class="apz-search-tag">${word}</span>`).join('');
+    tagArea.innerHTML = selected.map(word => {
+      const displayWord = C.T(word); 
+      return `<span class="apz-search-tag" data-original="${word}">${displayWord}</span>`;
+    }).join('');
     tagArea.querySelectorAll('.apz-search-tag').forEach(tag => {
       tag.onclick = () => { input.value = tag.textContent; runSearch(input.value); };
     });
@@ -151,25 +136,23 @@
     lastResults = results || []; 
     listEl.innerHTML = "";
     searchingEl.classList.remove("is-active"); 
-
     if (!query.trim()) { suggestEl.style.display = "block"; emptyEl.style.display = "none"; return; }
-
     suggestEl.style.display = "none";
     if (!results || !results.length){ emptyEl.style.display = "block"; return; }
     
     emptyEl.style.display = "none";
     listEl.innerHTML = results.map((it, idx) => {
-      // コンテンツの多言語化 (C.Lを使用)
-      const l1 = C.L(it, 'l1');
-      const l2 = C.L(it, 'l2');
-      const title = C.L(it, 'title');
+      const l1 = C.L(it, 'l1'), l2 = C.L(it, 'l2'), title = C.L(it, 'title');
       const snippetBase = C.L(it, 'body') || C.L(it, 'lead') || "";
+
+      /* ★修正：カテゴリ名(L1/L2)にもハイライトを適用 */
+      const categoryLine = highlight(`${l1} / ${l2}`, query);
 
       return `
       <li><button class="apz-item-btn" type="button" data-idx="${idx}">
         <div class="apz-thumb"><img src="${it.mainImage || FALLBACK_IMG}"></div>
         <div class="apz-meta">
-          <div class="apz-l2l3">${esc(l1)} / ${esc(l2)}</div>
+          <div class="apz-l2l3">${categoryLine}</div>
           <div class="apz-title">${highlight(title, query)}</div>
           <div class="apz-snippet">${getSnippet(snippetBase, query)}</div>
         </div>
@@ -181,14 +164,11 @@
     const q = query.trim();
     clearBt.style.display = q ? "flex" : "none";
     if (!q) { renderResults([], ""); return; }
-
     listEl.innerHTML = "";
     emptyEl.style.display = "none";
     suggestEl.style.display = "none";
     searchingEl.classList.add("is-active");
-
     try {
-      // GAS側は全言語のタイトルを検索対象に含んでいるため、クエリはそのまま送信
       const res = await fetch(`${SEARCH_ENDPOINT}?q=${encodeURIComponent(q)}&limit=50`);
       const json = await res.json();
       renderResults(json.items || [], q);
@@ -196,35 +176,22 @@
   }
 
   const openFloat = () => { float.classList.add("is-open"); refreshRecommendations(); setTimeout(() => input.focus(), 10); };
-  
   fab.onclick = openFloat;
   D.getElementById("apzSearchClose").onclick = () => float.classList.remove("is-open");
-  
-  clearBt.onclick = () => { 
-    input.value = ""; 
-    refreshRecommendations(); 
-    runSearch(""); 
-    input.focus(); 
-  };
+  clearBt.onclick = () => { input.value = ""; refreshRecommendations(); runSearch(""); input.focus(); };
   
   let timer = null;
   input.oninput = () => { 
     clearTimeout(timer); 
-    if (!input.value.trim()) {
-      refreshRecommendations();
-      renderResults([], "");
-    } else {
-      timer = setTimeout(() => runSearch(input.value), 400); 
-    }
+    if (!input.value.trim()) { refreshRecommendations(); renderResults([], ""); } 
+    else { timer = setTimeout(() => runSearch(input.value), 400); }
   };
 
   listEl.onclick = (e) => {
     const btn = e.target.closest(".apz-item-btn"); if (!btn) return;
     const hit = lastResults[+btn.dataset.idx]; if (!hit) return;
-    // 言語状態を維持して移動
     const targetTitle = C.L(hit, 'title');
     location.href = `${MENU_URL[hit.l1] || location.origin}?lang=${window.LZ_CURRENT_LANG}&id=${encodeURIComponent(targetTitle)}`;
   };
-  
   D.addEventListener("click", (e) => { if (!e.target.closest(".apz-search-card") && !e.target.closest("#apzSearchFab")) float.classList.remove("is-open"); });
 })();
