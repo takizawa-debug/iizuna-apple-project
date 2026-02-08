@@ -1,5 +1,5 @@
 /**
- * header.js - ナビゲーション・コンポーネント (整合性・エラー回避 最終版)
+ * header.js - ナビゲーション・コンポーネント (タイミング整合性・エラー回避 最終版)
  */
 (async function headerNavBoot(){
   "use strict";
@@ -92,14 +92,15 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. 言語切り替えヘルパー (ハッシュを除去して移行)
+     2. 言語切り替えヘルパー (二重ジャンプ防止)
      ========================================== */
   function getLangLinks() {
     const config = window.LZ_CONFIG.LANG;
     return config.SUPPORTED.map(l => {
       const url = new URL(window.location.href);
       url.searchParams.set('lang', l);
-      // 🍎 重要：jQueryエラー防止のためハッシュは消去して出発
+      // 🍎 重要：言語切り替え時は「既存のジャンプ命令」を消去する
+      url.searchParams.delete('jump');
       url.hash = ""; 
       return `<a href="${url.toString()}">${config.LABELS[l]}</a>`;
     }).join('');
@@ -158,11 +159,10 @@
      4. 精密スクロールロジック (親ブロック特定版)
      ========================================== */
   function smoothScrollToL2(label) {
-    // 🍎 整合性のための改善点：
-    // 看板(data-l2)を見つけたあと、その親ブロック(section-X)にジャンプ先を補正する
     const el = document.querySelector(`[data-l2="${label}"]`);
     if (!el) return;
 
+    // 🍎 改良：看板要素を包んでいるペライチ公式のブロックIDを探す
     const target = el.closest('[id^="section-"]') || el;
     const offset = 75 + 20; 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
@@ -181,14 +181,12 @@
       item.onmouseleave = () => { closeTimer = setTimeout(() => panel.classList.remove('is-open'), 300); };
     });
 
-    // 🍎 アンカーリンクイベントを「預かり証(jump=)」対応に変更
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a');
       if (!a) return;
       const url = new URL(a.href);
       const jumpVal = url.searchParams.get('jump');
       
-      // 同じページ内への移動指示であれば、リロードさせずにスクロール
       if (url.pathname === window.location.pathname && jumpVal) {
         e.preventDefault();
         smoothScrollToL2(jumpVal);
@@ -240,9 +238,6 @@
 
   renderSkeleton(); setupEvents();
 
-  /* ==========================================
-     5. L2リンク生成 (ここで # ではなく ?jump= を使う)
-     ========================================== */
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
     const json = await res.json();
@@ -257,7 +252,6 @@
 
       MENU_ORDER.forEach((l1, i) => {
         const l2Data = map.get(l1) || [];
-        // 🍎 修正：# ではなく jump= パラメータとして預けて遷移する
         const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         
         const panels = document.querySelectorAll('.lz-h-panel');
@@ -278,37 +272,42 @@
   } catch(e) { console.error(e); }
 
   /* ==========================================
-     6. 【預かっていた合言葉を適用】 監視ロジック (最終整合版)
+     6. 【整合性・完結版】 監視ロジック (ロード遅延・シフト対策)
      ========================================== */
-  window.addEventListener('load', () => {
-    // URLの ?jump= の中身をチェックする
+  function runJumpCheck() {
     const params = new URLSearchParams(window.location.search);
     const jumpTarget = params.get('jump');
+    if (!jumpTarget) return;
 
-    if (jumpTarget) {
-      let attempts = 0;
-      const checkReady = setInterval(() => {
-        const el = document.querySelector(`[data-l2="${jumpTarget}"]`);
+    let attempts = 0;
+    const checkReady = setInterval(() => {
+      const el = document.querySelector(`[data-l2="${jumpTarget}"]`);
+      
+      // 🍎 整合性のポイント：
+      // 要素が見つかり、さらにブラウザがその場所の「高さ(offsetHeight)」を認識した瞬間に飛ぶ
+      if (el && el.offsetHeight > 0) {
+        clearInterval(checkReady);
         
-        // 🍎 整合性の最重要ポイント：
-        // 1. section.js が見出しを描画し終えて
-        // 2. さらにブラウザがその場所の「高さ(offsetHeight)」を認識した瞬間に飛ぶ
-        if (el && el.offsetHeight > 0) {
-          clearInterval(checkReady);
+        // 🍎 さらに0.5秒待機：スライドショー等の読み込みによる高さ変動が落ち着いてからジャンプ
+        setTimeout(() => {
+          smoothScrollToL2(jumpTarget);
           
-          setTimeout(() => {
-            smoothScrollToL2(jumpTarget);
-            
-            // 🍎 到着後、URLから jump パラメータを消して掃除を完結
-            const url = new URL(window.location.href);
-            url.searchParams.delete('jump');
-            history.replaceState(null, "", url.pathname + url.search);
-          }, 400);
-        }
+          // 到着後、URLから jump パラメータを消して掃除（戻るボタン時の再発動防止）
+          const url = new URL(window.location.href);
+          url.searchParams.delete('jump');
+          history.replaceState(null, "", url.pathname + url.search);
+        }, 500);
+      }
+      if (++attempts > 100) clearInterval(checkReady);
+    }, 150);
+  }
 
-        if (++attempts > 100) clearInterval(checkReady);
-      }, 150);
-    }
-  });
+  // 🍎 ロードタイミングの整合性をとる：
+  // 順次ローダーにより「既にloadが終わっている」場合は即実行、まだならイベントを待つ
+  if (document.readyState === 'complete') {
+    runJumpCheck();
+  } else {
+    window.addEventListener('load', runJumpCheck);
+  }
 
 })();
