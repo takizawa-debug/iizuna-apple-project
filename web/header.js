@@ -274,36 +274,42 @@
     }
   } catch(e) { console.error(e); }
 
-  // --- 修正版：ハッシュスクロール (他ページからの遷移対応) ---
-  window.addEventListener('DOMContentLoaded', () => {
-    // 1. まず、URLにハッシュがあるか確認し、あれば変数にコピー
-    const initialHash = window.location.hash;
-    if (!initialHash) return;
+  // --- 修正版：ハッシュスクロール監視 (タイミングとURL競合を完全解決) ---
+  const handleAutoJump = () => {
+    const rawHash = window.location.hash;
+    if (!rawHash) return;
 
-    // 2. 🍎 重要：ペライチ側のjQueryエラーを防ぐため、URLバーからハッシュを即座に消す
-    const cleanUrl = window.location.pathname + window.location.search;
-    history.replaceState(null, "", cleanUrl);
+    // 1. URLからハッシュをデコードして取得
+    const label = decodeURIComponent(rawHash.replace('#', ''));
+    
+    // 2. 🍎 重要：ブラウザの標準挙動やペライチのjQueryエラーに邪魔されないよう、
+    //    ハッシュをURLバーから即座に物理的に消去する
+    if (window.history.replaceState) {
+      const cleanUrl = window.location.pathname + window.location.search;
+      window.history.replaceState(null, "", cleanUrl);
+    }
 
-    // 3. デコードして「滞在」などの文字に戻す
-    const label = decodeURIComponent(initialHash.replace('#', ''));
     let attempts = 0;
-
-    // 4. setIntervalで「中身が入ったセクション」が出るまで粘り強く探す
     const checkReady = setInterval(() => {
-      // .lz-section[data-l2="..."] かつ .lz-ready が付いているものを探す
-      const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
+      // 3. 記事が入って高さが確定した(.lz-ready)要素を探す
+      // セレクターを少し柔軟にして、親要素でも子要素でも見つけられるようにします
+      const target = document.querySelector(`.lz-ready[data-l2="${label}"], [data-l2="${label}"].lz-ready`);
 
       if (target) {
         clearInterval(checkReady);
-        // 見つかったら、ブラウザの描画が落ち着くまで少しだけ待ってジャンプ
+        // 見つかったら、少し待ってからスクロール実行
         setTimeout(() => {
           smoothScrollToL2(label);
         }, 500);
       }
 
-      // 10秒探して見つからなければ諦める
-      if (++attempts > 70) clearInterval(checkReady);
+      // 最大15秒（100回）探してダメなら諦める
+      if (++attempts > 100) clearInterval(checkReady);
     }, 150);
-  });
+  };
+
+  // ページ読み込み完了時、および「戻る・進む」でハッシュが変わった時に実行
+  window.addEventListener('load', handleAutoJump);
+  window.addEventListener('hashchange', handleAutoJump);
 
 })();
