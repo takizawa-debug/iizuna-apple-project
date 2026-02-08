@@ -167,15 +167,40 @@ window.lzModal = (function() {
     var gallery = [d.main].concat(JSON.parse(d.sub || "[]")).filter(Boolean);
     var rows = [];
     var fields = [
-      {k:'address', l:getTranslation('住所', MODAL_ACTIVE_LANG)}, {k:'bizDays', l:getTranslation('営業曜日', MODAL_ACTIVE_LANG)}, 
-      {k:'holiday', l:getTranslation('定休日', MODAL_ACTIVE_LANG)}, {k:'hoursCombined', l:getTranslation('営業時間', MODAL_ACTIVE_LANG)}, 
-      {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)}, {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
+      {k:'address', l:getTranslation('住所', MODAL_ACTIVE_LANG)},
+      {k:'organizer', l:getTranslation('主催者名', MODAL_ACTIVE_LANG)},
+      {k:'tel', l:getTranslation('問い合わせ電話', MODAL_ACTIVE_LANG)},
+      {k:'email', l:getTranslation('問い合わせメール', MODAL_ACTIVE_LANG)},
+      {k:'bizDays', l:getTranslation('営業曜日', MODAL_ACTIVE_LANG)}, 
+      {k:'holiday', l:getTranslation('定休日', MODAL_ACTIVE_LANG)}, 
+      {k:'hoursCombined', l:getTranslation('営業時間', MODAL_ACTIVE_LANG)}, 
+      {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)},
+      {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)},
+      {k:'target', l:getTranslation('対象', MODAL_ACTIVE_LANG)},
+      {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
     ];
     for(var i=0; i<fields.length; i++) if(d[fields[i].k] && d[fields[i].k].trim() !== "") rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
     var sns = JSON.parse(d.sns || "{}");
     var snsHtml = [];
     var addSns = function(url, key) { if(url && url.trim() !== "") snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
     addSns(d.home, "web"); addSns(d.ec, "ec"); addSns(sns.instagram, "ig"); addSns(sns.facebook, "fb");
+
+    // --- 追加：関連記事の組み立て ---
+    var relHtml = "";
+    if (rawData.relatedArticles && rawData.relatedArticles.length > 0) {
+      relHtml = '<div style="padding:15px; border-top:1px solid #eee;"><h3 style="font-size:1.2rem; color:#a82626; margin-bottom:10px;">' + getTranslation('関連記事', MODAL_ACTIVE_LANG) + '</h3><div style="display:grid; gap:8px;">' + 
+        rawData.relatedArticles.map(function(ra){
+          if(!ra.url) return "";
+          return '<a href="'+C.esc(ra.url)+'" target="_blank" style="display:block; padding:12px; background:#f9f9f9; border-radius:10px; color:#cf3a3a; text-decoration:none; font-weight:700; border:1px solid #eee; font-size:1.2rem;">🔗 '+C.esc(ra.title || ra.url)+'</a>';
+        }).join('') + '</div></div>';
+    }
+
+    // --- 追加：フォーム・ダウンロードボタンの組み立て ---
+    var extraBtns = [];
+    if(d.form) extraBtns.push('<a href="'+C.esc(d.form)+'" target="_blank" class="lz-btn" style="background:#cf3a3a; color:#fff; padding: 10px 20px;">' + getTranslation('申し込み方法', MODAL_ACTIVE_LANG) + '</a>');
+    if(d.downloadUrl) extraBtns.push('<a href="'+C.esc(d.downloadUrl)+'" target="_blank" class="lz-btn" style="padding: 10px 20px;">' + getTranslation('保存', MODAL_ACTIVE_LANG) + '</a>');
+    var extraBtnsHtml = extraBtns.length ? '<div style="padding:0 15px 15px; display:flex; gap:10px; flex-wrap:wrap;">' + extraBtns.join('') + '</div>' : '';
+
     var langTabs = '<div class="lz-m-lang-tabs">' + window.LZ_CONFIG.LANG.SUPPORTED.map(function(l){
         var label = window.LZ_CONFIG.LANG.LABELS[l]; return '<div class="lz-m-lang-btn '+(l === MODAL_ACTIVE_LANG ? 'active' : '')+'" data-lang="'+l+'">'+label+'</div>';
       }).join('') + '</div>';
@@ -186,11 +211,13 @@ window.lzModal = (function() {
       '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button></div></div>',
       langTabs, '<div>', (gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
       (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), 
-      /* 重要：自動反映用のクラスとIDを付与 */
       '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
+      extraBtnsHtml, // 🍎 申し込み・DLボタンを表示
       (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : ''),
       (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
-      (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''), '</div>'
+      (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''),
+      relHtml, // 🍎 関連記事を表示
+      '</div>'
     ].join('');
 
     // リンクへのis-active付与（既存のリンクがある場合用）
