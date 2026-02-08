@@ -72,7 +72,8 @@ window.lzModal = (function() {
       '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
       '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
       '@media(max-width:768px) { .lz-prev, .lz-next { top: auto; bottom: -68px; left: 50%; transform: none; } .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); } }',
-      '.lz-btn.lz-dl { border-color: #27ae60 !important; color: #27ae60 !important; } .lz-btn.lz-dl:hover { background: #27ae60 !important; color: #fff !important; }'
+      '.lz-btn.lz-dl { border-color: #27ae60 !important; color: #27ae60 !important; } .lz-btn.lz-dl:hover { background: #27ae60 !important; color: #fff !important; }',
+      '.lz-map { padding: 15px; border-top: 1px solid #eee; } .lz-map iframe { width: 100%; height: 250px; border: 0; border-radius: 12px; background: #eee; }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -237,8 +238,18 @@ window.lzModal = (function() {
     var langTabs = '<div class="lz-m-lang-tabs">' + window.LZ_CONFIG.LANG.SUPPORTED.map(function(l){
         var label = window.LZ_CONFIG.LANG.LABELS[l]; return '<div class="lz-m-lang-btn '+(l === MODAL_ACTIVE_LANG ? 'active' : '')+'" data-lang="'+l+'">'+label+'</div>';
       }).join('') + '</div>';
+      
+// --- ⑤ GoogleマップHTMLの生成 ---
+    var mapHtml = "";
+    if (rawData.address && String(rawData.address).trim() !== "") {
+      // 🍎 正しい埋め込み用URL形式に修正（httpsを使用し、output=embedを付与）
+      var encodedAddr = encodeURIComponent(String(rawData.address).trim());
+      mapHtml = '<div class="lz-map">' +
+                '<iframe src="https://maps.google.com/maps?q=' + encodedAddr + '&output=embed" ' +
+                'allowfullscreen loading="lazy"></iframe>' +
+                '</div>';
+    }
 
-    // この後に MODAL.innerHTML = [ ... ] が続きます
 
     MODAL.innerHTML = [
       '<div class="lz-mh"><h2 class="lz-mt">' + C.esc(title) + '</h2><div class="lz-actions">',
@@ -255,6 +266,7 @@ window.lzModal = (function() {
       /* --- SNS・HP・ECリンクを表示 --- */
       (snsLinksHtml.length ? '  <div class="lz-sns">' + snsLinksHtml.join('') + '</div>' : ''),
       relHtml,
+      mapHtml,
       '</div>'
     ].join('');
 
