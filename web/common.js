@@ -1,56 +1,26 @@
 /**
- * common.js - Appletown 基盤コンポーネント (多言語対応版)
+ * common.js - Appletown 基盤コンポーネント (シールド機能統合版)
  */
 window.LZ_COMMON = (function() {
   "use strict";
 
   /* ==========================================
-     1. 高信頼通信インフラ (LZ_NET)
+     1. 通信インフラ (LZ_NET) -
      ========================================== */
   var NET = (function(){
-    var MAX_CONCURRENCY = 20;
-    var RETRIES = 2;
-    var TIMEOUT_MS = 12000;
-    var inFlight = 0;
-    var q = [];
-
-    function runNext(){
-      if (inFlight >= MAX_CONCURRENCY) return;
-      var job = q.shift();
-      if (!job) return;
-      inFlight++;
-      job().finally(function(){ inFlight--; runNext(); });
-    }
-
-    function enqueue(task){
-      return new Promise(function(resolve, reject){
-        q.push(function(){ return task().then(resolve, reject); });
-        runNext();
-      });
-    }
-
+    var MAX_CONCURRENCY = 20, RETRIES = 2, TIMEOUT_MS = 12000, inFlight = 0, q = [];
+    function runNext(){ if (inFlight >= MAX_CONCURRENCY) return; var job = q.shift(); if (!job) return; inFlight++; job().finally(function(){ inFlight--; runNext(); }); }
+    function enqueue(task){ return new Promise(function(resolve, reject){ q.push(function(){ return task().then(resolve, reject); }); runNext(); }); }
     async function fetchJSON(url, opt){
-      opt = opt || {};
-      var attempt = 0;
+      opt = opt || {}; var attempt = 0;
       while (true){
-        attempt++;
-        var ac = new AbortController();
-        var timer = setTimeout(function(){ ac.abort(); }, opt.timeout || TIMEOUT_MS);
+        attempt++; var ac = new AbortController(), timer = setTimeout(function(){ ac.abort(); }, opt.timeout || TIMEOUT_MS);
         try {
-          var res = await fetch(url, {
-            mode: "cors",
-            cache: "no-store",
-            credentials: "omit",
-            signal: ac.signal
-          });
-          clearTimeout(timer);
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          return await res.json();
+          var res = await fetch(url, { mode: "cors", cache: "no-store", credentials: "omit", signal: ac.signal });
+          clearTimeout(timer); if (!res.ok) throw new Error("HTTP " + res.status); return await res.json();
         } catch(err) {
-          clearTimeout(timer);
-          if (attempt > RETRIES) throw err;
-          var backoff = (200 * Math.pow(2, attempt - 1)) + Math.random() * 300;
-          await new Promise(function(r){ setTimeout(r, backoff); });
+          clearTimeout(timer); if (attempt > RETRIES) throw err;
+          var backoff = (200 * Math.pow(2, attempt - 1)) + Math.random() * 300; await new Promise(function(r){ setTimeout(r, backoff); });
         }
       }
     }
@@ -58,88 +28,94 @@ window.LZ_COMMON = (function() {
   })();
 
   /* ==========================================
-     2. デザイン・コア (CSS Variables)
+     2. デザイン・シールド CSS 🍎
      ========================================== */
   var injectCoreStyles = function() {
     var style = document.createElement('style');
     style.id = 'lz-common-styles';
     style.textContent = [
       ':root {',
-      '  --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --fw-l2: 550;',
-      '  --fz-card-title: 1.65rem; --fw-card-title: 600;',
-      '  --fz-modal-title: 2.0rem; --fw-modal-title: 600;',
-      '  --fz-lead: 1.25rem; --fw-lead: 400;',
-      '  --fz-body: 1.5rem; --fw-body: 400;',
-      '  --apple-red: #cf3a3a; --apple-red-strong: #a82626;',
-      '  --apple-green: #2aa85c; --apple-brown: #5b3a1e;',
-      '  --ink-dark: #1b1b1b; --ink-light: #495057;',
-      '  --border: #e7d3c8; --radius: 14px; --card-radius: 20px;',
-      '  --font-base: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans JP", sans-serif;',
-      '  --font-article: "筑須A丸ゴシック Std M", "Tsukushi A Maru Gothic Std", "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;',
-      '  --loading-h: clamp(220px, 38vh, 360px); --fz-l3: 1.85rem;',
+      '  --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --apple-red: #cf3a3a; --apple-red-strong: #a82626;',
+      '  --apple-green: #2aa85c; --apple-brown: #5b3a1e; --font-base: system-ui, -apple-system, sans-serif;',
       '}',
-      '.lz-section, .lz-nav, .lz-backdrop, .lz-modal { font-family: var(--font-base); font-size: var(--fz-body); color: var(--ink-dark); }',
-      '.lz-lead, .lz-lead-strong, .lz-txt { font-family: var(--font-article); }',
-      '.lz-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: rgba(17, 17, 17, .88); color: #fff; padding: 10px 14px; border-radius: 12px; font-size: 13px; z-index: 10001; opacity: 0; pointer-events: none; transition: opacity .2s ease; }',
-      '.lz-toast.show { opacity: 1; }'
+      'body.lz-is-loading { overflow: hidden !important; height: 100vh !important; }',
+      /* 全画面シールドの設定 */
+      '.lz-global-shield { position: fixed; inset: 0; background: #fff; z-index: 30000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.5s ease-out; }',
+      '.lz-global-shield.is-hidden { opacity: 0; pointer-events: none; }',
+      '.lz-shield-logo { width: 80px; height: auto; animation: lz-pulse 1.5s infinite ease-in-out; }',
+      '@keyframes lz-pulse { 0% { transform: scale(0.92); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.92); opacity: 0.6; } }'
     ].join('\n');
     document.head.appendChild(style);
   };
   injectCoreStyles();
 
   /* ==========================================
-     3. 多言語管理 (Multi-language Management)
+     3. シールド表示と自動解除ロジック 🍎
+     ========================================== */
+  var initShield = function() {
+    // 1. ページ読み込みと同時にシールドを生成
+    document.body.classList.add('lz-is-loading');
+    var shield = document.createElement('div');
+    shield.className = 'lz-global-shield';
+    shield.id = 'lzGlobalShield';
+    // config.js のロゴが読めるまで待たずに済むようURLを直接指定
+    shield.innerHTML = '<img class="lz-shield-logo" src="https://cdn.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png">';
+    document.body.insertAdjacentElement('afterbegin', shield);
+
+    // 2. 監視ロジック：全ての .lz-section が「data-lz-done="1"（描画完了）」になるのを待つ
+    var checkCount = 0;
+    var waitReady = setInterval(function() {
+      var allSections = document.querySelectorAll('.lz-section[data-l2]');
+      var doneSections = document.querySelectorAll('.lz-section[data-lz-done="1"]');
+      
+      // セクションが存在しない場合（お問い合わせページ等）または 全て終わった場合
+      if (allSections.length === 0 || doneSections.length >= allSections.length) {
+        unlock();
+      }
+      
+      // 最大10秒で強制解除（セーフティ）
+      if (++checkCount > 100) unlock();
+    }, 100);
+
+    function unlock() {
+      clearInterval(waitReady);
+      setTimeout(function() {
+        var s = document.getElementById('lzGlobalShield');
+        if (s) s.classList.add('is-hidden');
+        document.body.classList.remove('lz-is-loading');
+      }, 300); // 最後の余韻
+    }
+  };
+
+  /* ==========================================
+     4. 多言語管理 (全維持) -
      ========================================== */
   var initLang = function() {
     var urlParams = new URLSearchParams(window.location.search);
     var lang = urlParams.get('lang');
-    // サポート外の言語ならデフォルト(ja)にする
-    if (!window.LZ_CONFIG.LANG.SUPPORTED.includes(lang)) {
-      lang = window.LZ_CONFIG.LANG.DEFAULT;
-    }
+    if (!window.LZ_CONFIG.LANG.SUPPORTED.includes(lang)) lang = window.LZ_CONFIG.LANG.DEFAULT;
     window.LZ_CURRENT_LANG = lang;
   };
-  initLang();
 
-  // ① システム文言用 (T = Translate UI)
-  var T = function(key) {
-    var dict = window.LZ_CONFIG.LANG.I18N[window.LZ_CURRENT_LANG] || window.LZ_CONFIG.LANG.I18N[window.LZ_CONFIG.LANG.DEFAULT];
-    return dict[key] || key;
-  };
-
-  // ② 記事データ用 (L = Localize Content)
-  var L = function(item, key) {
-    if (!item) return "";
-    var lang = window.LZ_CURRENT_LANG;
-    // デフォルト(ja)ならそのまま返す
-    if (lang === window.LZ_CONFIG.LANG.DEFAULT) return item[key] || "";
-    // 指定言語(en/zh)のデータがあればそれを返し、なければjaをフォールバックとして返す
-    if (item[lang] && (item[lang][key] !== undefined && item[lang][key] !== "")) {
-      return item[lang][key];
+  // LZ_CONFIG が存在すれば即実行、まだなら待機
+  var boot = function() {
+    if (window.LZ_CONFIG) {
+      initLang();
+      initShield();
+    } else {
+      setTimeout(boot, 20);
     }
-    return item[key] || "";
   };
+  boot();
 
-  /* ==========================================
-     4. ユーティリティ
-     ========================================== */
   return {
     NET: NET,
-    T: T, // UI文言取得関数
-    L: L, // コンテンツ取得関数
+    T: function(key) { var dict = window.LZ_CONFIG.LANG.I18N[window.LZ_CURRENT_LANG] || window.LZ_CONFIG.LANG.I18N[window.LZ_CONFIG.LANG.DEFAULT]; return dict[key] || key; },
+    L: function(item, key) { if (!item) return ""; var lang = window.LZ_CURRENT_LANG; if (lang === window.LZ_CONFIG.LANG.DEFAULT) return item[key] || ""; if (item[lang] && (item[lang][key] !== undefined && item[lang][key] !== "")) return item[lang][key]; return item[key] || ""; },
     esc: function(s){ return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); },
     ratio: function(r){ return ({"16:9":"56.25%","4:3":"75%","1:1":"100%","3:2":"66.67%"}[r] || "56.25%"); },
-    loadScript: function(src){
-      return new Promise(function(res, rej){
-        if ([].slice.call(document.scripts).some(function(s){ return s.src === src; })) return res();
-        var s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
-      });
-    },
+    loadScript: function(src){ return new Promise(function(res, rej){ if ([].slice.call(document.scripts).some(function(s){ return s.src === src; })) return res(); var s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); },
     originalTitle: document.title,
-    RED_APPLE: "\u{1F34E}\uFE0F",
-    GREEN_APPLE: "\u{1F34F}\uFE0F",
-    PDF_FOOTER: { dtPt:8, dtBottomMm:7, jpPt:16, jpBaselineGapMm:1.8, qrSizeMm:18 },
-    pt2mm: function(pt){ return pt * 0.3528; },
-    pt2px: function(pt){ return pt * (96/72); }
+    RED_APPLE: "\u{1F34E}\uFE0F", GREEN_APPLE: "\u{1F34F}\uFE0F"
   };
 })();
