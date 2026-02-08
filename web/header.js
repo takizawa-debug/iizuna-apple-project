@@ -244,7 +244,23 @@
   } catch(e) { console.error(e); }
 
   setupEvents();
-  setTimeout(() => document.getElementById('lzHdr').classList.add('is-visible'), 500);
+
+  const hdr = document.getElementById('lzHdr');
+  // 表示実行関数
+  const showHeader = () => {
+    if (hdr && !hdr.classList.contains('is-visible')) {
+      hdr.classList.add('is-visible');
+      // 1度表示したらイベントとタイマーを解除
+      window.removeEventListener('scroll', showHeader);
+      clearTimeout(fallbackTimer);
+    }
+  };
+
+  // 1. スクロールを検知したら即座に表示
+  window.addEventListener('scroll', showHeader, { passive: true });
+
+  // 2. スクロールしなかった場合のフォールバック (従来通り500ms後に表示)
+  const fallbackTimer = setTimeout(showHeader, 500);
 
   /* ==========================================
      6. 【整合性・最速ジャンプ・ロック解除】 🍎
