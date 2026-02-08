@@ -1,5 +1,5 @@
 /**
- * common.js - Appletown 基盤コンポーネント (安定版ベース・シールド解除最適化)
+ * common.js - Appletown 基盤コンポーネント (ディープリンク整合性最適化版)
  */
 window.LZ_COMMON = (function() {
   "use strict";
@@ -28,7 +28,7 @@ window.LZ_COMMON = (function() {
   })();
 
   /* ==========================================
-     2. デザイン・演出設定 (シールド解除アニメ)
+     2. 共通 CSS (解除時の演出)
      ========================================== */
   var injectCoreStyles = function() {
     if (document.getElementById('lz-common-styles')) return;
@@ -43,44 +43,51 @@ window.LZ_COMMON = (function() {
   injectCoreStyles();
 
   /* ==========================================
-     3. シールド解除ロジック 🍎
+     3. シールド解除ロジック (モーダル連動) 🍎
      ========================================== */
   var initShieldController = function() {
-    // 看板（L2）が設置された瞬間に解除する監視ロジック
+    var urlParams = new URLSearchParams(window.location.search);
+    var targetArticleId = urlParams.get('id'); // モーダル直接アクセスの判定用
+
     var checkCount = 0;
     var waitReady = setInterval(function() {
+      // 1. 通常のセクション描画チェック
       var targets = document.querySelectorAll('.lz-container, .lz-section[data-l2]');
       var readyCount = 0;
-
       for (var i = 0; i < targets.length; i++) {
-        // 見出しの殻（.lz-section）が生成されたかチェック
         if (targets[i].querySelector('.lz-section')) { readyCount++; }
       }
-      
-      // セクションがないページ、または全ての看板ができた場合
-      if (targets.length === 0 || readyCount >= targets.length) {
+      var headersReady = (targets.length === 0 || readyCount >= targets.length);
+
+      // 2. 🍎 モーダル表示チェック
+      // URLに id がある場合は、モーダル(lz-backdrop)が open になるまで解除しない
+      var modalReady = true;
+      if (targetArticleId) {
+        modalReady = !!document.querySelector('.lz-backdrop.open');
+      }
+
+      // 両方の準備が整ったら解除
+      if (headersReady && modalReady) {
         unlock();
       }
       
-      if (++checkCount > 100) unlock(); // 最大5秒で強制解除
+      if (++checkCount > 160) unlock(); // セーフティ（8秒：モーダル読み込みは時間がかかるため少し延長）
     }, 50);
 
     function unlock() {
       clearInterval(waitReady);
-      // 🍎 正常に解除されるので、Headタグの安全タイマーを止める
       if (window._lzSafetyFuse) clearTimeout(window._lzSafetyFuse);
 
       setTimeout(function() {
         var s = document.getElementById('lzGlobalShield');
         if (s) s.classList.add('is-hidden');
-        // 🍎 ここでクラスを削除し、スクロールを可能にする
         document.documentElement.classList.remove('lz-loading-lock');
       }, 100);
     }
   };
 
   /* ==========================================
-     4. 多言語管理 ＆ 起動
+     4. 多言語管理 ＆ 起動シーケンス
      ========================================== */
   initShieldController();
 
