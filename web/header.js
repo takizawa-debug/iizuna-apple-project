@@ -1,5 +1,5 @@
 /**
- * header.js - ナビゲーション・コンポーネント (整合性・エラー回避 最終版)
+ * header.js - ナビゲーション・コンポーネント (多言語完全対応・整合性維持版)
  */
 (async function headerNavBoot(){
   "use strict";
@@ -8,7 +8,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入 (絶対基準のまま維持)
+     1. CSSの注入 (現状のデザインを維持)
      ========================================== */
   const cssText = `
     :root { --lz-h-max: 1100px; --lz-h-height: 75px; --lz-h-red: #cf3a3a; }
@@ -89,24 +89,25 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. ヘルパー (言語切り替え・ハッシュ掃除)
+     2. 言語切り替えヘルパー (ハッシュを除去して移行)
      ========================================== */
   function getLangLinks() {
     const config = window.LZ_CONFIG.LANG;
     return config.SUPPORTED.map(l => {
       const url = new URL(window.location.href);
       url.searchParams.set('lang', l);
-      // 🍎 重要：言語切り替え時はエラー防止のためハッシュを捨てる
+      // 🍎 重要：jQueryエラー防止のためハッシュは消去して出発
       url.hash = ""; 
       return `<a href="${url.toString()}">${config.LABELS[l]}</a>`;
     }).join('');
   }
 
-  /* ==========================================
-     3. HTML構造の注入 (絶対基準のまま維持)
+/* ==========================================
+     3. HTML構造の注入
      ========================================== */
   const langLabelMob = window.LZ_CURRENT_LANG === 'ja' ? '日' : (window.LZ_CURRENT_LANG === 'en' ? 'EN' : '中');
   const langLabelPc = window.LZ_CONFIG.LANG.LABELS[window.LZ_CURRENT_LANG];
+
   const brandTitle = {
     ja: { t1: '飯綱町産りんごポータルサイト', t2: 'りんごのまちいいづな' },
     en: { t1: 'Iizuna Apple Portal Site', t2: 'Appletown Iizuna' },
@@ -151,15 +152,42 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     4. ロジック (精密スクロール・イベント)
+     4. スクロールロジック (現状版をベースに修正)
      ========================================== */
   function smoothScrollToL2(label) {
-    // 🍎 改良：見出しの殻（lz-section）ができた瞬間に飛ぶため、クラスに依存しない
+    // 🍎 改良：[data-l2] を持っている要素（殻）を直接探す
     const target = document.querySelector(`[data-l2="${label}"]`);
     if (!target) return;
-    const offset = 75 + 20; 
+    const offset = 75 + 20; // ヘッダー高 75px + 余白
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
     window.scrollTo({ top: y, behavior: "smooth" });
+  }
+
+  const { ENDPOINT, MENU_ORDER, MENU_URL } = window.LZ_CONFIG;
+
+  function renderSkeleton(){
+    const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
+    const loadLabel = window.LZ_CURRENT_LANG === 'ja' ? '読み込み中...' : 'Loading...';
+    
+    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => {
+      const translatedL1 = C.T(l1);
+      return `<li class="lz-h-nav__item"><a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}" class="lz-h-nav__l1">${translatedL1}</a><div class="lz-h-panel"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></li>`;
+    }).join('');
+
+    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `
+      <div class="lz-h-dw-group" data-l1="${l1}">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <a class="lz-h-dw-l1a" href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}">${C.T(l1)}</a>
+          <div class="lz-h-dw-arrow" style="padding:18px 20px;color:#cf3a3a;cursor:pointer;transition:0.3s;">▼</div>
+        </div>
+        <div class="lz-h-dw-l2-area"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div>
+      </div>`).join('');
+    
+    const hdr = document.getElementById('lzHdr');
+    const showHeader = () => { hdr.classList.add('is-visible'); window.removeEventListener('scroll', showHeader); };
+    window.addEventListener('scroll', showHeader);
+    if (window.scrollY > 20) showHeader();
+    setTimeout(showHeader, 2000);
   }
 
   function setupEvents(){
@@ -181,6 +209,7 @@
       const url = new URL(a.href);
       const jumpVal = url.searchParams.get('jump');
       
+      // 同じページ内への移動指示であれば、リロードさせずにスクロール
       if (url.pathname === window.location.pathname && jumpVal) {
         e.preventDefault();
         smoothScrollToL2(jumpVal);
@@ -202,26 +231,10 @@
     [backdrop, close].forEach(el => { if(el) el.onclick = closeDrawer; });
   }
 
-  const config = window.LZ_CONFIG;
-  const { ENDPOINT, MENU_ORDER, MENU_URL } = config;
-
-  function renderSkeleton(){
-    const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
-    const loadLabel = window.LZ_CURRENT_LANG === 'ja' ? '読み込み中...' : 'Loading...';
-    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => `<li class="lz-h-nav__item"><a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}" class="lz-h-nav__l1">${C.T(l1)}</a><div class="lz-h-panel"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></li>`).join('');
-    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `<div class="lz-h-dw-group" data-l1="${l1}"><div style="display:flex;align-items:center;justify-content:space-between;width:100%;"><a class="lz-h-dw-l1a" href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}">${C.T(l1)}</a><div class="lz-h-dw-arrow" style="padding:18px 20px;color:#cf3a3a;cursor:pointer;transition:0.3s;">▼</div></div><div class="lz-h-dw-l2-area"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></div>`).join('');
-    
-    const hdr = document.getElementById('lzHdr');
-    const showHeader = () => { hdr.classList.add('is-visible'); window.removeEventListener('scroll', showHeader); };
-    window.addEventListener('scroll', showHeader);
-    if (window.scrollY > 20) showHeader();
-    setTimeout(showHeader, 2000);
-  }
-
   renderSkeleton(); setupEvents();
 
   /* ==========================================
-     5. L2データの動的取得 & リンク生成
+     5. L2リンク生成 (ここで # ではなく ?jump= を使う)
      ========================================== */
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
@@ -230,26 +243,27 @@
       const map = new Map();
       json.items.forEach(it => { 
         if(!map.has(it.l1)) map.set(it.l1, []); 
-        const localizedL2 = C.L(it, 'l2');
         const exists = map.get(it.l1).some(x => x.key === it.l2);
-        if(!exists) map.get(it.l1).push({ key: it.l2, label: localizedL2 }); 
+        if(!exists) map.get(it.l1).push({ key: it.l2, label: C.L(it, 'l2') }); 
       });
 
       MENU_ORDER.forEach((l1, i) => {
         const l2Data = map.get(l1) || [];
-        // 🍎 移行時に # を持たせず、'jump=' という名前で預けて出る
+        // 🍎 修正：# ではなく jump= パラメータとして預けて遷移する
         const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         
+        const noContentLabel = window.LZ_CURRENT_LANG === 'ja' ? '（記事なし）' : '(No Articles)';
         const panels = document.querySelectorAll('.lz-h-panel');
-        if(panels[i]) panels[i].innerHTML = links || '<div style="padding:10px;text-align:center;color:#999;">(No Articles)</div>';
+        if(panels[i]) panels[i].innerHTML = links || `<div style="padding:10px;text-align:center;color:#999;">${noContentLabel}</div>`;
         
         const dwGroups = document.querySelectorAll('.lz-h-dw-group');
         if(dwGroups[i]) {
           const area = dwGroups[i].querySelector('.lz-h-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-h-dw-arrow'), link = dwGroups[i].querySelector('.lz-h-dw-l1a');
           if(l2Data.length > 0) {
             area.innerHTML = links;
-            arrow.onclick = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); arrow.style.transform = dwGroups[i].classList.contains('is-active') ? 'rotate(180deg)' : 'rotate(0)'; };
-            link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) arrow.click(); else closeDrawer(); };
+            const t = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); arrow.style.transform = dwGroups[i].classList.contains('is-active') ? 'rotate(180deg)' : 'rotate(0)'; };
+            arrow.onclick = t; 
+            link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) t(e); else closeDrawer(); };
           } else { area.innerHTML = ''; if(arrow) arrow.style.display='none'; link.onclick=closeDrawer; }
         }
       });
@@ -260,32 +274,30 @@
      6. 【預かっていた合言葉を適用】 監視ロジック
      ========================================== */
   window.addEventListener('load', () => {
-    // 1. URLの ?jump= の中身をチェックする
     const params = new URLSearchParams(window.location.search);
     const jumpTarget = params.get('jump');
 
     if (jumpTarget) {
       let attempts = 0;
       const checkReady = setInterval(() => {
-        // 2. section.js が見出し（lz-section）を描き出した瞬間にジャンプ（.lz-readyは待たない）
         const target = document.querySelector(`[data-l2="${jumpTarget}"]`);
-
-        if (target) {
+        
+        // 🍎 整合性のポイント：
+        // 要素が存在し、かつ offsetHeight > 0 (＝section.jsが見出しを描画して高さが発生した状態) を待つ
+        if (target && target.offsetHeight > 0) {
           clearInterval(checkReady);
           
-          // 🍎 整合性のための微調整：slideshow.jsなどの読み込みによる高さ変化を考慮して少し待つ
           setTimeout(() => {
             smoothScrollToL2(jumpTarget);
             
-            // 3. 最後にURLから jump を消して掃除を完結
+            // 🍎 到着後、URLから jump パラメータを消して綺麗にする
             const url = new URL(window.location.href);
             url.searchParams.delete('jump');
             history.replaceState(null, "", url.pathname + url.search);
           }, 400);
         }
 
-        // 最大12秒探してダメなら諦める
-        if (++attempts > 80) clearInterval(checkReady);
+        if (++attempts > 100) clearInterval(checkReady);
       }, 150);
     }
   });
