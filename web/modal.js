@@ -111,6 +111,8 @@ window.lzModal = (function() {
       var clone = element.cloneNode(true);
       clone.querySelector(".lz-actions").remove();
       if(clone.querySelector(".lz-m-lang-tabs")) clone.querySelector(".lz-m-lang-tabs").remove();
+      if(clone.querySelector(".lz-map")) clone.querySelector(".lz-map").remove();
+      if(clone.querySelector(".lz-sns")) clone.querySelector(".lz-sns").remove();
       clone.style.maxHeight = "none"; clone.style.height = "auto"; clone.style.width = "800px";
       clone.querySelectorAll("img").forEach(function(img){ img.setAttribute("referrerpolicy","no-referrer-when-downgrade"); });
       document.body.appendChild(clone);
