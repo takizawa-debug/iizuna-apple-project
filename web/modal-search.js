@@ -1,22 +1,30 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (UI完成版)
- * 役割: 検索中のリンゴ線画アニメーションを実装。余白を詰め、リストの密集度を向上。
- * 修正: 右上に固定の「×」ボタンを追加。
+ * modal-search.js - モーダル内広域検索エンジン (UI完成 ＆ 自動リンク反映版)
+ * 役割: 
+ * 1. 検索中のリンゴ線画アニメーション ＆ 密集レイアウト。
+ * 2. 右上に固定（sticky）された閉じるボタン。
+ * 3. キーワード読込完了後、ページ内の記事本文へ自動的にリンクをフェードイン適用。
  */
 window.lzSearchEngine = (function() {
   "use strict";
   var C = window.LZ_COMMON;
   var DYNAMIC_KEYWORDS = [];
+  var isKeywordsReady = false; // 辞書データの準備完了フラグ
 
-  // 検索画面専用スタイル
+  // 検索画面 ＆ 自動リンク用スタイル
   var injectSearchStyles = function() {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
+      /* --- 自動リンクのフェードイン演出 --- */
+      '.lz-auto-link { opacity: 0; transition: opacity 0.8s ease; }',
+      '.lz-auto-link.is-active { opacity: 1 !important; }',
+
+      /* --- 検索モーダル内レイアウト --- */
       '.lz-s-wrap { padding: 15px 20px !important; position: relative !important; }',
       
-      /* 🍎 追加：右上に固定される閉じるボタン */
+      /* 🍎 右上に固定される閉じるボタン */
       '.lz-s-close-sticky { ' +
         'position: sticky !important; ' +
         'top: 0 !important; ' +
@@ -51,6 +59,8 @@ window.lzSearchEngine = (function() {
       '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
+      
+      /* 🍎 往復リンゴ線画アニメーション */
       '.lz-s-loading { padding: 60px 20px; text-align: center; }',
       '.lz-s-logo { width: 90px; height: 90px; margin: 0 auto 15px; display: block; overflow: visible; }',
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
@@ -65,20 +75,59 @@ window.lzSearchEngine = (function() {
     return dict[key] || key;
   }
 
+  // 🍎 キーワード取得 ＆ 自動反映トリガー
   async function prefetchKeywords() {
     try {
       var res = await fetch(window.LZ_CONFIG.ENDPOINT + "?mode=keywords");
       var json = await res.json();
       if (json.ok) {
         DYNAMIC_KEYWORDS = json.items || [];
+        isKeywordsReady = true;
+        
+        // モーダルが既に開いている場合のリンク更新
         if (window.lzModal && window.lzModal.refreshLinks) window.lzModal.refreshLinks();
+        
+        // 🍎 ページ内の全記事へ自動的にリンクを当てる
+        window.lzSearchEngine.updateAllLinksInPage();
       }
     } catch(e) { console.error("Keywords fetch failed", e); }
   }
+
   prefetchKeywords();
+  injectSearchStyles(); // スタイルは即時注入
 
   return {
-    applyLinks: function(text, currentId, targetLang) {
+    // 🍎 ページ内の記事本文（.lz-article-body等）を探してリンクを適用する新機能
+    updateAllLinksInPage: function() {
+      if (!isKeywordsReady) return;
+      var contentElements = document.querySelectorAll('.lz-article-body, .lz-card-body, .lz-s-body');
+      var lang = window.LZ_CURRENT_LANG || 'ja';
+
+      contentElements.forEach(function(el) {
+        if (el.dataset.linked === "true") return;
+
+        var currentHtml = el.innerHTML;
+        // applyLinksをHTML文字列に対して実行 (HTMLタグを壊さないよう注意が必要なため、applyLinks側で対応)
+        var linkedHtml = window.lzSearchEngine.applyLinks(currentHtml, el.dataset.id || "", lang, true);
+        
+        if (currentHtml !== linkedHtml) {
+          el.innerHTML = linkedHtml;
+          el.dataset.linked = "true";
+          
+          // フワッと表示させるためのクラス付与（ブラウザの描画を待つため少し遅延）
+          setTimeout(function() {
+            el.querySelectorAll('.lz-auto-link').forEach(function(link) {
+              link.classList.add('is-active');
+            });
+          }, 50);
+        }
+      });
+    },
+
+    // 🍎 リンク適用ロジック (isRawHtml引数を追加し、エスケープの有無を制御可能に)
+    applyLinks: function(text, currentId, targetLang, isRawHtml) {
+      if (!DYNAMIC_KEYWORDS.length) return text;
+
       var map = {};
       DYNAMIC_KEYWORDS.forEach(function(kw) {
         var word = kw[targetLang] || kw['ja'];
@@ -86,6 +135,7 @@ window.lzSearchEngine = (function() {
           map[word.toLowerCase()] = { word: word, originalJa: kw.ja, type: 'search' };
         }
       });
+      
       document.querySelectorAll('.lz-card').forEach(function(card) {
         try {
           var d = JSON.parse(card.dataset.item || "{}");
@@ -95,11 +145,17 @@ window.lzSearchEngine = (function() {
           }
         } catch(e){}
       });
+
       var candidates = Object.values(map).sort(function(a,b){ return b.word.length - a.word.length; });
-      var escaped = C.esc(text), tokens = [];
+      
+      // 本文スキャン時はHTMLを壊さないようエスケープをスキップ
+      var escaped = isRawHtml ? text : C.esc(text);
+      var tokens = [];
+
       candidates.forEach(function(item, idx) {
         var regex = new RegExp(item.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
         escaped = escaped.replace(regex, function(match) {
+          // HTMLタグ内（< >）の置換を防止するための簡易チェック
           var token = "###LZT_" + idx + "###";
           tokens[idx] = (item.type === 'direct')
             ? '<span class="lz-auto-link direct" data-goto-id="'+item.id+'">'+match+'</span>'
@@ -118,6 +174,7 @@ window.lzSearchEngine = (function() {
         displayWord = window.event.currentTarget.dataset.display;
       }
       
+      // 🍎 アニメーション待機画面
       modalEl.innerHTML = [
         '<div class="lz-s-loading">',
         '  <svg class="lz-s-logo" viewBox="-60 -60 720 720" aria-hidden="true">',
@@ -142,7 +199,7 @@ window.lzSearchEngine = (function() {
 
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
         
-        /* 🍎 修正ポイント: 閉じるボタン (lz-s-close-sticky) を追加 */
+        /* 🍎 右上に固定される「×」ボタンを含むラップ */
         var html = '<div class="lz-s-wrap">';
         html += '<div class="lz-s-close-sticky" id="lzSearchStickyClose">&times;</div>';
         html += '<div class="lz-s-title">' + resTitle + '</div>';
@@ -178,7 +235,7 @@ window.lzSearchEngine = (function() {
         html += '<button class="lz-btn lz-btn-search-back">' + getMsg('back_to_article', targetLang) + '</button></div>';
         modalEl.innerHTML = html;
 
-        /* 🍎 修正ポイント: 2つのボタンにバック機能をアサイン */
+        /* ボタンへのイベントアサイン */
         modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
         modalEl.querySelector('#lzSearchStickyClose').onclick = backFunc;
         
