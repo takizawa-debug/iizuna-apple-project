@@ -189,15 +189,7 @@ var injectStyles = function() {
       (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''), '</div>'
     ].join('');
 
-MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
-  // 追加：初期表示時にリンクを可視化する（データが既にある場合のため）
-  el.classList.add('is-active'); 
-  
-  el.onclick = function() { 
-    if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]'), MODAL_ACTIVE_LANG); 
-    else if(window.lzSearchEngine) window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function(){ render(card, MODAL_ACTIVE_LANG); });
-  };
-});
+
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
     MODAL.querySelector(".lz-share").onclick = function() {
@@ -243,6 +235,23 @@ MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
         HOST = document.body.appendChild(document.createElement("div")); HOST.className = "lz-backdrop";
         HOST.innerHTML = '<div class="lz-shell"><div class="lz-modal"></div></div>';
         SHELL = HOST.firstChild; MODAL = SHELL.firstChild;
+        MODAL.addEventListener('click', function(e) {
+      var el = e.target.closest('.lz-auto-link');
+      if (!el) return; // リンク以外なら無視
+
+      e.preventDefault();
+      if (el.dataset.gotoId) {
+        // 直接カードを開く
+        var targetCard = document.querySelector('.lz-card[data-id="' + el.dataset.gotoId + '"]');
+        if (targetCard) render(targetCard, MODAL_ACTIVE_LANG);
+      } else if (window.lzSearchEngine) {
+        // 検索リストを開く
+        window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function() {
+          render(CURRENT_CARD, MODAL_ACTIVE_LANG);
+        });
+      }
+    });
+        
         HOST.onclick = function(e){ if(e.target === HOST) close(); };
         document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
       }

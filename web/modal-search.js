@@ -81,6 +81,11 @@ window.lzSearchEngine = (function() {
         if (window.lzModal && window.lzModal.refreshLinks) window.lzModal.refreshLinks();
         // 2. ページ内の既存コンテンツにリンクを即時適用
         window.lzSearchEngine.updateAllLinksInPage();
+        // 🍎 追加：もし既にモーダルが開いていたら、その中身も即座に更新する
+      var modalBody = document.querySelector('.lz-modal-body-txt');
+      if (modalBody) {
+        window.lzSearchEngine.updateAllLinksInPage();
+      }
       }
     } catch(e) { console.error("Keywords fetch failed", e); }
   }
