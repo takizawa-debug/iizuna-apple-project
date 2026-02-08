@@ -287,16 +287,25 @@
   // ハッシュスクロール（最下部）
   window.addEventListener('load', () => {
     if (window.location.hash) {
-      const label = decodeURIComponent(window.location.hash.replace('#', ''));
+      // 1. URLの#以降を取得し、デコードする
+      const hashLabel = decodeURIComponent(window.location.hash.replace('#', ''));
       let attempts = 0;
+
       const checkReady = setInterval(() => {
-        const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
-        // 🍎 修正：.lz-readyを待つが、30回（約4.5秒）試してダメなら強制実行
-        if (target && (target.classList.contains('lz-ready') || attempts > 30)) {
+        // 2. data-l2 という属性を持つ要素を探す
+        // 注意：HTML側で data-l2="生産者" のように「生データ」が入っている必要があります
+        const target = document.querySelector(`.lz-section[data-l2="${hashLabel}"]`);
+
+        if (target) {
           clearInterval(checkReady);
-          setTimeout(() => smoothScrollToL2(label), 500);
+          // 要素が見つかったら、中身が描画されるのを少し待ってジャンプ
+          setTimeout(() => {
+            smoothScrollToL2(hashLabel);
+          }, 600);
         }
-        if (++attempts > 100) clearInterval(checkReady); // 最大15秒で諦める
+
+        // 30回（約4.5秒）探して見つからなければ終了
+        if (++attempts > 30) clearInterval(checkReady);
       }, 150);
     }
   });
