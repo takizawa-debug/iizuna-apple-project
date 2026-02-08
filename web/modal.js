@@ -169,16 +169,19 @@ window.lzModal = (function() {
     var fields = [
       {k:'address', l:getTranslation('住所', MODAL_ACTIVE_LANG)},
       {k:'organizer', l:getTranslation('主催者名', MODAL_ACTIVE_LANG)},
+      {k:'orgTel', l:getTranslation('主催者連絡先', MODAL_ACTIVE_LANG)}, // 🍎 追加
       {k:'tel', l:getTranslation('問い合わせ電話', MODAL_ACTIVE_LANG)},
       {k:'email', l:getTranslation('問い合わせメール', MODAL_ACTIVE_LANG)},
       {k:'bizDays', l:getTranslation('営業曜日', MODAL_ACTIVE_LANG)}, 
       {k:'holiday', l:getTranslation('定休日', MODAL_ACTIVE_LANG)}, 
       {k:'hoursCombined', l:getTranslation('営業時間', MODAL_ACTIVE_LANG)}, 
+      {k:'bizNote', l:getTranslation('営業注意事項', MODAL_ACTIVE_LANG)}, // 🍎 追加
       {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)},
+      {k:'eventTime', l:getTranslation('開催時間', MODAL_ACTIVE_LANG)}, // 🍎 追加
       {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)},
       {k:'target', l:getTranslation('対象', MODAL_ACTIVE_LANG)},
-      {k:'bring', l:getTranslation('もちもの', MODAL_ACTIVE_LANG)}, // GAS: BRING
-      {k:'venueNote', l:getTranslation('会場注意事項', MODAL_ACTIVE_LANG)}, // GAS: VENUE_NOTE
+      {k:'bring', l:getTranslation('もちもの', MODAL_ACTIVE_LANG)},      // 🍎 追加
+      {k:'venueNote', l:getTranslation('会場注意事項', MODAL_ACTIVE_LANG)}, // 🍎 追加
       {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
     ];
 
