@@ -1,5 +1,5 @@
 /**
- * common.js - Appletown 基盤コンポーネント (シールド解除タイミング最適化版)
+ * common.js - Appletown 基盤コンポーネント (安定版ベース・シールド解除最適化)
  */
 window.LZ_COMMON = (function() {
   "use strict";
@@ -28,90 +28,79 @@ window.LZ_COMMON = (function() {
   })();
 
   /* ==========================================
-     2. デザイン・シールド CSS 🍎
+     2. デザイン・演出設定 (シールド解除アニメ)
      ========================================== */
   var injectCoreStyles = function() {
+    if (document.getElementById('lz-common-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-common-styles';
     style.textContent = [
-      ':root {',
-      '  --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --apple-red: #cf3a3a; --apple-red-strong: #a82626;',
-      '  --apple-green: #2aa85c; --apple-brown: #5b3a1e; --font-base: system-ui, -apple-system, sans-serif;',
-      '}',
-      'body.lz-is-loading { overflow: hidden !important; height: 100vh !important; }',
-      '.lz-global-shield { position: fixed; inset: 0; background: #fff; z-index: 30000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.4s ease-out; }',
-      '.lz-global-shield.is-hidden { opacity: 0; pointer-events: none; }',
-      '.lz-shield-logo { width: 80px; height: auto; animation: lz-pulse 1.5s infinite ease-in-out; }',
-      '@keyframes lz-pulse { 0% { transform: scale(0.92); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.92); opacity: 0.6; } }'
+      ':root { --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --apple-red: #cf3a3a; --font-base: system-ui, -apple-system, sans-serif; }',
+      '.lz-global-shield.is-hidden { opacity: 0; transition: opacity 0.4s ease-out; pointer-events: none; }'
     ].join('\n');
     document.head.appendChild(style);
   };
   injectCoreStyles();
 
   /* ==========================================
-     3. シールド表示と「看板設置」での解除ロジック 🍎
+     3. シールド解除ロジック 🍎
      ========================================== */
-  var initShield = function() {
-    document.body.classList.add('lz-is-loading');
-    var shield = document.createElement('div');
-    shield.className = 'lz-global-shield';
-    shield.id = 'lzGlobalShield';
-    shield.innerHTML = '<img class="lz-shield-logo" src="https://cdn.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png">';
-    document.body.insertAdjacentElement('afterbegin', shield);
-
-    // 🍎 監視ロジックの変更：
-    // 全ての .lz-container または [data-l2] の中に
-    // section.js が見出しの殻（.lz-section）を流し込んだ瞬間に解除する
+  var initShieldController = function() {
+    // 看板（L2）が設置された瞬間に解除する監視ロジック
     var checkCount = 0;
     var waitReady = setInterval(function() {
       var targets = document.querySelectorAll('.lz-container, .lz-section[data-l2]');
       var readyCount = 0;
 
       for (var i = 0; i < targets.length; i++) {
-        // targets[i] の中に .lz-section という div が生成されたかチェック
-        if (targets[i].querySelector('.lz-section')) {
-          readyCount++;
-        }
+        // 見出しの殻（.lz-section）が生成されたかチェック
+        if (targets[i].querySelector('.lz-section')) { readyCount++; }
       }
       
-      // セクションが見つからないページ、または全てのセクションの「殻」ができた場合
+      // セクションがないページ、または全ての看板ができた場合
       if (targets.length === 0 || readyCount >= targets.length) {
         unlock();
       }
       
-      if (++checkCount > 120) unlock(); // セーフティ（6秒）
-    }, 50); // 頻度を上げてレスポンスを改善
+      if (++checkCount > 100) unlock(); // 最大5秒で強制解除
+    }, 50);
 
     function unlock() {
       clearInterval(waitReady);
+      // 🍎 正常に解除されるので、Headタグの安全タイマーを止める
+      if (window._lzSafetyFuse) clearTimeout(window._lzSafetyFuse);
+
       setTimeout(function() {
         var s = document.getElementById('lzGlobalShield');
         if (s) s.classList.add('is-hidden');
-        document.body.classList.remove('lz-is-loading');
-      }, 100); // 殻ができたらほぼノータイムで解除
+        // 🍎 ここでクラスを削除し、スクロールを可能にする
+        document.documentElement.classList.remove('lz-loading-lock');
+      }, 100);
     }
   };
 
   /* ==========================================
-     4. 多言語管理 (全維持)
+     4. 多言語管理 ＆ 起動
      ========================================== */
+  initShieldController();
+
   var initLang = function() {
     var urlParams = new URLSearchParams(window.location.search);
     var lang = urlParams.get('lang');
-    if (!window.LZ_CONFIG.LANG.SUPPORTED.includes(lang)) lang = window.LZ_CONFIG.LANG.DEFAULT;
-    window.LZ_CURRENT_LANG = lang;
+    if (window.LZ_CONFIG && !window.LZ_CONFIG.LANG.SUPPORTED.includes(lang)) lang = window.LZ_CONFIG.LANG.DEFAULT;
+    window.LZ_CURRENT_LANG = lang || 'ja';
   };
 
   var boot = function() {
-    if (window.LZ_CONFIG) { initLang(); initShield(); }
+    if (window.LZ_CONFIG) { initLang(); }
     else { setTimeout(boot, 20); }
   };
   boot();
 
   return {
     NET: NET,
-    T: function(key) { var dict = window.LZ_CONFIG.LANG.I18N[window.LZ_CURRENT_LANG] || window.LZ_CONFIG.LANG.I18N[window.LZ_CONFIG.LANG.DEFAULT]; return dict[key] || key; },
-    L: function(item, key) { if (!item) return ""; var lang = window.LZ_CURRENT_LANG; if (lang === window.LZ_CONFIG.LANG.DEFAULT) return item[key] || ""; if (item[lang] && (item[lang][key] !== undefined && item[lang][key] !== "")) return item[lang][key]; return item[key] || ""; },
+    T: function(key) { var dict = (window.LZ_CONFIG && window.LZ_CONFIG.LANG.I18N[window.LZ_CURRENT_LANG]) || {}; return dict[key] || key; },
+    L: function(item, key) { if (!item) return ""; var lang = window.LZ_CURRENT_LANG; if (lang === 'ja') return item[key] || ""; if (item[lang] && (item[lang][key] !== undefined && item[lang][key] !== "")) return item[lang][key]; return item[key] || ""; },
     esc: function(s){ return String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;"); },
     ratio: function(r){ return ({"16:9":"56.25%","4:3":"75%","1:1":"100%","3:2":"66.67%"}[r] || "56.25%"); },
     loadScript: function(src){ return new Promise(function(res, rej){ if ([].slice.call(document.scripts).some(function(s){ return s.src === src; })) return res(); var s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); },
