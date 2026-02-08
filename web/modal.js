@@ -183,18 +183,21 @@ var injectStyles = function() {
       (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
       '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button></div></div>',
       langTabs, '<div>', (gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
-      (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), '  <div class="lz-txt">' + linkedBody + '</div>',
+      (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
       (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : ''),
       (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
       (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''), '</div>'
     ].join('');
 
-    MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
-      el.onclick = function() { 
-        if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]'), MODAL_ACTIVE_LANG); 
-        else if(window.lzSearchEngine) window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function(){ render(card, MODAL_ACTIVE_LANG); });
-      };
-    });
+MODAL.querySelectorAll('.lz-auto-link').forEach(function(el) {
+  // 追加：初期表示時にリンクを可視化する（データが既にある場合のため）
+  el.classList.add('is-active'); 
+  
+  el.onclick = function() { 
+    if(el.dataset.gotoId) render(document.querySelector('.lz-card[data-id="'+el.dataset.gotoId+'"]'), MODAL_ACTIVE_LANG); 
+    else if(window.lzSearchEngine) window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function(){ render(card, MODAL_ACTIVE_LANG); });
+  };
+});
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
     MODAL.querySelector(".lz-share").onclick = function() {
