@@ -1,5 +1,5 @@
 /**
- * header.js - ナビゲーション・コンポーネント (多言語完全対応・整合性維持版)
+ * header.js - ナビゲーション・コンポーネント (整合性・エラー回避 最終版)
  */
 (async function headerNavBoot(){
   "use strict";
@@ -8,7 +8,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入 (現状のデザインを維持)
+     1. CSSの注入 (既存のデザインとロジックを完全維持)
      ========================================== */
   const cssText = `
     :root { --lz-h-max: 1100px; --lz-h-height: 75px; --lz-h-red: #cf3a3a; }
@@ -37,6 +37,7 @@
     
     .lz-h-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2vw, 16px) !important; flex-shrink: 0 !important; }
 
+    /* PCナビ */
     .lz-h-nav { display: none; }
     @media (min-width: 1024px) { .lz-h-nav { display: block !important; } }
     .lz-h-nav__list { display: flex !important; align-items: center !important; gap: 20px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
@@ -51,6 +52,7 @@
     .lz-h-panel a:hover { background: #fff5f5 !important; color: var(--lz-h-red) !important; padding-left: 28px !important; }
     .lz-h-panel a:hover::before { height: 24px; }
 
+    /* 言語セレクター */
     .lz-lang-pc { position: relative !important; display: none; height: var(--lz-h-height); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
     .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 44px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer; font-weight: 600; font-size: 1.1rem; padding: 0 20px !important;}
@@ -68,6 +70,7 @@
     .lz-lang-mob__menu.is-open { display: flex !important; }
     .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 1.0rem !important; font-weight: 600; border-radius: 8px; }
 
+    /* ハンバーガー */
     .lz-h-hamb { display: flex !important; width: 36px !important; height: 36px !important; border: 1px solid rgba(255,255,255,.6) !important; background: none; border-radius: 8px !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 4px !important; cursor: pointer; }
     @media (min-width: 1024px) { .lz-h-hamb { display: none !important; } }
     .lz-h-hamb__bar { width: 20px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
@@ -102,8 +105,8 @@
     }).join('');
   }
 
-/* ==========================================
-     3. HTML構造の注入
+  /* ==========================================
+     3. HTML構造の注入 (既存ロジックを維持)
      ========================================== */
   const langLabelMob = window.LZ_CURRENT_LANG === 'ja' ? '日' : (window.LZ_CURRENT_LANG === 'en' ? 'EN' : '中');
   const langLabelPc = window.LZ_CONFIG.LANG.LABELS[window.LZ_CURRENT_LANG];
@@ -152,42 +155,18 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     4. スクロールロジック (現状版をベースに修正)
+     4. 精密スクロールロジック (親ブロック特定版)
      ========================================== */
   function smoothScrollToL2(label) {
-    // 🍎 改良：[data-l2] を持っている要素（殻）を直接探す
-    const target = document.querySelector(`[data-l2="${label}"]`);
-    if (!target) return;
-    const offset = 75 + 20; // ヘッダー高 75px + 余白
+    // 🍎 整合性のための改善点：
+    // 看板(data-l2)を見つけたあと、その親ブロック(section-X)にジャンプ先を補正する
+    const el = document.querySelector(`[data-l2="${label}"]`);
+    if (!el) return;
+
+    const target = el.closest('[id^="section-"]') || el;
+    const offset = 75 + 20; 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
     window.scrollTo({ top: y, behavior: "smooth" });
-  }
-
-  const { ENDPOINT, MENU_ORDER, MENU_URL } = window.LZ_CONFIG;
-
-  function renderSkeleton(){
-    const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
-    const loadLabel = window.LZ_CURRENT_LANG === 'ja' ? '読み込み中...' : 'Loading...';
-    
-    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => {
-      const translatedL1 = C.T(l1);
-      return `<li class="lz-h-nav__item"><a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}" class="lz-h-nav__l1">${translatedL1}</a><div class="lz-h-panel"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></li>`;
-    }).join('');
-
-    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `
-      <div class="lz-h-dw-group" data-l1="${l1}">
-        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
-          <a class="lz-h-dw-l1a" href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}">${C.T(l1)}</a>
-          <div class="lz-h-dw-arrow" style="padding:18px 20px;color:#cf3a3a;cursor:pointer;transition:0.3s;">▼</div>
-        </div>
-        <div class="lz-h-dw-l2-area"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div>
-      </div>`).join('');
-    
-    const hdr = document.getElementById('lzHdr');
-    const showHeader = () => { hdr.classList.add('is-visible'); window.removeEventListener('scroll', showHeader); };
-    window.addEventListener('scroll', showHeader);
-    if (window.scrollY > 20) showHeader();
-    setTimeout(showHeader, 2000);
   }
 
   function setupEvents(){
@@ -231,6 +210,34 @@
     [backdrop, close].forEach(el => { if(el) el.onclick = closeDrawer; });
   }
 
+  const config = window.LZ_CONFIG;
+  const { ENDPOINT, MENU_ORDER, MENU_URL } = config;
+
+  function renderSkeleton(){
+    const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
+    const loadLabel = window.LZ_CURRENT_LANG === 'ja' ? '読み込み中...' : 'Loading...';
+    
+    if(ul) ul.innerHTML = MENU_ORDER.map(l1 => {
+      const translatedL1 = C.T(l1);
+      return `<li class="lz-h-nav__item"><a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}" class="lz-h-nav__l1">${translatedL1}</a><div class="lz-h-panel"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></li>`;
+    }).join('');
+
+    if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `
+      <div class="lz-h-dw-group" data-l1="${l1}">
+        <div style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+          <a class="lz-h-dw-l1a" href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}">${C.T(l1)}</a>
+          <div class="lz-h-dw-arrow" style="padding:18px 20px;color:#cf3a3a;cursor:pointer;transition:0.3s;">▼</div>
+        </div>
+        <div class="lz-h-dw-l2-area"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div>
+      </div>`).join('');
+    
+    const hdr = document.getElementById('lzHdr');
+    const showHeader = () => { hdr.classList.add('is-visible'); window.removeEventListener('scroll', showHeader); clearTimeout(safeTimer); };
+    const safeTimer = setTimeout(showHeader, 2000);
+    window.addEventListener('scroll', showHeader);
+    if (window.scrollY > 20) showHeader();
+  }
+
   renderSkeleton(); setupEvents();
 
   /* ==========================================
@@ -243,8 +250,9 @@
       const map = new Map();
       json.items.forEach(it => { 
         if(!map.has(it.l1)) map.set(it.l1, []); 
+        const localizedL2 = C.L(it, 'l2');
         const exists = map.get(it.l1).some(x => x.key === it.l2);
-        if(!exists) map.get(it.l1).push({ key: it.l2, label: C.L(it, 'l2') }); 
+        if(!exists) map.get(it.l1).push({ key: it.l2, label: localizedL2 }); 
       });
 
       MENU_ORDER.forEach((l1, i) => {
@@ -252,9 +260,8 @@
         // 🍎 修正：# ではなく jump= パラメータとして預けて遷移する
         const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         
-        const noContentLabel = window.LZ_CURRENT_LANG === 'ja' ? '（記事なし）' : '(No Articles)';
         const panels = document.querySelectorAll('.lz-h-panel');
-        if(panels[i]) panels[i].innerHTML = links || `<div style="padding:10px;text-align:center;color:#999;">${noContentLabel}</div>`;
+        if(panels[i]) panels[i].innerHTML = links || `<div style="padding:10px;text-align:center;color:#999;">(No Articles)</div>`;
         
         const dwGroups = document.querySelectorAll('.lz-h-dw-group');
         if(dwGroups[i]) {
@@ -271,26 +278,28 @@
   } catch(e) { console.error(e); }
 
   /* ==========================================
-     6. 【預かっていた合言葉を適用】 監視ロジック
+     6. 【預かっていた合言葉を適用】 監視ロジック (最終整合版)
      ========================================== */
   window.addEventListener('load', () => {
+    // URLの ?jump= の中身をチェックする
     const params = new URLSearchParams(window.location.search);
     const jumpTarget = params.get('jump');
 
     if (jumpTarget) {
       let attempts = 0;
       const checkReady = setInterval(() => {
-        const target = document.querySelector(`[data-l2="${jumpTarget}"]`);
+        const el = document.querySelector(`[data-l2="${jumpTarget}"]`);
         
-        // 🍎 整合性のポイント：
-        // 要素が存在し、かつ offsetHeight > 0 (＝section.jsが見出しを描画して高さが発生した状態) を待つ
-        if (target && target.offsetHeight > 0) {
+        // 🍎 整合性の最重要ポイント：
+        // 1. section.js が見出しを描画し終えて
+        // 2. さらにブラウザがその場所の「高さ(offsetHeight)」を認識した瞬間に飛ぶ
+        if (el && el.offsetHeight > 0) {
           clearInterval(checkReady);
           
           setTimeout(() => {
             smoothScrollToL2(jumpTarget);
             
-            // 🍎 到着後、URLから jump パラメータを消して綺麗にする
+            // 🍎 到着後、URLから jump パラメータを消して掃除を完結
             const url = new URL(window.location.href);
             url.searchParams.delete('jump');
             history.replaceState(null, "", url.pathname + url.search);
