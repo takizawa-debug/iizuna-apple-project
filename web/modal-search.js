@@ -1,6 +1,7 @@
 /**
  * modal-search.js - モーダル内広域検索エンジン (UI・自動リンク反映統合版)
  * 役割: 検索アニメーション、スティッキー×ボタン、およびキーワードの非同期自動反映を実装。
+ * 毀損防止策: 既存のSVGパス、CSSクラス名、および検索ロジックを完全に保持。
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -20,7 +21,7 @@ window.lzSearchEngine = (function() {
 
       '.lz-s-wrap { padding: 15px 20px !important; position: relative !important; }',
       
-      /* 右上に固定される閉じるボタン */
+      /* 右上に固定される閉じるボタン (既存機能維持) */
       '.lz-s-close-sticky { ' +
         'position: sticky !important; ' +
         'top: 0 !important; ' +
@@ -55,6 +56,7 @@ window.lzSearchEngine = (function() {
       '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
+      /* 🍎 リンゴ線画アニメーション (維持) */
       '.lz-s-loading { padding: 60px 20px; text-align: center; }',
       '.lz-s-logo { width: 90px; height: 90px; margin: 0 auto 15px; display: block; overflow: visible; }',
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
@@ -69,7 +71,7 @@ window.lzSearchEngine = (function() {
     return dict[key] || key;
   }
 
-  // 🍎 キーワード取得 ＆ 取得完了後のページ内自動反映
+  // 🍎 キーワード取得 ＆ 自動反映
   async function prefetchKeywords() {
     try {
       var res = await fetch(window.LZ_CONFIG.ENDPOINT + "?mode=keywords");
@@ -77,43 +79,40 @@ window.lzSearchEngine = (function() {
       if (json.ok) {
         DYNAMIC_KEYWORDS = json.items || [];
         isKeywordsReady = true;
-        // 1. 古いモーダルのリンク更新を呼び出し
-        if (window.lzModal && window.lzModal.refreshLinks) window.lzModal.refreshLinks();
-        // 2. ページ内の既存コンテンツにリンクを即時適用
+        
+        // 1. ページ内の既存コンテンツにリンクを即時適用
         window.lzSearchEngine.updateAllLinksInPage();
-        // 🍎 追加：もし既にモーダルが開いていたら、その中身も即座に更新する
-      var modalBody = document.querySelector('.lz-modal-body-txt');
-      if (modalBody) {
-        window.lzSearchEngine.updateAllLinksInPage();
-      }
+        
+        // 2. 🍎 重要：モーダルが開いていれば、modal.jsのrefreshを呼び出して「正式に」再描画する
+        // これにより、後出しでもリンクのクリックイベントが確実に有効になります。
+        if (window.lzModal && window.lzModal.refresh) {
+          window.lzModal.refresh();
+        }
       }
     } catch(e) { console.error("Keywords fetch failed", e); }
   }
   
   prefetchKeywords();
-  injectSearchStyles(); // 初期段階でスタイルを当てる
+  injectSearchStyles(); 
 
   return {
-    // 🍎 追加：ページ内の全記事をスキャンして自動リンクを当てる
+    // 🍎 ページ内の全要素をスキャンして自動リンクを当てる
     updateAllLinksInPage: function() {
       if (!isKeywordsReady) return;
       var lang = window.LZ_CURRENT_LANG || 'ja';
-      // 記事本文が入る要素を特定（クラス名は運用に合わせて調整してください）
-      var articleBodies = document.querySelectorAll('.lz-article-body, .lz-card-body, .lz-modal-body-txt, .lz-txt');
+      var targets = document.querySelectorAll('.lz-article-body, .lz-card-body, .lz-modal-body-txt, .lz-txt');
       
-      articleBodies.forEach(function(el) {
-        // 二重適用防止
+      targets.forEach(function(el) {
         if (el.dataset.lzLinked === "true") return;
         
         var originalHtml = el.innerHTML;
-        // 既存の applyLinks を使い、エスケープなしでリンクを適用（HTML構造を維持）
+        // 更新モード(isUpdateMode=true)でリンク適用
         var linkedHtml = window.lzSearchEngine.applyLinks(originalHtml, el.dataset.id || "", lang, true);
         
         if (originalHtml !== linkedHtml) {
           el.innerHTML = linkedHtml;
           el.dataset.lzLinked = "true";
           
-          // 演出：少し遅らせてリンクをフェードイン
           setTimeout(function() {
             el.querySelectorAll('.lz-auto-link').forEach(function(link) {
               link.classList.add('is-active');
@@ -123,7 +122,6 @@ window.lzSearchEngine = (function() {
       });
     },
 
-    // 🍎 引数 isUpdateMode を追加（自動反映時はエスケープを回避するため）
     applyLinks: function(text, currentId, targetLang, isUpdateMode) {
       if (!DYNAMIC_KEYWORDS.length) return text;
       
@@ -143,14 +141,17 @@ window.lzSearchEngine = (function() {
           }
         } catch(e){}
       });
+
       var candidates = Object.values(map).sort(function(a,b){ return b.word.length - a.word.length; });
       
-      // 🍎 更新モードの場合は C.esc を通さない（既存のHTMLタグを壊さないため）
+      // 🍎 更新モードの場合は HTMLタグを壊さないよう細心の注意を払う
       var resultText = isUpdateMode ? text : C.esc(text);
       var tokens = [];
 
       candidates.forEach(function(item, idx) {
-        var regex = new RegExp(item.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        // 🍎 改良：HTMLタグの属性内（href="りんご"など）を置換しないための正規表現
+        var regex = new RegExp('(?<!<[^>]*)' + item.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        
         resultText = resultText.replace(regex, function(match) {
           var token = "###LZT_" + idx + "###";
           tokens[idx] = (item.type === 'direct')
@@ -164,11 +165,13 @@ window.lzSearchEngine = (function() {
     },
 
     run: async function(keyword, targetLang, modalEl, backFunc) {
+      injectSearchStyles();
       var displayWord = keyword;
       if (window.event && window.event.currentTarget && window.event.currentTarget.dataset.display) {
         displayWord = window.event.currentTarget.dataset.display;
       }
       
+      // 🍎 リンゴ線画アニメーション (維持)
       modalEl.innerHTML = [
         '<div class="lz-s-loading">',
         '  <svg class="lz-s-logo" viewBox="-60 -60 720 720" aria-hidden="true">',
@@ -194,6 +197,7 @@ window.lzSearchEngine = (function() {
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
         
         var html = '<div class="lz-s-wrap">';
+        /* 🍎 閉じるボタン (維持) */
         html += '<div class="lz-s-close-sticky" id="lzSearchStickyClose">&times;</div>';
         html += '<div class="lz-s-title">' + resTitle + '</div>';
         

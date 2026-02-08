@@ -1,6 +1,7 @@
 /**
  * modal.js - 詳細表示・機能コンポーネント (UI・安定機能維持版)
  * 役割: 画像表示、PDF生成、SNS共有、言語切り替え、ページめくりを担当。
+ * 修正: 自動反映されるリンクが確実に動作するよう「イベントデリゲーション」を統合。
  */
 window.lzModal = (function() {
   "use strict";
@@ -21,7 +22,7 @@ window.lzModal = (function() {
     tt:`<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2h3.2c.2 1.7 1.5 3 3.3 3.3V9c-1.9 -.1 -3.4 -.7 -4.5 -1.8v6.8c0 3 -2.4 5.4 -5.4 5.4S3.2 17 3.2 14s2.4 -5.4 5.4 -5.4c.6 0 1.2 .1 1.7 .3V12c-.3 -.1 -.6 -.2 -1 -.2-1.3 0-2.4 1.1-2.4 2.4S7.9 16.6 9.2 16.6c1.3 0 2.4 -1.1 2.4 -2.4V2z"/></svg>`
   };
 
-var injectStyles = function() {
+  var injectStyles = function() {
     if (document.getElementById('lz-modal-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-modal-styles';
@@ -47,7 +48,8 @@ var injectStyles = function() {
       '.lz-mm img.lz-fadeout { opacity: 0; }',
       '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
       '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
-      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; }',
+      '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; opacity: 0; transition: opacity 0.8s ease; }',
+      '.lz-auto-link.is-active { opacity: 1; }',
       '.lz-auto-link.direct { color: #cf3a3a; }',
       '.lz-auto-link.search { color: #27ae60; }',
       '.lz-auto-link:hover { background: #f5f5f5; }',
@@ -85,7 +87,7 @@ var injectStyles = function() {
     return dict[key] || key;
   }
 
-  /* PDF精密生成ロジック (変更なし) */
+  /* PDF精密生成ロジック (維持) */
   function renderFooterImagePx(text, px, color) {
     var scale = 2, w = 1200, h = Math.round(px * 2.4);
     var canvas = document.createElement("canvas"); canvas.width = w * scale; canvas.height = h * scale;
@@ -154,7 +156,7 @@ var injectStyles = function() {
     var lead = getLangText(rawData, 'lead', MODAL_ACTIVE_LANG);
     var bodyText = getLangText(rawData, 'body', MODAL_ACTIVE_LANG);
     
-    // リンク生成ロジックを外部エンジン(lzSearchEngine)から呼び出す
+    // 重要：リンク生成ロジック（lzSearchEngine）を呼び出す
     var linkedBody = window.lzSearchEngine ? window.lzSearchEngine.applyLinks(bodyText, d.id, MODAL_ACTIVE_LANG) : bodyText;
     
     var url = new URL(window.location.href);
@@ -183,12 +185,16 @@ var injectStyles = function() {
       (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
       '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button></div></div>',
       langTabs, '<div>', (gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
-      (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
+      (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), 
+      /* 重要：自動反映用のクラスとIDを付与 */
+      '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
       (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : ''),
       (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
       (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''), '</div>'
     ].join('');
 
+    // リンクへのis-active付与（既存のリンクがある場合用）
+    MODAL.querySelectorAll('.lz-auto-link').forEach(function(l){ l.classList.add('is-active'); });
 
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
@@ -235,22 +241,20 @@ var injectStyles = function() {
         HOST = document.body.appendChild(document.createElement("div")); HOST.className = "lz-backdrop";
         HOST.innerHTML = '<div class="lz-shell"><div class="lz-modal"></div></div>';
         SHELL = HOST.firstChild; MODAL = SHELL.firstChild;
-        MODAL.addEventListener('click', function(e) {
-      var el = e.target.closest('.lz-auto-link');
-      if (!el) return; // リンク以外なら無視
 
-      e.preventDefault();
-      if (el.dataset.gotoId) {
-        // 直接カードを開く
-        var targetCard = document.querySelector('.lz-card[data-id="' + el.dataset.gotoId + '"]');
-        if (targetCard) render(targetCard, MODAL_ACTIVE_LANG);
-      } else if (window.lzSearchEngine) {
-        // 検索リストを開く
-        window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function() {
-          render(CURRENT_CARD, MODAL_ACTIVE_LANG);
+        /* 重要：イベントデリゲーションを統合（書き換えられてもクリックが効く） */
+        MODAL.addEventListener('click', function(e) {
+          var el = e.target.closest('.lz-auto-link');
+          if (!el) return;
+          e.preventDefault();
+          if (el.dataset.gotoId) {
+            render(document.querySelector('.lz-card[data-id="' + el.dataset.gotoId + '"]'), MODAL_ACTIVE_LANG);
+          } else if (window.lzSearchEngine) {
+            window.lzSearchEngine.run(el.dataset.keyword, MODAL_ACTIVE_LANG, MODAL, function() {
+              render(CURRENT_CARD, MODAL_ACTIVE_LANG);
+            });
+          }
         });
-      }
-    });
         
         HOST.onclick = function(e){ if(e.target === HOST) close(); };
         document.addEventListener("keydown", function(e){ if(e.key === "Escape") close(); });
@@ -260,6 +264,8 @@ var injectStyles = function() {
       IDX = CARDS.indexOf(card); render(card, MODAL_ACTIVE_LANG);
     },
     close: close,
+    /* 同期用の再描画機能 */
+    refresh: function() { if(HOST && HOST.classList.contains("open")) render(CURRENT_CARD, MODAL_ACTIVE_LANG); },
     backToCurrent: function() { render(CURRENT_CARD, MODAL_ACTIVE_LANG); }
   };
 })();
