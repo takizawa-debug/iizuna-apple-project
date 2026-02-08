@@ -108,13 +108,11 @@
   /* ==========================================
      3. ヘルパー・HTML構造 (安定版に準拠)
      ========================================== */
-  function getLangLinks() {
+     function getLangLinks() {
     const config = window.LZ_CONFIG.LANG;
     return config.SUPPORTED.map(l => {
-      const url = new URL(window.location.href);
-      url.searchParams.set('lang', l);
-      url.searchParams.delete('jump'); // 言語変更時はジャンプ命令を無効化
-      url.hash = ""; return `<a href="${url.toString()}">${config.LABELS[l]}</a>`;
+      // 🍎 hrefに情報を固定せず、data-langに保持させる
+      return `<a href="#" data-lang="${l}">${config.LABELS[l]}</a>`;
     }).join('');
   }
 
@@ -203,6 +201,22 @@
       const c = document.getElementById(cid), b = c?.querySelector('.'+bc), m = c?.querySelector('.'+mc);
       if(!b || !m) return;
       b.onclick = (e) => { e.stopPropagation(); m.classList.toggle('is-open'); b.classList.toggle('is-active'); };
+
+      // 🍎 追加：メニュー内のリンクがクリックされた瞬間に「今」のURLを取得して遷移
+      m.addEventListener('click', (e) => {
+        const a = e.target.closest('a');
+        if (!a || !a.dataset.lang) return;
+        e.preventDefault();
+        
+        // 🍎 実行時の最新URL（モーダルを閉じて id が消えていれば、消えた状態のもの）を取得
+        const nextUrl = new URL(window.location.href);
+        nextUrl.searchParams.set('lang', a.dataset.lang);
+        nextUrl.searchParams.delete('jump'); // 言語変更時はスクロール予約は消去
+        nextUrl.hash = "";
+        
+        window.location.href = nextUrl.toString();
+      });
+
       document.addEventListener('click', () => { m.classList.remove('is-open'); b.classList.remove('is-active'); });
     };
     setupLang('lzLangPc', 'lz-lang-pc__btn', 'lz-lang-pc__menu');
