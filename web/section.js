@@ -146,7 +146,8 @@
     var loadingLabel = window.LZ_CURRENT_LANG === 'ja' ? '記事読み込み中…' : 'Loading articles...';
 
     root.innerHTML = [
-      '<div class="lz-section">',
+      /* 🍎 重要：検索用キー（l2）を属性として付与し、header.jsが見つけられるようにする */
+      '<div class="lz-section" data-l2="' + C.esc(l2) + '">',
       '  <div class="lz-head"><div class="lz-titlewrap"><h2 class="lz-title">' + C.esc(heading) + '</h2></div></div>',
       '  <div class="lz-groupwrap"><div class="lz-loading"><div class="lz-loading-inner">',
       '    <svg class="lz-logo" viewBox="-60 -60 720 720" aria-hidden="true" style="overflow:visible">',
