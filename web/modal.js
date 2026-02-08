@@ -260,9 +260,14 @@ window.lzModal = (function() {
 
     // リンクへのis-active付与（既存のリンクがある場合用）
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(l){ l.classList.add('is-active'); });
-
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
     
+    // --- 🍎 印刷ボタンの命令を復活 ---
+    var pdfBtnEl = MODAL.querySelector(".lz-pdf");
+    if (pdfBtnEl) {
+      pdfBtnEl.onclick = function() { generatePdf(MODAL, title, d.id); };
+    }
+
     // 共有ボタンのクリックイベント
     MODAL.querySelector(".lz-share").onclick = function() {
       // 「詳しくはこちら」などの文言を辞書から取得
