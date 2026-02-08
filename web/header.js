@@ -157,16 +157,16 @@
      4. ロジック (PC言語クリック、非表示制御など)
      ========================================== */
      function smoothScrollToL2(label) {
-    const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
+    // 🍎 修正：ここでも .lz-ready が付いている「中身入り」の方を探す
+    const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
     if (!target) return;
     
-    // --lz-h-height: 75px に合わせたオフセット設定
     const offset = 75 + 20; 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
     
     window.scrollTo({ top: y, behavior: "smooth" });
 
-    // 🍎 追加：スクロールが終わった頃にURLからハッシュを消去
+    // スクロール完了後にハッシュを消去
     setTimeout(() => {
       if (window.location.hash) {
         history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -284,28 +284,26 @@
     }
   } catch(e) { console.error(e); }
 
-  // ハッシュスクロール（最下部）
+ // ハッシュスクロール（最下部）を修正
   window.addEventListener('load', () => {
     if (window.location.hash) {
-      // 1. URLの#以降を取得し、デコードする
       const hashLabel = decodeURIComponent(window.location.hash.replace('#', ''));
       let attempts = 0;
 
       const checkReady = setInterval(() => {
-        // 2. data-l2 という属性を持つ要素を探す
-        // 注意：HTML側で data-l2="生産者" のように「生データ」が入っている必要があります
-        const target = document.querySelector(`.lz-section[data-l2="${hashLabel}"]`);
+        // 🍎 修正：.lz-ready クラスが付いている要素（中身が入った状態）を探す
+        const target = document.querySelector(`.lz-section[data-l2="${hashLabel}"].lz-ready`);
 
         if (target) {
           clearInterval(checkReady);
-          // 要素が見つかったら、中身が描画されるのを少し待ってジャンプ
+          // 中身が表示されてから少しだけ待ってジャンプ（安定させるため）
           setTimeout(() => {
             smoothScrollToL2(hashLabel);
-          }, 600);
+          }, 300);
         }
 
-        // 30回（約4.5秒）探して見つからなければ終了
-        if (++attempts > 30) clearInterval(checkReady);
+        // 最大100回（15秒）試して見つからなければ終了
+        if (++attempts > 100) clearInterval(checkReady);
       }, 150);
     }
   });
