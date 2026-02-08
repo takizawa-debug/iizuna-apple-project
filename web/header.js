@@ -159,18 +159,19 @@
      function smoothScrollToL2(label) {
     const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
     if (!target) return;
-    const offset = 68 + 20; // ヘッダー高 + 余白
+    
+    // --lz-h-height: 75px に合わせたオフセット設定
+    const offset = 75 + 20; 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
     
     window.scrollTo({ top: y, behavior: "smooth" });
 
-    // 🍎 追加: スクロール後にURLを「ハッシュなし」に書き換える
+    // 🍎 追加：スクロールが終わった頃にURLからハッシュを消去
     setTimeout(() => {
-      const url = new URL(window.location.href);
-      if (url.hash) {
-        history.replaceState(null, "", url.pathname + url.search);
+      if (window.location.hash) {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
       }
-    }, 800); // スクロール完了を待って実行
+    }, 1000);
   }
 
   const config = window.LZ_CONFIG;
@@ -283,15 +284,20 @@
     }
   } catch(e) { console.error(e); }
 
-  // ハッシュスクロール
+  // ハッシュスクロール（最下部）
   window.addEventListener('load', () => {
     if (window.location.hash) {
       const label = decodeURIComponent(window.location.hash.replace('#', ''));
+      let attempts = 0;
       const checkReady = setInterval(() => {
-        const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
-        if (target) { clearInterval(checkReady); setTimeout(() => smoothScrollToL2(label), 400); }
-      }, 100);
-      setTimeout(() => clearInterval(checkReady), 5000);
+        const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
+        // 🍎 修正：.lz-readyを待つが、30回（約4.5秒）試してダメなら強制実行
+        if (target && (target.classList.contains('lz-ready') || attempts > 30)) {
+          clearInterval(checkReady);
+          setTimeout(() => smoothScrollToL2(label), 500);
+        }
+        if (++attempts > 100) clearInterval(checkReady); // 最大15秒で諦める
+      }, 150);
     }
   });
 
