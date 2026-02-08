@@ -157,21 +157,15 @@
      4. ロジック (PC言語クリック、非表示制御など)
      ========================================== */
      function smoothScrollToL2(label) {
-    // 🍎 修正：ここでも .lz-ready が付いている「中身入り」の方を探す
-    const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
+    // 🍎 .lz-ready が付いている（＝高さが確定している）要素を確実に狙う
+    const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`) 
+                || document.querySelector(`[data-l2="${label}"]`); 
     if (!target) return;
     
     const offset = 75 + 20; 
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
     
     window.scrollTo({ top: y, behavior: "smooth" });
-
-    // スクロール完了後にハッシュを消去
-    setTimeout(() => {
-      if (window.location.hash) {
-        history.replaceState(null, "", window.location.pathname + window.location.search);
-      }
-    }, 1000);
   }
 
   const config = window.LZ_CONFIG;
@@ -264,7 +258,8 @@
 
       MENU_ORDER.forEach((l1, i) => {
         const l2Data = map.get(l1) || [];
-        const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}#${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
+        // MENU_ORDER.forEach 内のリンク生成部分
+        const links = l2Data.map(d =>   `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         
         const noContentLabel = window.LZ_CURRENT_LANG === 'ja' ? '（記事なし）' : '(No Articles)';
         const panels = document.querySelectorAll('.lz-h-panel');
@@ -284,25 +279,30 @@
     }
   } catch(e) { console.error(e); }
 
- // ハッシュスクロール（最下部）を修正
+// 🍎 ハッシュの代わりにURLパラメータ (?jump=...) を監視する
   window.addEventListener('load', () => {
-    if (window.location.hash) {
-      const hashLabel = decodeURIComponent(window.location.hash.replace('#', ''));
-      let attempts = 0;
+    const params = new URLSearchParams(window.location.search);
+    const jumpTarget = params.get('jump'); // 例: "生産者" が入る
 
+    if (jumpTarget) {
+      let attempts = 0;
       const checkReady = setInterval(() => {
-        // 🍎 修正：.lz-ready クラスが付いている要素（中身が入った状態）を探す
-        const target = document.querySelector(`.lz-section[data-l2="${hashLabel}"].lz-ready`);
+        // 中身が入ったセクションを探す
+        const target = document.querySelector(`.lz-section[data-l2="${jumpTarget}"].lz-ready`);
 
         if (target) {
           clearInterval(checkReady);
-          // 中身が表示されてから少しだけ待ってジャンプ（安定させるため）
           setTimeout(() => {
-            smoothScrollToL2(hashLabel);
-          }, 300);
+            // スクロール実行
+            smoothScrollToL2(jumpTarget);
+            
+            // 🍎 完了後、URLから jump パラメータを消して綺麗にする
+            const url = new URL(window.location.href);
+            url.searchParams.delete('jump');
+            history.replaceState(null, "", url.pathname + url.search + url.hash);
+          }, 600);
         }
 
-        // 最大100回（15秒）試して見つからなければ終了
         if (++attempts > 100) clearInterval(checkReady);
       }, 150);
     }
