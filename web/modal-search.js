@@ -1,5 +1,5 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (UI完成版 + 右上閉じボタン追加)
+ * modal-search.js - モーダル内広域検索エンジン (UI完成版 + 右上閉じるボタン追加)
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -12,26 +12,23 @@ window.lzSearchEngine = (function() {
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
+      /* ラッパーを相対位置に設定（閉じるボタンの基準） */
       '.lz-s-wrap { padding: 15px 20px !important; position: relative !important; }',
       
-      /* 🆕 右上固定閉じボタンのスタイル */
-      '.lz-s-close-sticky { position: fixed !important; top: 15px !important; right: 15px !important; width: 40px !important; height: 40px !important; background: #fff !important; border-radius: 50% !important; border: 1px solid #eee !important; box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; z-index: 10010 !important; font-size: 24px !important; color: #666 !important; line-height: 1 !important; transition: transform 0.2s ease !important; -webkit-tap-highlight-color: transparent !important; }',
-      '.lz-s-close-sticky:active { transform: scale(0.9) !important; background: #f9f9f9 !important; }',
+      /* 新設：右上の閉じるボタン */
+      '.lz-s-close-top { position: absolute !important; top: 12px !important; right: 12px !important; width: 38px !important; height: 38px !important; background: #f0f0f0 !important; color: #666 !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 28px !important; cursor: pointer !important; z-index: 110 !important; transition: .2s; border: none !important; line-height: 1 !important; padding: 0 !important; }',
+      '.lz-s-close-top:hover { background: #e0e0e0 !important; color: #333 !important; }',
 
-      '.lz-s-title { font-size: 1.7rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; padding-right: 40px !important; }', /* 閉じボタンと被らないよう右余白追加 */
-      
+      '.lz-s-title { font-size: 1.7rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; padding-right: 40px !important; }',
       '.lz-s-item { display:flex; gap:12px; align-items:center; padding:10px; background:#fff; border:1px solid #eee; border-radius:10px; margin-bottom: 8px !important; cursor:pointer; transition:.2s; }',
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-1px); }',
       '.lz-s-name { font-size: 1.3rem; font-weight: 800; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; }',
       '.lz-s-body { font-size: 1.05rem; color: #666; line-height: 1.5; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
       '.lz-s-cat { font-size: 0.95rem; background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; display: inline-block; }',
-      
       '.lz-btn-search-back { margin-top:12px; width:100%; border:2px solid #27ae60 !important; color:#27ae60 !important; background:#fff !important; transition:.2s; font-weight:800; font-size: 1.1rem; padding: 8px 0; cursor: pointer; border-radius: 999px; text-align:center; display:block; }',
-      
       '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
-      
       '.lz-s-loading { padding: 60px 20px; text-align: center; }',
       '.lz-s-logo { width: 90px; height: 90px; margin: 0 auto 15px; display: block; overflow: visible; }',
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
@@ -99,12 +96,8 @@ window.lzSearchEngine = (function() {
         displayWord = window.event.currentTarget.dataset.display;
       }
       
-      // 🆕 閉じボタンHTMLの共通定義
-      var closeBtnHtml = '<div class="lz-s-close-sticky" id="lzSearchCloseBtn" aria-label="Close">&times;</div>';
-
       modalEl.innerHTML = [
         '<div class="lz-s-loading">',
-        closeBtnHtml, // ローディング中も閉じれるように配置
         '  <svg class="lz-s-logo" viewBox="-60 -60 720 720" aria-hidden="true">',
         '    <path class="lz-s-logo-path" pathLength="1000" d="M287.04,32.3c.29.17,1.01.63,1.46,1.55.57,1.19.29,2.29.2,2.57-7.08,18.09-14.18,36.17-21.26,54.26,5.96-.91,14.77-2.45,25.28-5.06,17.98-4.45,22.46-7.44,33.44-9.85,18.59-4.08,33.88-1.67,44.51,0,21.1,3.32,37.42,10.74,47.91,16.6-4.08,8.59-11.1,20.05-23.06,29.99-18.47,15.35-38.46,18.54-52.07,20.7-7.55,1.21-21.61,3.32-39.12.24-13.71-2.41-11-4.76-30.72-9.36-6.73-1.56-12.82-2.64-17.98-7.87-3.73-3.77-4.92-7.63-6.74-7.3-2.44.43-1.84,7.58-4.5,16.85-.98,3.46-5.56,19.45-14.05,21.35-5.5,1.23-9.85-4.07-17.02-9.79-17.52-13.96-36.26-17.94-45.91-19.99-7.62-1.62-25.33-5.16-45.19,1.36-6.6,2.17-19.57,7.82-35.2,23.74-48.04,48.93-49.39,127.17-49.69,143.97-.08,5-.47,48.18,16.56,90.06,6.63,16.3,14.21,28.27,24.85,38.3,4.2,3.97,12.19,11.37,24.85,16.56,13.72,5.63,26.8,6.15,31.06,6.21,8.06.12,9.06-1.03,14.49,0,10.22,1.95,13.47,7.33,22.77,12.42,10.16,5.56,19.45,6.3,30.02,7.25,8.15.73,18.56,1.67,31.15-1.99,9.83-2.85,16.44-7.18,25.24-12.93,2.47-1.61,9.94-6.61,20.55-16.18,12.76-11.51,21.35-21.79,25.53-26.87,26.39-32.12,39.71-48.12,50.73-71.43,12.87-27.23,17.2-49.56,18.63-57.97,3.23-18.95,5.82-35.27,0-54.87-2.24-7.54-6.98-23.94-21.74-37.27-5.26-4.76-12.9-11.66-24.85-13.46-17.04-2.58-30.24,7.19-33.13,9.32-9.71,7.17-13.91,16.56-21.93,35.04-1.81,4.19-8.26,19.38-14.31,43.63-2.82,11.32-6.43,25.97-8.28,45.55-1.47,15.61-3.27,34.6,1.04,59.01,4.92,27.9,15.01,47.01,17.6,51.76,5.58,10.26,12.02,21.83,24.85,33.13,6.45,5.69,17.55,15.24,35.2,19.77,19.17,4.92,34.7.98,38.3,0,14.29-3.9,24.02-11.27,28.99-15.63"></path>',
         '  </svg>',
@@ -112,10 +105,6 @@ window.lzSearchEngine = (function() {
         '</div>'
       ].join('');
       
-      // ローディング画面の閉じボタンにもイベント設定
-      var loadClose = modalEl.querySelector('#lzSearchCloseBtn');
-      if(loadClose) loadClose.onclick = backFunc;
-
       try {
         var endpoint = window.LZ_CONFIG.SEARCH_ENDPOINT + "?q=" + encodeURIComponent(keyword) + "&limit=50";
         var res = await fetch(endpoint);
@@ -131,9 +120,11 @@ window.lzSearchEngine = (function() {
 
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
         
-        // 🆕 検索結果画面の構築
+        /* ここからHTML生成。
+           lz-s-wrapの中に「×」ボタン（lz-s-close-top）を追加。
+        */
         var html = '<div class="lz-s-wrap">';
-        html += closeBtnHtml; // 右上固定閉じボタンを追加
+        html += '<button class="lz-s-close-top" title="Close">&times;</button>';
         html += '<div class="lz-s-title">' + resTitle + '</div>';
         
         if(results.length === 0) {
@@ -165,11 +156,15 @@ window.lzSearchEngine = (function() {
         }
         
         html += '<button class="lz-btn lz-btn-search-back">' + getMsg('back_to_article', targetLang) + '</button></div>';
-        modalEl.innerHTML = html;
         
-        // 🆕 各種イベントの紐付け
-        modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
-        modalEl.querySelector('#lzSearchCloseBtn').onclick = backFunc; // 右上ボタン
+        modalEl.innerHTML = html;
+
+        // イベント設定：右上の「×」ボタンと下部の「戻る」ボタン両方に backFunc を紐付け
+        var closeBtnTop = modalEl.querySelector('.lz-s-close-top');
+        if(closeBtnTop) closeBtnTop.onclick = backFunc;
+
+        var backBtnBottom = modalEl.querySelector('.lz-btn-search-back');
+        if(backBtnBottom) backBtnBottom.onclick = backFunc;
         
         modalEl.querySelectorAll('.lz-s-item').forEach(function(item) {
           item.onclick = function() {
