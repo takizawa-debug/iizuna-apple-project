@@ -82,7 +82,8 @@ window.LZ_CONFIG = {
         "search_res_title": "「{0}」に関連する情報",
         "back_to_article": "← 記事に戻る",
         "searching": "検索しています...",
-        "not_found": "見つかりませんでした"
+        "not_found": "見つかりませんでした",
+        "hashtags": "#いいづなりんご #飯綱町"
       },
       en: {
         "知る": "Discover", "味わう": "Savor", "体験する": "Experience", "暮らす": "Lifestyle", "営む": "Business",
@@ -118,7 +119,8 @@ window.LZ_CONFIG = {
         "search_res_title": "Information related to \"{0}\"",
         "back_to_article": "← Back to Article",
         "searching": "Searching...",
-        "not_found": "No results found."
+        "not_found": "No results found.",
+        "hashtags": "#IizunaApples #IizunaTown #NaganoJapan"
       },
       zh: {
         "知る": "探索", "味わう": "品味", "体験する": "體驗", "暮らす": "生活", "営む": "經營",
@@ -154,7 +156,8 @@ window.LZ_CONFIG = {
         "search_res_title": "与“{0}”相关的信息",
         "back_to_article": "← 返回文章",
         "searching": "正在搜索...",
-        "not_found": "未找到相关内容"
+        "not_found": "未找到相关内容",
+        "hashtags": "#飯綱蘋果 #飯綱町 #長野旅遊"
       }
     }
   }

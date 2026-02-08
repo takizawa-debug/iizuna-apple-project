@@ -262,11 +262,39 @@ window.lzModal = (function() {
     MODAL.querySelectorAll('.lz-auto-link').forEach(function(l){ l.classList.add('is-active'); });
 
     MODAL.querySelectorAll('.lz-m-lang-btn').forEach(function(btn){ btn.onclick = function(){ render(card, btn.dataset.lang); }; });
-    var pdfBtnEl = MODAL.querySelector(".lz-pdf"); if(pdfBtnEl) { pdfBtnEl.onclick = function(){ generatePdf(MODAL, title, d.id); }; }
+    
+    // 共有ボタンのクリックイベント
     MODAL.querySelector(".lz-share").onclick = function() {
-      var payload = C.RED_APPLE + title + C.GREEN_APPLE + "\n" + (lead || "") + "\n" + window.location.href;
-      if(navigator.share) navigator.share({ text: payload }); else { var ta=document.createElement("textarea"); ta.value=payload; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); alert(getTranslation("共有テキストをコピーしました！", MODAL_ACTIVE_LANG)); }
+      // 「詳しくはこちら」などの文言を辞書から取得
+      var detailsLabel = getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG);
+      var hashtags = getTranslation('hashtags', MODAL_ACTIVE_LANG);
+      
+      // 送信テキストの組み立て
+      var payload = [
+        C.RED_APPLE + title + C.GREEN_APPLE,   // 🍎タイトル🍏
+        (lead ? lead : ""),                    // リード文（あれば）
+        "ーーー",                               // 区切り線
+        detailsLabel,                          // 詳しくはこちら
+        window.location.href,                  // 現在のページのURL（ID付き）
+        "",                                    // 改行用空行
+        hashtags                 // ハッシュタグ
+      ].join("\n"); // 各要素を改行でつなぐ
+
+      if(navigator.share) {
+        // スマホなどの標準共有機能を使用
+        navigator.share({ text: payload });
+      } else {
+        // PCなどで共有機能がない場合はクリップボードにコピー
+        var ta = document.createElement("textarea");
+        ta.value = payload;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        alert(getTranslation("共有テキストをコピーしました！", MODAL_ACTIVE_LANG));
+      }
     };
+
     var mainImg = MODAL.querySelector("#lz-mainimg"); var thumbs = MODAL.querySelector(".lz-g");
     if(thumbs && mainImg) {
       thumbs.onclick = function(e) {
