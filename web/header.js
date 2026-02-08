@@ -1,6 +1,5 @@
 /**
- * header.js - ナビゲーション・コンポーネント (最終安定版: 2026 Edition)
- * 役割: サイト全体のヘッダー生成、多言語リンク、?jump=による確実なアンカー移動を制御
+ * header.js - ナビゲーション・コンポーネント (多言語完全対応版)
  */
 (async function headerNavBoot(){
   "use strict";
@@ -9,7 +8,7 @@
   if (!C) return;
 
   /* ==========================================
-     1. CSSの注入
+     1. CSSの注入 (既存のスタイルを維持しつつ調整)
      ========================================== */
   const cssText = `
     :root { --lz-h-max: 1100px; --lz-h-height: 75px; --lz-h-red: #cf3a3a; }
@@ -38,7 +37,7 @@
     
     .lz-h-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2vw, 16px) !important; flex-shrink: 0 !important; }
 
-    /* PCナビ・ドロップダウンパネル */
+    /* PCナビ */
     .lz-h-nav { display: none; }
     @media (min-width: 1024px) { .lz-h-nav { display: block !important; } }
     .lz-h-nav__list { display: flex !important; align-items: center !important; gap: 20px !important; margin: 0 !important; padding: 0 !important; list-style: none !important; }
@@ -56,12 +55,12 @@
     /* 言語セレクター */
     .lz-lang-pc { position: relative !important; display: none; height: var(--lz-h-height); align-items: center; }
     @media (min-width: 1024px) { .lz-lang-pc { display: flex !important; } }
-    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 44px !important; padding: 0 20px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer; font-weight: 600; font-size: 1.1rem; }
+    .lz-lang-pc__btn { display: inline-flex !important; align-items: center !important; gap: 6px !important; height: 44px !important; padding: 0 14px !important; border: 1px solid rgba(255, 255, 255, .6) !important; background: transparent !important; color: #fff !important; border-radius: 18px !important; cursor: pointer; font-weight: 600; font-size: 1.1rem; padding: 0 20px !important;}
     .lz-lang-pc__btn::after { content: ""; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 4px solid #fff; transition: 0.3s; }
     .lz-lang-pc__btn.is-active::after { transform: rotate(180deg); }
     .lz-lang-pc__menu { position: absolute !important; right: 0 !important; top: 100% !important; margin-top: 8px; background: #fff !important; border-radius: 16px !important; padding: 8px !important; display: none; min-width: 150px !important; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,.15); z-index: 10002; }
     .lz-lang-pc__menu.is-open { display: flex !important; }
-    .lz-lang-pc__menu a { display: block !important; padding: 14px 20px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; transition: 0.2s; font-size: 1.15rem !important; }
+    .lz-lang-pc__menu a { display: block !important; padding: 10px 14px !important; color: #333 !important; text-decoration: none !important; border-radius: 10px !important; font-weight: 600; transition: 0.2s; font-size: 1.15rem !important; padding: 14px 20px !important; }
     .lz-lang-pc__menu a:hover { background: #fff5f5; color: var(--lz-h-red); }
 
     .lz-lang-mob { position: relative !important; display: flex !important; }
@@ -71,7 +70,7 @@
     .lz-lang-mob__menu.is-open { display: flex !important; }
     .lz-lang-mob__menu a { display: block !important; padding: 12px 14px !important; color: #333 !important; text-decoration: none !important; font-size: 1.0rem !important; font-weight: 600; border-radius: 8px; }
 
-    /* モバイルドロワー */
+    /* ハンバーガー */
     .lz-h-hamb { display: flex !important; width: 36px !important; height: 36px !important; border: 1px solid rgba(255,255,255,.6) !important; background: none; border-radius: 8px !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 4px !important; cursor: pointer; }
     @media (min-width: 1024px) { .lz-h-hamb { display: none !important; } }
     .lz-h-hamb__bar { width: 20px !important; height: 2px !important; background: #fff !important; border-radius: 2px !important; }
@@ -93,38 +92,24 @@
   document.head.appendChild(styleTag);
 
   /* ==========================================
-     2. ヘルパー関数群
+     2. 言語切り替えリンク生成ヘルパー
      ========================================== */
-  
-  // 🍎 言語切り替えリンク生成 (ハッシュを確実にクリアしてエラーを防止)
   function getLangLinks() {
     const config = window.LZ_CONFIG.LANG;
     return config.SUPPORTED.map(l => {
       const url = new URL(window.location.href);
       url.searchParams.set('lang', l);
-      url.hash = ""; // 👈 エラーの元になる日本語ハッシュを除去
       return `<a href="${url.toString()}">${config.LABELS[l]}</a>`;
     }).join('');
   }
 
-  // 🍎 精密スクロール実行 (オフセット調整版)
-  function smoothScrollToL2(label) {
-    // 記事読み込み済み(lz-ready)を優先して探し、なければ土台を探す
-    const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`) 
-                || document.querySelector(`.lz-container[data-l2="${label}"]`);
-    if (!target) return;
-
-    const offset = 75 + 20; 
-    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
-    window.scrollTo({ top: y, behavior: "smooth" });
-  }
-
 /* ==========================================
-     3. HTML構造の注入
+     3. HTML構造の注入 (多言語・タイトル最適化版)
      ========================================== */
   const langLabelMob = window.LZ_CURRENT_LANG === 'ja' ? '日' : (window.LZ_CURRENT_LANG === 'en' ? 'EN' : '中');
   const langLabelPc = window.LZ_CONFIG.LANG.LABELS[window.LZ_CURRENT_LANG];
 
+  // タイトルとサブタイトルの多言語定義
   const brandTitle = {
     ja: { t1: '飯綱町産りんごポータルサイト', t2: 'りんごのまちいいづな' },
     en: { t1: 'Iizuna Apple Portal Site', t2: 'Appletown Iizuna' },
@@ -169,8 +154,17 @@
   document.body.insertAdjacentHTML('afterbegin', headerHTML);
 
   /* ==========================================
-     4. UIイベント制御
+     4. ロジック (PC言語クリック、非表示制御など)
      ========================================== */
+  function smoothScrollToL2(label) {
+    // データ属性検索は内部キー(日本語)で行う
+    const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
+    if (!target) return;
+    const offset = 68 + 20;
+    const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  }
+
   const config = window.LZ_CONFIG;
   const { ENDPOINT, MENU_ORDER, MENU_URL } = config;
 
@@ -178,8 +172,10 @@
     const ul = document.getElementById('lzNavList'), dw = document.getElementById('lzDwNav');
     const loadLabel = window.LZ_CURRENT_LANG === 'ja' ? '読み込み中...' : 'Loading...';
     
+    // UI文言の翻訳を適用 (C.Tを使用)
     if(ul) ul.innerHTML = MENU_ORDER.map(l1 => {
-      return `<li class="lz-h-nav__item"><a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}" class="lz-h-nav__l1">${C.T(l1)}</a><div class="lz-h-panel"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></li>`;
+      const translatedL1 = C.T(l1);
+      return `<li class="lz-h-nav__item"><a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}" class="lz-h-nav__l1">${translatedL1}</a><div class="lz-h-panel"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div></li>`;
     }).join('');
 
     if(dw) dw.innerHTML = MENU_ORDER.map(l1 => `
@@ -191,19 +187,17 @@
         <div class="lz-h-dw-l2-area"><div style="padding:20px;text-align:center;color:#bbb;">${loadLabel}</div></div>
       </div>`).join('');
     
-    // ヘッダーのふわっと表示
     const hdr = document.getElementById('lzHdr');
-    const showHeader = () => { hdr.classList.add('is-visible'); window.removeEventListener('scroll', showHeader); };
+    const showHeader = () => { hdr.classList.add('is-visible'); window.removeEventListener('scroll', showHeader); clearTimeout(safeTimer); };
+    const safeTimer = setTimeout(showHeader, 2000);
     window.addEventListener('scroll', showHeader);
     if (window.scrollY > 20) showHeader();
-    setTimeout(showHeader, 2000);
   }
 
   function setupEvents(){
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.style.display = 'none'; };
 
-    // PCドロップダウン
     let closeTimer;
     const items = document.querySelectorAll('.lz-h-nav__item');
     items.forEach(item => {
@@ -212,19 +206,16 @@
       item.onmouseleave = () => { closeTimer = setTimeout(() => panel.classList.remove('is-open'), 300); };
     });
 
-    // 🍎 アンカーリンクイベント (ハッシュエラーを回避し、?jump= を活用)
+    // アンカーリンクイベント
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a');
-      if (!a) return;
-      
+      if (!a || !a.hash) return;
       const url = new URL(a.href);
-      const jumpKey = url.searchParams.get('jump');
-      
-      // 同じページ内へのジャンプ指示であれば、URL遷移させずにスクロール
-      if (url.pathname === window.location.pathname && jumpKey) {
-        e.preventDefault();
-        smoothScrollToL2(jumpKey);
-        closeDrawer();
+      if (url.pathname === window.location.pathname) {
+        const label = decodeURIComponent(a.hash.replace('#', ''));
+        // 内部キー(日本語)で検索
+        const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
+        if (target) { e.preventDefault(); smoothScrollToL2(label); closeDrawer(); }
       }
     });
 
@@ -246,7 +237,7 @@
   renderSkeleton(); setupEvents();
 
   /* ==========================================
-     5. L2データの動的取得 ＆ ?jump= 監視
+     5. L2データの動的取得と翻訳適用
      ========================================== */
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
@@ -255,55 +246,43 @@
       const map = new Map();
       json.items.forEach(it => { 
         if(!map.has(it.l1)) map.set(it.l1, []); 
+        // L = Localize Content 関数を使用して表示用のL2名を取得
+        const localizedL2 = C.L(it, 'l2');
         const exists = map.get(it.l1).some(x => x.key === it.l2);
-        if(!exists) map.get(it.l1).push({ key: it.l2, label: C.L(it, 'l2') }); 
+        if(!exists) map.get(it.l1).push({ key: it.l2, label: localizedL2 }); 
       });
 
       MENU_ORDER.forEach((l1, i) => {
         const l2Data = map.get(l1) || [];
-        // 🍎 修正: # ではなく ?jump= パラメータを付与 (jQueryエラー回避)
-        const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
+        const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}#${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         
+        const noContentLabel = window.LZ_CURRENT_LANG === 'ja' ? '（記事なし）' : '(No Articles)';
         const panels = document.querySelectorAll('.lz-h-panel');
-        if(panels[i]) panels[i].innerHTML = links || '<div style="padding:10px;text-align:center;color:#999;">(No Articles)</div>';
+        if(panels[i]) panels[i].innerHTML = links || `<div style="padding:10px;text-align:center;color:#999;">${noContentLabel}</div>`;
         
         const dwGroups = document.querySelectorAll('.lz-h-dw-group');
         if(dwGroups[i]) {
           const area = dwGroups[i].querySelector('.lz-h-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-h-dw-arrow'), link = dwGroups[i].querySelector('.lz-h-dw-l1a');
           if(l2Data.length > 0) {
             area.innerHTML = links;
-            arrow.onclick = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); arrow.style.transform = dwGroups[i].classList.contains('is-active') ? 'rotate(180deg)' : 'rotate(0)'; };
-          } else { if(arrow) arrow.style.display='none'; }
-          link.onclick = (e) => { closeDrawer(); };
+            const t = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); arrow.style.transform = dwGroups[i].classList.contains('is-active') ? 'rotate(180deg)' : 'rotate(0)'; };
+            arrow.onclick = t; 
+            link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) t(e); else closeDrawer(); };
+          } else { area.innerHTML = ''; if(arrow) arrow.style.display='none'; link.onclick=closeDrawer; }
         }
       });
     }
   } catch(e) { console.error(e); }
 
-  // 🍎 パラメータ監視ロジック (ページ遷移後のジャンプ制御)
+  // ハッシュスクロール
   window.addEventListener('load', () => {
-    const params = new URLSearchParams(window.location.search);
-    const jumpTarget = params.get('jump');
-
-    if (jumpTarget) {
-      let attempts = 0;
+    if (window.location.hash) {
+      const label = decodeURIComponent(window.location.hash.replace('#', ''));
       const checkReady = setInterval(() => {
-        // 記事が入り、高さが確定した(lz-ready)要素が現れるまで待つ
-        const target = document.querySelector(`.lz-section[data-l2="${jumpTarget}"].lz-ready`);
-
-        if (target) {
-          clearInterval(checkReady);
-          setTimeout(() => {
-            smoothScrollToL2(jumpTarget);
-            // 完了後、URLをきれいに掃除
-            const cleanUrl = new URL(window.location.href);
-            cleanUrl.searchParams.delete('jump');
-            history.replaceState(null, "", cleanUrl.pathname + cleanUrl.search);
-          }, 600);
-        }
-
-        if (++attempts > 80) clearInterval(checkReady); // 最大12秒
-      }, 150);
+        const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
+        if (target) { clearInterval(checkReady); setTimeout(() => smoothScrollToL2(label), 400); }
+      }, 100);
+      setTimeout(() => clearInterval(checkReady), 5000);
     }
   });
 
