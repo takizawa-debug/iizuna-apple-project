@@ -270,14 +270,19 @@ window.lzModal = (function() {
 
     // 共有ボタンのクリックイベント
     MODAL.querySelector(".lz-share").onclick = function() {
-      // 「詳しくはこちら」などの文言を辞書から取得
+      
+      // 1. 表示中の言語に合わせて、データからテキストを直接引く
+      var shareTitle = getLangText(rawData, 'title', MODAL_ACTIVE_LANG);
+      var shareLead  = getLangText(rawData, 'lead', MODAL_ACTIVE_LANG);
+
+        // 「詳しくはこちら」などの文言を辞書から取得
       var detailsLabel = getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG);
       var hashtags = getTranslation('hashtags', MODAL_ACTIVE_LANG);
       
       // 送信テキストの組み立て
       var payload = [
-        C.RED_APPLE + title + C.GREEN_APPLE,   // 🍎タイトル🍏
-        (lead ? lead : ""),                    // リード文（あれば）
+        C.RED_APPLE + shareTitle + C.GREEN_APPLE, // 🍎タイトル🍏
+        (shareLead ? shareLead : ""),             // リード文
         "ーーー",                               // 区切り線
         detailsLabel,                          // 詳しくはこちら
         window.location.href,                  // 現在のページのURL（ID付き）
