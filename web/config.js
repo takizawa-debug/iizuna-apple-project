@@ -24,8 +24,8 @@ window.LZ_CONFIG = {
     "知る":"https://appletown-iizuna.com/discover",
     "味わう":"https://appletown-iizuna.com/savor",
     "体験する":"https://appletown-iizuna.com/experience",
-    "働く・住む":"https://appletown-iizuna.com/lifestyle",
-    "販売・発信する":"https://appletown-iizuna.com/business"
+    "暮らす":"https://appletown-iizuna.com/lifestyle",
+    "営む":"https://appletown-iizuna.com/business"
   },
 
   // ⑤ フッター用設定
