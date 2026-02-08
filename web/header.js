@@ -246,21 +246,39 @@
   setupEvents();
 
   const hdr = document.getElementById('lzHdr');
-  // 表示実行関数
   const showHeader = () => {
     if (hdr && !hdr.classList.contains('is-visible')) {
       hdr.classList.add('is-visible');
-      // 1度表示したらイベントとタイマーを解除
       window.removeEventListener('scroll', showHeader);
-      clearTimeout(fallbackTimer);
+      if (window._lzHeaderFallback) clearTimeout(window._lzHeaderFallback);
     }
   };
 
-  // 1. スクロールを検知したら即座に表示
-  window.addEventListener('scroll', showHeader, { passive: true });
+  // 🍎 シールド解除を待ってから監視を開始するロジック
+  const startHeaderLogic = () => {
+    // 1. すでにスクロールされている（ジャンプ後など）場合は即表示
+    if (window.scrollY > 10) {
+      showHeader();
+      return;
+    }
+    // 2. スクロールを検知したら表示
+    window.addEventListener('scroll', showHeader, { passive: true });
+    // 3. スクロールしなかった場合のフォールバック（1秒待って表示）
+    window._lzHeaderFallback = setTimeout(showHeader, 1000);
+  };
 
-  // 2. スクロールしなかった場合のフォールバック (従来通り500ms後に表示)
-  const fallbackTimer = setTimeout(showHeader, 500);
+  // <html>クラスの変化を監視して、シールドが消えた瞬間に起動
+  if (!document.documentElement.classList.contains('lz-loading-lock')) {
+    startHeaderLogic();
+  } else {
+    const observer = new MutationObserver(() => {
+      if (!document.documentElement.classList.contains('lz-loading-lock')) {
+        startHeaderLogic();
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
 
   /* ==========================================
      6. 【整合性・最速ジャンプ・ロック解除】 🍎
