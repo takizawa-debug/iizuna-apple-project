@@ -270,37 +270,31 @@ window.lzModal = (function() {
 
     // 共有ボタンのクリックイベント
     MODAL.querySelector(".lz-share").onclick = function() {
-      
-      // 1. 表示中の言語に合わせて、データからテキストを直接引く
-      var shareTitle = getLangText(rawData, 'title', MODAL_ACTIVE_LANG);
-      var shareLead  = getLangText(rawData, 'lead', MODAL_ACTIVE_LANG);
-
-        // 「詳しくはこちら」などの文言を辞書から取得
+      // 1. すでに冒頭で翻訳済みの title と lead をそのまま使います（再取得しない）
+      // 2. 辞書からはラベルとハッシュタグだけ取得
       var detailsLabel = getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG);
-      var hashtags = getTranslation('hashtags', MODAL_ACTIVE_LANG);
+      var hashtags     = getTranslation('hashtags', MODAL_ACTIVE_LANG);
       
-      // 送信テキストの組み立て
-      var payload = [
-        C.RED_APPLE + shareTitle + C.GREEN_APPLE, // 🍎タイトル🍏
-        (shareLead ? shareLead : ""),             // リード文
-        "ーーー",                               // 区切り線
-        detailsLabel,                          // 詳しくはこちら
-        window.location.href,                  // 現在のページのURL（ID付き）
-        "",                                    // 改行用空行
-        hashtags                 // ハッシュタグ
-      ].join("\n"); // 各要素を改行でつなぐ
+      // 3. 送信テキストの組み立て
+      var parts = [
+        window.LZ_COMMON.RED_APPLE + title + window.LZ_COMMON.GREEN_APPLE, // 翻訳済みタイトル
+        lead,                                                               // 翻訳済みリード文
+        "ーーー",                                                           // 区切り線
+        detailsLabel,                                                       // 言語別ラベル
+        window.location.href,                                               // ID・言語付きURL
+        "",                                                                 // 改行
+        hashtags                                                            // 言語別タグ
+      ];
+
+      // 空の要素（リード文がない場合など）を掃除して改行で結合
+      var payload = parts.filter(function(v) { return v && String(v).trim() !== ""; }).join("\n");
 
       if(navigator.share) {
-        // スマホなどの標準共有機能を使用
         navigator.share({ text: payload });
       } else {
-        // PCなどで共有機能がない場合はクリップボードにコピー
         var ta = document.createElement("textarea");
-        ta.value = payload;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
+        ta.value = payload; document.body.appendChild(ta); ta.select();
+        document.execCommand("copy"); document.body.removeChild(ta);
         alert(getTranslation("共有テキストをコピーしました！", MODAL_ACTIVE_LANG));
       }
     };
