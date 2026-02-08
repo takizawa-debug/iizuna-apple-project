@@ -1,5 +1,7 @@
 /**
- * modal-search.js - モーダル内広域検索エンジン (UI完成版 + 右上閉じるボタン追加)
+ * modal-search.js - モーダル内広域検索エンジン (UI完成版)
+ * 役割: 検索中のリンゴ線画アニメーションを実装。余白を詰め、リストの密集度を向上。
+ * 修正: 右上に固定の「×」ボタンを追加。
  */
 window.lzSearchEngine = (function() {
   "use strict";
@@ -12,14 +14,34 @@ window.lzSearchEngine = (function() {
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
     style.textContent = [
-      /* ラッパーを相対位置に設定（閉じるボタンの基準） */
       '.lz-s-wrap { padding: 15px 20px !important; position: relative !important; }',
       
-      /* 新設：右上の閉じるボタン */
-      '.lz-s-close-top { position: absolute !important; top: 12px !important; right: 12px !important; width: 38px !important; height: 38px !important; background: #f0f0f0 !important; color: #666 !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; font-size: 28px !important; cursor: pointer !important; z-index: 110 !important; transition: .2s; border: none !important; line-height: 1 !important; padding: 0 !important; }',
-      '.lz-s-close-top:hover { background: #e0e0e0 !important; color: #333 !important; }',
+      /* 🍎 追加：右上に固定される閉じるボタン */
+      '.lz-s-close-sticky { ' +
+        'position: sticky !important; ' +
+        'top: 0 !important; ' +
+        'float: right !important; ' +
+        'z-index: 100 !important; ' +
+        'width: 38px !important; ' +
+        'height: 38px !important; ' +
+        'margin-top: -5px !important; ' +
+        'margin-right: -10px !important; ' +
+        'background: rgba(255, 255, 255, 0.9) !important; ' +
+        'border: 1px solid #ddd !important; ' +
+        'border-radius: 50% !important; ' +
+        'display: flex !important; ' +
+        'align-items: center !important; ' +
+        'justify-content: center !important; ' +
+        'font-size: 26px !important; ' +
+        'color: #666 !important; ' +
+        'cursor: pointer !important; ' +
+        'box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; ' +
+        'transition: .2s !important; ' +
+        'line-height: 1 !important; ' +
+      '}',
+      '.lz-s-close-sticky:hover { background: #fff !important; color: #cf3a3a !important; border-color: #cf3a3a !important; }',
 
-      '.lz-s-title { font-size: 1.7rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; padding-right: 40px !important; }',
+      '.lz-s-title { font-size: 1.7rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; }',
       '.lz-s-item { display:flex; gap:12px; align-items:center; padding:10px; background:#fff; border:1px solid #eee; border-radius:10px; margin-bottom: 8px !important; cursor:pointer; transition:.2s; }',
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-1px); }',
       '.lz-s-name { font-size: 1.3rem; font-weight: 800; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; }',
@@ -120,11 +142,9 @@ window.lzSearchEngine = (function() {
 
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
         
-        /* ここからHTML生成。
-           lz-s-wrapの中に「×」ボタン（lz-s-close-top）を追加。
-        */
+        /* 🍎 修正ポイント: 閉じるボタン (lz-s-close-sticky) を追加 */
         var html = '<div class="lz-s-wrap">';
-        html += '<button class="lz-s-close-top" title="Close">&times;</button>';
+        html += '<div class="lz-s-close-sticky" id="lzSearchStickyClose">&times;</div>';
         html += '<div class="lz-s-title">' + resTitle + '</div>';
         
         if(results.length === 0) {
@@ -156,15 +176,11 @@ window.lzSearchEngine = (function() {
         }
         
         html += '<button class="lz-btn lz-btn-search-back">' + getMsg('back_to_article', targetLang) + '</button></div>';
-        
         modalEl.innerHTML = html;
 
-        // イベント設定：右上の「×」ボタンと下部の「戻る」ボタン両方に backFunc を紐付け
-        var closeBtnTop = modalEl.querySelector('.lz-s-close-top');
-        if(closeBtnTop) closeBtnTop.onclick = backFunc;
-
-        var backBtnBottom = modalEl.querySelector('.lz-btn-search-back');
-        if(backBtnBottom) backBtnBottom.onclick = backFunc;
+        /* 🍎 修正ポイント: 2つのボタンにバック機能をアサイン */
+        modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
+        modalEl.querySelector('#lzSearchStickyClose').onclick = backFunc;
         
         modalEl.querySelectorAll('.lz-s-item').forEach(function(item) {
           item.onclick = function() {
