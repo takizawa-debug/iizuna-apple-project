@@ -177,6 +177,8 @@ window.lzModal = (function() {
       {k:'eventDate', l:getTranslation('開催日', MODAL_ACTIVE_LANG)},
       {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)},
       {k:'target', l:getTranslation('対象', MODAL_ACTIVE_LANG)},
+      {k:'bring', l:getTranslation('もちもの', MODAL_ACTIVE_LANG)}, // GAS: BRING
+      {k:'venueNote', l:getTranslation('会場注意事項', MODAL_ACTIVE_LANG)}, // GAS: VENUE_NOTE
       {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
     ];
     for(var i=0; i<fields.length; i++) if(d[fields[i].k] && d[fields[i].k].trim() !== "") rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(d[fields[i].k]) + '</td></tr>');
@@ -185,13 +187,28 @@ window.lzModal = (function() {
     var addSns = function(url, key) { if(url && url.trim() !== "") snsHtml.push('<a data-sns="'+key+'" href="'+C.esc(url)+'" target="_blank">'+ICON[key]+'</a>'); };
     addSns(d.home, "web"); addSns(d.ec, "ec"); addSns(sns.instagram, "ig"); addSns(sns.facebook, "fb");
 
-    // --- 追加：関連記事の組み立て ---
+    // --- リンク(SNS+HP+EC)の統合組み立て ---
+    var snsLinksHtml = [];
+    var addLink = function(url, iconKey) { if(url && url.trim() !== "") snsLinksHtml.push('<a data-sns="'+iconKey+'" href="'+C.esc(url)+'" target="_blank">'+ICON[iconKey]+'</a>'); };
+    
+    addLink(rawData.home, "web"); // HP
+    addLink(rawData.ec, "ec");     // EC
+    if(rawData.sns) {
+      addLink(rawData.sns.instagram, "ig");
+      addLink(rawData.sns.facebook, "fb");
+      addLink(rawData.sns.x, "x");
+      addLink(rawData.sns.line, "line");
+      addLink(rawData.sns.tiktok, "tt");
+    }
+
+    // --- 関連記事の組み立て (最大2つ) ---
     var relHtml = "";
     if (rawData.relatedArticles && rawData.relatedArticles.length > 0) {
-      relHtml = '<div style="padding:15px; border-top:1px solid #eee;"><h3 style="font-size:1.2rem; color:#a82626; margin-bottom:10px;">' + getTranslation('関連記事', MODAL_ACTIVE_LANG) + '</h3><div style="display:grid; gap:8px;">' + 
+      relHtml = '<div style="padding:15px; border-top:1px solid #eee;"><h3 style="font-size:1.1rem; color:#a82626; margin-bottom:10px;">' + getTranslation('関連記事', MODAL_ACTIVE_LANG) + '</h3><div style="display:grid; gap:8px;">' + 
         rawData.relatedArticles.map(function(ra){
           if(!ra.url) return "";
-          return '<a href="'+C.esc(ra.url)+'" target="_blank" style="display:block; padding:12px; background:#f9f9f9; border-radius:10px; color:#cf3a3a; text-decoration:none; font-weight:700; border:1px solid #eee; font-size:1.2rem;">🔗 '+C.esc(ra.title || ra.url)+'</a>';
+          var displayTitle = ra.title || ra.url; 
+          return '<a href="'+C.esc(ra.url)+'" target="_blank" style="display:block; padding:12px; background:#f9f9f9; border-radius:10px; color:#cf3a3a; text-decoration:none; font-weight:700; border:1px solid #eee; font-size:1.1rem;">🔗 '+C.esc(displayTitle)+'</a>';
         }).join('') + '</div></div>';
     }
 
@@ -206,17 +223,21 @@ window.lzModal = (function() {
       }).join('') + '</div>';
 
     MODAL.innerHTML = [
-      '<div class="lz-mh"><h2 class="lz-mt">' + C.esc(title) + '</h2><div class="lz-actions"><button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">' + getTranslation('共有', MODAL_ACTIVE_LANG) + '</span></button>',
-      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
+      '<div class="lz-mh"><h2 class="lz-mt">' + C.esc(title) + '</h2><div class="lz-actions">',
+      '<button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">' + getTranslation('共有', MODAL_ACTIVE_LANG) + '</span></button>',
+      (rawData.downloadUrl ? '<button class="lz-btn" onclick="window.open(\''+C.esc(rawData.downloadUrl)+'\',\'_blank\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">' + getTranslation('保存', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
+      (window.innerWidth >= 769 ? '<button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
       '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button></div></div>',
       langTabs, '<div>', (gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
       (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), 
       '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
-      extraBtnsHtml, // 🍎 申し込み・DLボタンを表示
+      /* --- 問い合わせ(form)ボタンの配置 --- */
+      (rawData.form ? '<div style="padding:0 15px 15px;"><a href="'+C.esc(rawData.form)+'" target="_blank" class="lz-btn" style="background:#cf3a3a; color:#fff; width:100%; box-sizing:border-box;">' + getTranslation('申し込み方法', MODAL_ACTIVE_LANG) + '</a></div>' : ''),
       (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : ''),
       (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
-      (snsHtml.length ? '  <div class="lz-sns">' + snsHtml.join('') + '</div>' : ''),
-      relHtml, // 🍎 関連記事を表示
+      /* --- SNS・HP・ECリンクを表示 --- */
+      (snsLinksHtml.length ? '  <div class="lz-sns">' + snsLinksHtml.join('') + '</div>' : ''),
+      relHtml,
       '</div>'
     ].join('');
 
