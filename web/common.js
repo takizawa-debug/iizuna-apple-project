@@ -1,5 +1,5 @@
 /**
- * common.js - Appletown 基盤コンポーネント (ディープリンク整合性最適化版)
+ * common.js - Appletown 基盤コンポーネント (デザイン復元・高速解除版)
  */
 window.LZ_COMMON = (function() {
   "use strict";
@@ -28,30 +28,44 @@ window.LZ_COMMON = (function() {
   })();
 
   /* ==========================================
-     2. 共通 CSS (解除時の演出)
+     2. デザイン・基盤 CSS (変数を完全に復元) 🍎
      ========================================== */
   var injectCoreStyles = function() {
     if (document.getElementById('lz-common-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-common-styles';
     style.textContent = [
-      ':root { --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --apple-red: #cf3a3a; --font-base: system-ui, -apple-system, sans-serif; }',
-      '.lz-global-shield.is-hidden { opacity: 0; transition: opacity 0.4s ease-out; pointer-events: none; }'
+      ':root {',
+      '  /* フォントとサイズ */',
+      '  --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --fz-l3: 1.85rem; --fz-body: 1.5rem;',
+      '  --font-base: system-ui, -apple-system, sans-serif;',
+      '  ',
+      '  /* 配色 (復活) */',
+      '  --apple-red: #cf3a3a; --apple-red-strong: #a82626;',
+      '  --apple-green: #2aa85c; --apple-brown: #5b3a1e;',
+      '  --ink-dark: #1b1b1b;',
+      '  ',
+      '  /* 角丸と装飾 (復活) */',
+      '  --card-radius: 20px; --radius: 14px;',
+      '}',
+      '.lz-global-shield { position: fixed; inset: 0; background: #fff; z-index: 30000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.4s ease-out; }',
+      '.lz-global-shield.is-hidden { opacity: 0; transition: opacity 0.4s ease-out; pointer-events: none; }',
+      'html.lz-loading-lock body { overflow: hidden !important; height: 100vh !important; }'
     ].join('\n');
     document.head.appendChild(style);
   };
   injectCoreStyles();
 
   /* ==========================================
-     3. シールド解除ロジック (モーダル連動) 🍎
+     3. シールド解除ロジック (看板設置で即解除) 🍎
      ========================================== */
   var initShieldController = function() {
     var urlParams = new URLSearchParams(window.location.search);
-    var targetArticleId = urlParams.get('id'); // モーダル直接アクセスの判定用
+    var targetArticleId = urlParams.get('id');
 
     var checkCount = 0;
     var waitReady = setInterval(function() {
-      // 1. 通常のセクション描画チェック
+      // セクションの殻（看板）ができたかチェック
       var targets = document.querySelectorAll('.lz-container, .lz-section[data-l2]');
       var readyCount = 0;
       for (var i = 0; i < targets.length; i++) {
@@ -59,19 +73,17 @@ window.LZ_COMMON = (function() {
       }
       var headersReady = (targets.length === 0 || readyCount >= targets.length);
 
-      // 2. 🍎 モーダル表示チェック
-      // URLに id がある場合は、モーダル(lz-backdrop)が open になるまで解除しない
+      // モーダル直接アクセスの場合は表示まで待つ
       var modalReady = true;
       if (targetArticleId) {
         modalReady = !!document.querySelector('.lz-backdrop.open');
       }
 
-      // 両方の準備が整ったら解除
       if (headersReady && modalReady) {
         unlock();
       }
       
-      if (++checkCount > 160) unlock(); // セーフティ（8秒：モーダル読み込みは時間がかかるため少し延長）
+      if (++checkCount > 120) unlock(); // 最大6秒
     }, 50);
 
     function unlock() {
