@@ -168,10 +168,9 @@ window.lzModal = (function() {
     var rows = [];
     var fields = [
       {k:'address', l:getTranslation('住所', MODAL_ACTIVE_LANG)},
-      {k:'organizer', l:getTranslation('主催者名', MODAL_ACTIVE_LANG)},
-      {k:'orgTel', l:getTranslation('主催者連絡先', MODAL_ACTIVE_LANG)}, // 🍎 追加
       {k:'tel', l:getTranslation('問い合わせ電話', MODAL_ACTIVE_LANG)},
       {k:'email', l:getTranslation('問い合わせメール', MODAL_ACTIVE_LANG)},
+      {k:'form', l:getTranslation('問い合わせフォーム', MODAL_ACTIVE_LANG)}, // 🍎 ボタンから表へ移動
       {k:'bizDays', l:getTranslation('営業曜日', MODAL_ACTIVE_LANG)}, 
       {k:'holiday', l:getTranslation('定休日', MODAL_ACTIVE_LANG)}, 
       {k:'hoursCombined', l:getTranslation('営業時間', MODAL_ACTIVE_LANG)}, 
@@ -180,16 +179,27 @@ window.lzModal = (function() {
       {k:'eventTime', l:getTranslation('開催時間', MODAL_ACTIVE_LANG)}, // 🍎 追加
       {k:'fee', l:getTranslation('参加費', MODAL_ACTIVE_LANG)},
       {k:'target', l:getTranslation('対象', MODAL_ACTIVE_LANG)},
+      {k:'orgApply', l:getTranslation('申し込み方法', MODAL_ACTIVE_LANG)},
       {k:'bring', l:getTranslation('もちもの', MODAL_ACTIVE_LANG)},      // 🍎 追加
       {k:'venueNote', l:getTranslation('会場注意事項', MODAL_ACTIVE_LANG)}, // 🍎 追加
-      {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)}
+      {k:'note', l:getTranslation('備考', MODAL_ACTIVE_LANG)},
+      {k:'organizer', l:getTranslation('主催者名', MODAL_ACTIVE_LANG)},
+      {k:'orgTel', l:getTranslation('主催者連絡先', MODAL_ACTIVE_LANG)} // 🍎 追加
     ];
 
 // --- ① 情報テーブルの生成 (rawData を使い GASの全情報を拾う) ---
     for(var i=0; i<fields.length; i++) {
-      var val = rawData[fields[i].k]; 
+      var val = rawData[fields[i].k];
       if(val && String(val).trim() !== "") {
-        rows.push('<tr><th>' + fields[i].l + '</th><td>' + C.esc(String(val)) + '</td></tr>');
+        var strVal = String(val).trim();
+        var displayHtml = C.esc(strVal);
+        
+        // 🍎 判定：httpから始まる場合はリンクにする
+        if (strVal.startsWith('http')) {
+          displayHtml = '<a href="' + C.esc(strVal) + '" target="_blank" style="color:#cf3a3a; text-decoration:underline; font-weight:700;">' + displayHtml + '</a>';
+        }
+        
+        rows.push('<tr><th>' + fields[i].l + '</th><td>' + displayHtml + '</td></tr>');
       }
     }
 
@@ -239,7 +249,6 @@ window.lzModal = (function() {
       (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''), 
       '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
       /* --- 問い合わせ(form)ボタンの配置 --- */
-      (rawData.form ? '<div style="padding:0 15px 15px;"><a href="'+C.esc(rawData.form)+'" target="_blank" class="lz-btn" style="background:#cf3a3a; color:#fff; width:100%; box-sizing:border-box;">' + getTranslation('申し込み方法', MODAL_ACTIVE_LANG) + '</a></div>' : ''),
       (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function(u, i){ return '<img src="'+C.esc(u)+'" data-idx="'+i+'" class="'+(i===0?'is-active':'')+'">'; }).join('') + '</div>' : ''),
       (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
       /* --- SNS・HP・ECリンクを表示 --- */
