@@ -1,5 +1,5 @@
 /**
- * search.js - サイト内記事検索 (検索範囲拡大・多言語対応版)
+ * search.js - サイト内記事検索 (検索範囲拡大・多言語対応・キーワード連動版)
  */
 (async function apzSearchBoot() {
   "use strict";
@@ -12,12 +12,15 @@
     check();
   });
 
-  const { SEARCH_ENDPOINT, MENU_URL, ASSETS } = config;
+  const { ENDPOINT, SEARCH_ENDPOINT, MENU_URL, ASSETS } = config; // 🍎 ENDPOINTを追加
   const FALLBACK_IMG = ASSETS.LOGO_RED;
 
+  // 🍎 元々の静的な推奨ワード (GASからの取得に失敗した際のフォールバックとして維持)
   const RECOMMEND_WORDS = [
     "サンふじ", "シナノゴールド", "シナノスイート", "秋映", "紅玉", "グラニースミス", "ブラムリー", "直売所", "アップルパイ", "シードル", "飯綱町", "ふるさと納税"
   ];
+
+  let dynamicKeywords = []; // 🍎 スプレッドシートから取得する動的キーワードを保持
 
   /* --- CSS (変更なし) --- */
   const style = document.createElement('style');
@@ -120,17 +123,50 @@
 
   let lastResults = [];
 
+  // 🍎 スプレッドシートからキーワードを取得 ＆ おすすめをランダムで生成 (多言語対応)
   function refreshRecommendations() {
-    const shuffled = [...RECOMMEND_WORDS].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, 5);
-    tagArea.innerHTML = selected.map(word => {
-      const displayWord = C.T(word); 
-      return `<span class="apz-search-tag" data-original="${word}">${displayWord}</span>`;
+    const lang = window.LZ_CURRENT_LANG || 'ja';
+    let pool = [];
+
+    if (dynamicKeywords.length > 0) {
+      // 🍎 スプレッドシートから取得した動的キーワードを使用
+      pool = dynamicKeywords.map(kw => ({
+        display: kw[lang] || kw['ja'], // 現在の言語、なければ日本語
+        original: kw['ja']
+      })).filter(it => it.display);
+    } else {
+      // 🍎 フォールバック：取得前や失敗時は config.js 内の静的な単語を使用
+      pool = RECOMMEND_WORDS.map(word => ({
+        display: C.T(word),
+        original: word
+      }));
+    }
+
+    // ランダムにシャッフルして5つ選択
+    const selected = [...pool].sort(() => 0.5 - Math.random()).slice(0, 5);
+
+    tagArea.innerHTML = selected.map(item => {
+      return `<span class="apz-search-tag" data-original="${item.original}">${item.display}</span>`;
     }).join('');
+
     tagArea.querySelectorAll('.apz-search-tag').forEach(tag => {
       tag.onclick = () => { input.value = tag.textContent; runSearch(input.value); };
     });
   }
+
+  // 🍎 起動時にスプレッドシートから「キーワード定義」を読み込む
+  async function loadDynamicKeywords() {
+    try {
+      const res = await fetch(`${ENDPOINT}?mode=keywords`);
+      const json = await res.json();
+      if (json.ok) {
+        dynamicKeywords = json.items || [];
+        // もし既に検索パネルが開いていれば表示を更新する
+        if (float.classList.contains('is-open')) refreshRecommendations();
+      }
+    } catch(e) { console.error("Dynamic keywords fetch failed", e); }
+  }
+  loadDynamicKeywords(); // 非同期でバックグラウンド実行
 
   function renderResults(results, query){
     lastResults = results || []; 
