@@ -156,13 +156,21 @@
   /* ==========================================
      4. ロジック (PC言語クリック、非表示制御など)
      ========================================== */
-  function smoothScrollToL2(label) {
-    // データ属性検索は内部キー(日本語)で行う
+     function smoothScrollToL2(label) {
     const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
     if (!target) return;
-    const offset = 68 + 20;
+    const offset = 68 + 20; // ヘッダー高 + 余白
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
+    
     window.scrollTo({ top: y, behavior: "smooth" });
+
+    // 🍎 追加: スクロール後にURLを「ハッシュなし」に書き換える
+    setTimeout(() => {
+      const url = new URL(window.location.href);
+      if (url.hash) {
+        history.replaceState(null, "", url.pathname + url.search);
+      }
+    }, 800); // スクロール完了を待って実行
   }
 
   const config = window.LZ_CONFIG;
@@ -211,11 +219,12 @@
       const a = e.target.closest('a');
       if (!a || !a.hash) return;
       const url = new URL(a.href);
+      
       if (url.pathname === window.location.pathname) {
+        e.preventDefault(); // デフォルトの挙動を止める（URLに#を付与させない）
         const label = decodeURIComponent(a.hash.replace('#', ''));
-        // 内部キー(日本語)で検索
-        const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
-        if (target) { e.preventDefault(); smoothScrollToL2(label); closeDrawer(); }
+        smoothScrollToL2(label);
+        closeDrawer();
       }
     });
 

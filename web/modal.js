@@ -164,7 +164,7 @@ window.lzModal = (function() {
     var linkedBody = window.lzSearchEngine ? window.lzSearchEngine.applyLinks(bodyText, d.id, MODAL_ACTIVE_LANG) : bodyText;
     
     var url = new URL(window.location.href);
-    url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id);
+    url.searchParams.set('lang', MODAL_ACTIVE_LANG); url.searchParams.set('id', d.id); url.hash = "";
     window.history.replaceState(null, "", url.toString());
     document.title = title + " | " + C.originalTitle;
 
