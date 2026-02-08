@@ -274,16 +274,36 @@
     }
   } catch(e) { console.error(e); }
 
-  // ハッシュスクロール
-  window.addEventListener('load', () => {
-    if (window.location.hash) {
-      const label = decodeURIComponent(window.location.hash.replace('#', ''));
-      const checkReady = setInterval(() => {
-        const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
-        if (target) { clearInterval(checkReady); setTimeout(() => smoothScrollToL2(label), 400); }
-      }, 100);
-      setTimeout(() => clearInterval(checkReady), 5000);
-    }
+  // --- 修正版：ハッシュスクロール (他ページからの遷移対応) ---
+  window.addEventListener('DOMContentLoaded', () => {
+    // 1. まず、URLにハッシュがあるか確認し、あれば変数にコピー
+    const initialHash = window.location.hash;
+    if (!initialHash) return;
+
+    // 2. 🍎 重要：ペライチ側のjQueryエラーを防ぐため、URLバーからハッシュを即座に消す
+    const cleanUrl = window.location.pathname + window.location.search;
+    history.replaceState(null, "", cleanUrl);
+
+    // 3. デコードして「滞在」などの文字に戻す
+    const label = decodeURIComponent(initialHash.replace('#', ''));
+    let attempts = 0;
+
+    // 4. setIntervalで「中身が入ったセクション」が出るまで粘り強く探す
+    const checkReady = setInterval(() => {
+      // .lz-section[data-l2="..."] かつ .lz-ready が付いているものを探す
+      const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
+
+      if (target) {
+        clearInterval(checkReady);
+        // 見つかったら、ブラウザの描画が落ち着くまで少しだけ待ってジャンプ
+        setTimeout(() => {
+          smoothScrollToL2(label);
+        }, 500);
+      }
+
+      // 10秒探して見つからなければ諦める
+      if (++attempts > 70) clearInterval(checkReady);
+    }, 150);
   });
 
 })();
