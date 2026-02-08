@@ -156,15 +156,12 @@
   /* ==========================================
      4. ロジック (PC言語クリック、非表示制御など)
      ========================================== */
-     function smoothScrollToL2(label) {
-    // 🍎 .lz-ready が付いている（＝高さが確定している）要素を確実に狙う
-    const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`) 
-                || document.querySelector(`[data-l2="${label}"]`); 
+  function smoothScrollToL2(label) {
+    // データ属性検索は内部キー(日本語)で行う
+    const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
     if (!target) return;
-    
-    const offset = 75 + 20; 
+    const offset = 68 + 20;
     const y = target.getBoundingClientRect().top + window.pageYOffset - offset;
-    
     window.scrollTo({ top: y, behavior: "smooth" });
   }
 
@@ -214,12 +211,11 @@
       const a = e.target.closest('a');
       if (!a || !a.hash) return;
       const url = new URL(a.href);
-      
       if (url.pathname === window.location.pathname) {
-        e.preventDefault(); // デフォルトの挙動を止める（URLに#を付与させない）
         const label = decodeURIComponent(a.hash.replace('#', ''));
-        smoothScrollToL2(label);
-        closeDrawer();
+        // 内部キー(日本語)で検索
+        const target = document.querySelector(`.lz-section[data-l2="${label}"]`);
+        if (target) { e.preventDefault(); smoothScrollToL2(label); closeDrawer(); }
       }
     });
 
@@ -258,8 +254,7 @@
 
       MENU_ORDER.forEach((l1, i) => {
         const l2Data = map.get(l1) || [];
-        // MENU_ORDER.forEach 内のリンク生成部分
-        const links = l2Data.map(d =>   `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
+        const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}#${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         
         const noContentLabel = window.LZ_CURRENT_LANG === 'ja' ? '（記事なし）' : '(No Articles)';
         const panels = document.querySelectorAll('.lz-h-panel');
@@ -279,32 +274,15 @@
     }
   } catch(e) { console.error(e); }
 
-// 🍎 ハッシュの代わりにURLパラメータ (?jump=...) を監視する
+  // ハッシュスクロール
   window.addEventListener('load', () => {
-    const params = new URLSearchParams(window.location.search);
-    const jumpTarget = params.get('jump'); // 例: "生産者" が入る
-
-    if (jumpTarget) {
-      let attempts = 0;
+    if (window.location.hash) {
+      const label = decodeURIComponent(window.location.hash.replace('#', ''));
       const checkReady = setInterval(() => {
-        // 中身が入ったセクションを探す
-        const target = document.querySelector(`.lz-section[data-l2="${jumpTarget}"].lz-ready`);
-
-        if (target) {
-          clearInterval(checkReady);
-          setTimeout(() => {
-            // スクロール実行
-            smoothScrollToL2(jumpTarget);
-            
-            // 🍎 完了後、URLから jump パラメータを消して綺麗にする
-            const url = new URL(window.location.href);
-            url.searchParams.delete('jump');
-            history.replaceState(null, "", url.pathname + url.search + url.hash);
-          }, 600);
-        }
-
-        if (++attempts > 100) clearInterval(checkReady);
-      }, 150);
+        const target = document.querySelector(`.lz-section[data-l2="${label}"].lz-ready`);
+        if (target) { clearInterval(checkReady); setTimeout(() => smoothScrollToL2(label), 400); }
+      }, 100);
+      setTimeout(() => clearInterval(checkReady), 5000);
     }
   });
 
