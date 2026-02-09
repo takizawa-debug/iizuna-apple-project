@@ -3,7 +3,7 @@ import { utils } from './utils.js';
 export function initFormLogic() {
   const days = ["月", "火", "水", "木", "金", "土", "日", "祝"];
 
-  // 1. タブ切り替え（最優先）
+  // --- 🍎 1. タブ切り替え（最優先：ここが止まると全てが死ぬため Null ガード徹底） ---
   const tabs = document.querySelectorAll('.lz-form-tab');
   tabs.forEach(t => {
     t.onclick = () => {
@@ -14,7 +14,7 @@ export function initFormLogic() {
     };
   });
 
-  // 2. スケジュール要素の動的生成
+  // --- 🍎 2. 動的要素の生成（要素が存在する場合のみ安全に実行） ---
   const simpleBox = document.getElementById('box-simple-days');
   const customBody = document.getElementById('customSchedBody');
   if (simpleBox && customBody) {
@@ -37,7 +37,7 @@ export function initFormLogic() {
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
-  // 3. 住所検索
+  // --- 🍎 3. 住所検索 ---
   const zipBtn = document.getElementById('zipBtnAction');
   if (zipBtn) {
     zipBtn.onclick = async () => {
@@ -51,7 +51,7 @@ export function initFormLogic() {
     };
   }
 
-  // 4. 登録タイプによる動的展開
+  // --- 🍎 4. 登録タイプによる動的展開とラベル変更 ---
   const typeRadios = document.getElementsByName('art_type');
   const fieldsContainer = document.getElementById('article-fields-container');
   const lblTitle = document.getElementById('lbl-title');
@@ -84,19 +84,20 @@ export function initFormLogic() {
   typeRadios.forEach(r => r.onchange = updateTypeView);
   updateTypeView();
 
-  // 5. カテゴリー連動
+  // --- 🍎 5. カテゴリー連動 ---
   document.getElementsByName('cat_l1').forEach(c => c.onchange = () => {
     const v = Array.from(document.getElementsByName('cat_l1')).filter(i => i.checked).map(i => i.value);
     const catT = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
     catT('sub-eat', v.includes('飲食')); catT('sub-buy', v.includes('買い物')); catT('sub-stay', v.includes('宿泊'));
     catT('sub-tour', v.includes('観光')); catT('sub-consult', v.includes('相談')); catT('sub-industry', v.includes('産業'));
-    catT('sub-life', v.includes('暮らし'));
+    catT('sub-life', v.includes('暮らし')); catT('sub-cat-root-other', v.includes('大カテゴリその他'));
   });
 
-  // 🍎 6. SNSリンク連動ロジック (新規追加)
-  document.getElementsByName('sns_trigger').forEach(trigger => {
+  // --- 🍎 6. SNSリンク連動ロジック (復活：チェック連動型) ---
+  const snsTriggers = document.getElementsByName('sns_trigger');
+  snsTriggers.forEach(trigger => {
     trigger.onchange = () => {
-      const vals = Array.from(document.getElementsByName('sns_trigger')).filter(i => i.checked).map(i => i.value);
+      const vals = Array.from(snsTriggers).filter(i => i.checked).map(i => i.value);
       const targets = ['home', 'ec', 'ig', 'fb', 'x', 'line', 'tt'];
       targets.forEach(t => {
         const box = document.getElementById(`f-${t}`);
@@ -105,7 +106,7 @@ export function initFormLogic() {
     };
   });
 
-  // 7. サブカテゴリ「その他」連動
+  // --- 🍎 7. サブカテゴリ「その他」連動 ---
   document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
     trigger.onchange = (e) => {
       const parent = e.target.closest('.lz-dynamic-sub-area');
@@ -114,7 +115,7 @@ export function initFormLogic() {
     };
   });
 
-  // 8. 問い合わせ手段連動
+  // --- 🍎 8. 問い合わせ手段連動 ---
   document.getElementsByName('cm').forEach(c => c.onchange = () => {
     const vals = Array.from(document.getElementsByName('cm')).filter(i => i.checked).map(i => i.value);
     const cmT = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
@@ -124,7 +125,7 @@ export function initFormLogic() {
     if(sync) sync.style.display = vals.includes('email') ? 'flex' : 'none';
   });
 
-  // 9. メール同期
+  // --- 🍎 9. メール同期 ---
   const admMail = document.getElementById('adminEmail'), pubMail = document.getElementById('pubEmail'), syncCheck = document.getElementById('syncCheck');
   if (admMail && pubMail && syncCheck) {
     admMail.oninput = () => { if(syncCheck.checked) pubMail.value = admMail.value; };
