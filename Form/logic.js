@@ -3,7 +3,7 @@ import { utils } from './utils.js';
 export function initFormLogic() {
   const days = ["月", "火", "水", "木", "金", "土", "日", "祝"];
 
-  // --- 🍎 1. タブ切り替えロジック（最優先で設定） ---
+  // --- 🍎 1. タブ切り替え（最優先：他のエラーに影響されないようにする） ---
   const tabs = document.querySelectorAll('.lz-form-tab');
   tabs.forEach(t => {
     t.onclick = () => {
@@ -14,7 +14,7 @@ export function initFormLogic() {
     };
   });
 
-  // --- 🍎 2. 動的要素の生成（要素が存在する場合のみ実行） ---
+  // --- 🍎 2. 動的要素の生成（Nullガード付き） ---
   const simpleBox = document.getElementById('box-simple-days');
   const customBody = document.getElementById('customSchedBody');
   
@@ -34,13 +34,12 @@ export function initFormLogic() {
     });
   }
 
-  // 時間セレクターのセット（存在確認付き）
   const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
   setHtml('sel-simple-time', utils.createTimeSelectorHTML('simple_s') + '<span>〜</span>' + utils.createTimeSelectorHTML('simple_e'));
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
-  // --- 🍎 3. 住所検索機能 ---
+  // --- 🍎 3. 住所検索 ---
   const zipBtn = document.getElementById('zipBtnAction');
   if (zipBtn) {
     zipBtn.onclick = async () => {
@@ -71,13 +70,11 @@ export function initFormLogic() {
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
     const type = selected.value;
 
-    // パネル表示制御（Nullセーフ）
     const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
     toggle('box-shop-cat', type !== 'other');
 
-    // ラベル書き換え
     if (type === 'shop') {
       if(lblTitle) lblTitle.textContent = "店名・施設名"; 
       if(lblLead) lblLead.textContent = "お店の概要";
@@ -94,23 +91,23 @@ export function initFormLogic() {
   }
 
   typeRadios.forEach(r => r.onchange = updateTypeView);
-  updateTypeView(); // 初期実行
+  updateTypeView();
 
   // --- 🍎 5. カテゴリー連動 ---
   document.getElementsByName('cat_l1').forEach(c => c.onchange = () => {
     const v = Array.from(document.getElementsByName('cat_l1')).filter(i => i.checked).map(i => i.value);
-    const catToggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
-    catToggle('sub-eat', v.includes('飲食'));
-    catToggle('sub-buy', v.includes('買い物'));
-    catToggle('sub-stay', v.includes('宿泊'));
-    catToggle('sub-tour', v.includes('観光'));
-    catToggle('sub-consult', v.includes('相談'));
-    catToggle('sub-industry', v.includes('産業'));
-    catToggle('sub-life', v.includes('暮らし'));
-    catToggle('sub-cat-root-other', v.includes('大カテゴリその他'));
+    const catT = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
+    catT('sub-eat', v.includes('飲食'));
+    catT('sub-buy', v.includes('買い物'));
+    catT('sub-stay', v.includes('宿泊'));
+    catT('sub-tour', v.includes('観光'));
+    catT('sub-consult', v.includes('相談'));
+    catT('sub-industry', v.includes('産業'));
+    catT('sub-life', v.includes('暮らし'));
+    catT('sub-cat-root-other', v.includes('大カテゴリその他'));
   });
 
-  // --- 🍎 6. 各種サブ機能（その他・モード切替・メール同期） ---
+  // --- 🍎 6. その他サブ機能（ Nullガード徹底） ---
   document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
     trigger.onchange = (e) => {
       const parent = e.target.closest('.lz-dynamic-sub-area');
