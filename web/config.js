@@ -31,7 +31,7 @@ window.LZ_CONFIG = {
   // ⑤ フッター用設定
   FOOTER_LINKS: [
     { label: "お問い合わせ", url: "https://appletown-iizuna.com/contact" },
-    { label: "サイトマップ", url: "#" },
+    { label: "サイトマップ", url: "https://appletown-iizuna.com/site-map" },
     { label: "サイトポリシー", url: "https://appletown-iizuna.com/site-policy" },
     { label: "個人情報保護方針", url: "https://appletown-iizuna.com/privacy-policy" }
   ],
