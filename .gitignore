@@ -1,2 +1,3 @@
-.clasp.json
+# どのフォルダ階層にある .clasp.json も GitHub に上げない設定
+**/.clasp.json
 node_modules/
