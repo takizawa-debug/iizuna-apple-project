@@ -1,6 +1,5 @@
 /**
- * templates.js - フォーム構造定義（動的展開・順序最適化版）
- * 役割: 各タブのHTML構造および、タイプ選択後に展開されるフィールドの並び順を管理。
+ * templates.js - フォーム構造定義（対話型・順序最適化版）
  */
 
 export const formHTML = `
@@ -14,7 +13,7 @@ export const formHTML = `
   <form id="lzMasterForm">
     <div id="pane-report" class="lz-form-body is-active">
        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> お名前</label><input type="text" name="rep_name" class="lz-input" placeholder="ニックネーム可" required></div>
-       <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 内容</label><textarea name="rep_content" class="lz-textarea" rows="6" placeholder="町の素敵な発見を教えてください" required></textarea></div>
+       <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 内容</label><textarea name="rep_content" class="lz-textarea" rows="6" placeholder="町の発見を教えてください" required></textarea></div>
     </div>
 
     <div id="pane-inquiry" class="lz-form-body">
@@ -24,7 +23,6 @@ export const formHTML = `
     </div>
 
     <div id="pane-article" class="lz-form-body">
-      
       <div class="lz-section-head">登録内容の選択</div>
       <div class="lz-field">
         <label class="lz-label">何を登録しますか？</label>
@@ -69,7 +67,7 @@ export const formHTML = `
             <label class="lz-sub-label"><input type="checkbox" name="cat_eat" value="パン"> パン・スイーツ</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_eat" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_eat_val" class="lz-input lz-sub-other-field" placeholder="具体的な飲食ジャンルをご記入ください">
+          <input type="text" name="cat_eat_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な飲食ジャンルをご記入ください">
         </div>
 
         <div id="sub-buy" class="lz-dynamic-sub-area">
@@ -84,7 +82,7 @@ export const formHTML = `
             <label class="lz-sub-label"><input type="checkbox" name="cat_buy" value="生活"> スーパー・コンビニ</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_buy" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_buy_val" class="lz-input lz-sub-other-field" placeholder="具体的な販売内容をご記入ください">
+          <input type="text" name="cat_buy_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な販売内容をご記入ください">
         </div>
 
         <div id="sub-stay" class="lz-dynamic-sub-area">
@@ -97,7 +95,7 @@ export const formHTML = `
             <label class="lz-sub-label"><input type="checkbox" name="cat_stay" value="サウナ"> サウナ</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_stay" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_stay_val" class="lz-input lz-sub-other-field" placeholder="具体的な宿泊形態をご記入ください">
+          <input type="text" name="cat_stay_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な宿泊形態をご記入ください">
         </div>
 
         <div id="sub-tour" class="lz-dynamic-sub-area">
@@ -111,48 +109,48 @@ export const formHTML = `
             <label class="lz-sub-label"><input type="checkbox" name="cat_tour" value="体験"> 体験・ワークショップ</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_tour" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_tour_val" class="lz-input lz-sub-other-field" placeholder="具体的な体験内容をご記入ください">
+          <input type="text" name="cat_tour_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な体験内容をご記入ください">
         </div>
 
         <div id="sub-consult" class="lz-dynamic-sub-area">
-          <label class="lz-label" style="font-size:1.1rem; color:var(--apple-brown);">相談・窓口のジャンル</label>
+          <label class="lz-label" style="font-size:1.1rem; color:var(--apple-brown);">相談・サポートのジャンル</label>
           <div class="lz-choice-group-sub">
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="移住"> 移住相談</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="空き家"> 空き家相談</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="農地"> 農地・就農相談</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="旅行"> 旅行・ツアー相談</label>
-            <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="士業"> 士業（法務・税務・労務）</label>
+            <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="士業"> 士業（弁護士・税理士等）</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="健康"> 身体・健康相談</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="経営"> 経営・起業相談</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_consult" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_consult_val" class="lz-input lz-sub-other-field" placeholder="具体的な相談内容をご記入ください">
+          <input type="text" name="cat_consult_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な相談内容をご記入ください">
         </div>
 
         <div id="sub-industry" class="lz-dynamic-sub-area">
           <label class="lz-label" style="font-size:1.1rem; color:var(--apple-brown);">農業支援・産業のジャンル</label>
           <div class="lz-choice-group-sub">
             <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="農機具"> 農機具・修理</label>
-            <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="資材"> 資材・肥料・農薬</label>
+            <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="資材"> 農薬・肥料・資材</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="設備"> 農業設備（ハウス等）</label>
-            <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="スマート"> スマート農業</label>
+            <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="スマート"> ドローン・スマート農業</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="建築"> 住宅・建築・設備工事</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="製造"> 食品製造・加工</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_industry" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_industry_val" class="lz-input lz-sub-other-field" placeholder="具体的な業種をご記入ください">
+          <input type="text" name="cat_industry_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な業種をご記入ください">
         </div>
 
         <div id="sub-life" class="lz-dynamic-sub-area">
           <label class="lz-label" style="font-size:1.1rem; color:var(--apple-brown);">暮らし・公共のジャンル</label>
           <div class="lz-choice-group-sub">
-            <label class="lz-sub-label"><input type="checkbox" name="cat_life" value="行政"> 行政・公共施設</label>
+            <label class="lz-sub-label"><input type="checkbox" name="cat_life" value="行政"> 公共施設</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_life" value="金融"> 銀行・郵便局</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_life" value="交通"> 駅・タクシー・車</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_life" value="会議"> 会議室・コワーク</label>
             <label class="lz-sub-label"><input type="checkbox" name="cat_life" value="その他" class="lz-sub-trigger"> その他</label>
           </div>
-          <input type="text" name="cat_life_val" class="lz-input lz-sub-other-field" placeholder="具体的な内容をご記入ください">
+          <input type="text" name="cat_life_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください">
         </div>
 
         <div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="border-left-color: #cf3a3a; margin-left: 0; margin-top: 10px;">
@@ -201,18 +199,14 @@ export const formHTML = `
 
         <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
           <div class="lz-section-head" style="margin-top:0;">開催詳細</div>
-          <div class="lz-choice-group-main"><label class="lz-choice-label"><input type="radio" name="ev_date_type" value="single" checked> 1日のみ</label><label class="lz-choice-label"><input type="radio" name="ev_date_type" value="multi"> 数日間</label></div>
           <div class="lz-grid">
             <div class="lz-field"><label class="lz-label">開始日</label><input type="date" name="ev_sdate" class="lz-input"></div>
-            <div id="edate-box" class="lz-field" style="display:none;"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div>
+            <div class="lz-field"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div>
           </div>
           <div class="lz-grid">
             <div class="lz-field"><label class="lz-label">開始時刻</label><div class="lz-time-box" id="sel-ev-s"></div></div>
             <div class="lz-field"><label class="lz-label">終了時刻</label><div class="lz-time-box" id="sel-ev-e"></div></div>
           </div>
-          <div class="lz-grid"><div class="lz-field"><label class="lz-label">参加費</label><input type="text" name="ev_fee" class="lz-input"></div><div class="lz-field"><label class="lz-label">対象</label><input type="text" name="ev_target" class="lz-input"></div></div>
-          <div class="lz-field"><label class="lz-label">主催者名</label><input type="text" name="ev_org" class="lz-input"></div>
-          <div class="lz-field"><label class="lz-label">申し込み方法</label><textarea name="ev_method" class="lz-textarea" rows="2"></textarea></div>
         </div>
 
         <div class="lz-section-head">問い合わせ・公開設定</div>
@@ -226,16 +220,14 @@ export const formHTML = `
         </div>
         <div id="cm-form-box" class="lz-field" style="display:none;"><label class="lz-label">フォームURL</label><input type="url" name="cm_url" class="lz-input"></div>
         <div id="cm-email-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用メール</label><input type="email" id="pubEmail" name="cm_mail" class="lz-input"></div>
-        <div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用電話番号</label><input type="tel" name="cm_tel" class="lz-input" placeholder="026-..."></div>
-        <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付詳細</label><input type="text" name="cm_other_val" class="lz-input"></div>
-
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">公開</span> 読者への備考</label><textarea name="art_notes_pub" class="lz-textarea" rows="3" placeholder="雨天順延の案内など"></textarea></div>
+        <div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用電話</label><input type="tel" name="cm_tel" class="lz-input" placeholder="026-..."></div>
+        <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他詳細</label><input type="text" name="cm_other_val" class="lz-input"></div>
 
         <div class="lz-section-head">事務局への連絡</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label><input type="email" id="adminEmail" name="admin_email" class="lz-input" required></div>
+        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 事務局用連絡先</label><input type="email" id="adminEmail" name="admin_email" class="lz-input" required></div>
         <div class="lz-field" id="syncField" style="display:none;"><label class="lz-choice-label"><input type="checkbox" id="syncCheck" checked> 掲載用メールも同じにする</label></div>
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">非公開</span> 事務局へのメッセージ</label><textarea name="admin_msg" class="lz-textarea" rows="4" placeholder="掲載時期のご相談など"></textarea></div>
+        <div class="lz-field"><label class="lz-badge opt" style="background:#999;">非公開</label><textarea name="admin_msg" class="lz-textarea" rows="4" placeholder="事務局へのメッセージ"></textarea></div>
 
         <button type="submit" class="lz-send-btn" id="lzBtn">この内容で送信する</button>
       </div>
@@ -244,5 +236,5 @@ export const formHTML = `
 </div>
 `;
 
-// ※ formCommonHTML は廃止し、すべて formHTML 内に統合しました。
+// formCommonHTML は不要になったため空にします
 export const formCommonHTML = ``;
