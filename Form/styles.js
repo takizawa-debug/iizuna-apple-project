@@ -19,7 +19,7 @@ export const formStyles = `
   .lz-textarea { height: auto; min-height: 120px; }
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
-  /* チップ選択 */
+  /* カテゴリー・チップ */
   .lz-choice-flex { display: flex !important; flex-wrap: wrap !important; justify-content: flex-start !important; align-items: flex-start !important; gap: 6px !important; width: 100% !important; text-align: left !important; margin: 0 !important; padding: 0 !important; }
   .lz-choice-item { position: relative !important; cursor: pointer !important; display: block !important; width: auto !important; flex: 0 0 auto !important; margin: 0 !important; padding: 0 !important; }
   .lz-choice-inner { display: flex; align-items: center; justify-content: center; padding: 10px 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; font-size: 1.1rem; font-weight: 800; color: #666; transition: all 0.2s ease; min-height: 50px; box-sizing: border-box; }
@@ -29,9 +29,9 @@ export const formStyles = `
   /* 🍎 画像プレビュー：正方形 1:1 */
   .lz-img-preview-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 15px; }
   .lz-img-container { position: relative; width: 110px; height: 110px; }
-  .lz-img-container img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #eee; background: #f9f9f9; }
+  .lz-img-container img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #eee; }
   .lz-img-remove { position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; background: #cf3a3a; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; border: 2px solid #fff; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-  .lz-img-add-btn { width: 110px; height: 110px; border: 2px dashed #ccc; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 28px; transition: 0.3s; background: #fafafa; }
+  .lz-img-add-btn { width: 110px; height: 110px; border: 2px dashed #ccc; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 32px; transition: 0.3s; background: #fafafa; }
   .lz-img-add-btn:hover { border-color: #cf3a3a; color: #cf3a3a; }
 
   /* 🍎 営業曜日の下の余白 */
@@ -48,10 +48,4 @@ export const formStyles = `
   .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, auto)); gap: 8px; width: 100%; }
   .lz-schedule-table th, .lz-schedule-table td { padding: 14px 18px; border: 1px solid #eee; text-align: center; font-size: 1.1rem; }
   .lz-schedule-table th { background: #fdfaf8; color: #5b3a1e; font-weight: 800; }
-  
-  @media (max-width: 600px) {
-    .lz-schedule-table tr { border: 2px solid #f0e6e0; border-radius: 16px; padding: 15px; margin-bottom: 15px; display: block; }
-    .lz-schedule-table td { position: relative; padding: 10px 0 10px 110px; text-align: left; display: flex; align-items: center; border: none; }
-    .lz-schedule-table td::before { content: attr(data-label); position: absolute; left: 10px; font-weight: 900; color: #5b3a1e; font-size: 1rem; width: 95px; }
-  }
 `;
