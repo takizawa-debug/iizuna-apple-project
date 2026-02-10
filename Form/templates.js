@@ -1,5 +1,5 @@
 /**
- * templates.js - フォーム構造定義（UI改善・注意事項強化版）
+ * templates.js - フォーム構造定義（祝日分離・UX改善版）
  */
 
 export const formHTML = `
@@ -34,16 +34,10 @@ export const formHTML = `
       </div>
 
       <div id="article-fields-container" style="display:none; flex-direction:column; gap:28px;">
-        
         <div class="lz-section-head">基本情報</div>
-        <div class="lz-field">
-          <label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-title">店名・施設名</span></label>
-          <input type="text" name="art_title" id="inp-title" class="lz-input" required>
-        </div>
+        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-title">店名・施設名</span></label><input type="text" name="art_title" id="inp-title" class="lz-input" required></div>
 
-        <div id="lz-dynamic-category-area" style="display:flex; flex-direction:column; gap:20px;">
-          <div style="padding:20px; text-align:center; color:#999;">カテゴリー情報を読み込み中...</div>
-        </div>
+        <div id="lz-dynamic-category-area" style="display:flex; flex-direction:column; gap:20px;"><div style="padding:20px; text-align:center; color:#999;">カテゴリー情報を読み込み中...</div></div>
 
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-lead">概要</span>（100文字以内）</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" required></textarea></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" required></textarea></div>
@@ -66,21 +60,34 @@ export const formHTML = `
             <label class="lz-choice-label"><input type="radio" name="shop_mode" value="simple" checked> 標準設定</label>
             <label class="lz-choice-label"><input type="radio" name="shop_mode" value="custom"> 曜日別に詳細設定</label>
           </div>
+          
           <div id="shop-simple">
-            <div class="lz-field">
-              <label class="lz-label">営業曜日</label>
-              <div id="box-simple-days" class="lz-day-selector"></div>
-            </div>
-            <div class="lz-field"><label class="lz-label">標準営業時間</label><div style="display:flex; align-items:center; gap:10px;" id="sel-simple-time"></div></div>
+            <div class="lz-field"><label class="lz-label">営業曜日</label><div id="box-simple-days" class="lz-day-selector"></div></div>
+            <div class="lz-field"><label class="lz-label">標準営業時間</label><div id="sel-simple-time" class="lz-time-box"></div></div>
           </div>
+
           <div id="shop-custom" style="display:none;">
             <div class="lz-schedule-container">
-              <table class="lz-schedule-table"><thead><tr><th>曜日</th><th>休業</th><th>開店</th><th>閉店</th></tr></thead><tbody id="customSchedBody"></tbody></table>
+              <table class="lz-schedule-table">
+                <thead><tr><th>曜日</th><th>休業</th><th>開店</th><th>閉店</th></tr></thead>
+                <tbody id="customSchedBody"></tbody>
+              </table>
             </div>
           </div>
+
+          <div class="lz-field">
+            <label class="lz-label">祝日の営業</label>
+            <select name="shop_holiday_type" class="lz-select">
+              <option value="">（未選択：設定しない）</option>
+              <option value="follow">曜日通りに営業</option>
+              <option value="closed">祝日は休業</option>
+              <option value="irregular">祝日は不定休・特別ダイヤ（注意事項に記載）</option>
+            </select>
+          </div>
+
           <div class="lz-field">
             <label class="lz-label">営業に関する注意事項</label>
-            <textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。最新情報は公式Instagramをご確認ください。"></textarea>
+            <textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。"></textarea>
           </div>
         </div>
 
