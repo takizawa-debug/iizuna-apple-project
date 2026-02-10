@@ -166,7 +166,7 @@ export async function initFormLogic() {
     });
   }
 
-  function updateTypeView() {
+   function updateTypeView() {
     const selected = Array.from(typeRadios).find(r => r.checked);
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
@@ -175,32 +175,50 @@ export async function initFormLogic() {
     loadAndBuildGenres(type);
 
     const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
+    
+    // パネルの表示切り替え
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
+    toggle('ev-venue-box', type === 'event'); // 🍎 イベント時のみ「会場名」を表示
+
+    // ラベル・プレースホルダーの切り替え
     if (type === 'shop') {
-      if(lblTitle) lblTitle.textContent = "店名・施設名"; if(lblLead) lblLead.textContent = "お店の概要";
+      if(lblTitle) lblTitle.textContent = "店名・施設名"; 
+      if(lblLead) lblLead.textContent = "お店の概要";
       if(inpTitle) inpTitle.placeholder = "正式な店舗名をご記入ください";
     } else if (type === 'event') {
-      if(lblTitle) lblTitle.textContent = "イベント名"; if(lblLead) lblLead.textContent = "イベントの概要";
+      if(lblTitle) lblTitle.textContent = "イベント名"; 
+      if(lblLead) lblLead.textContent = "イベントの概要";
       if(inpTitle) inpTitle.placeholder = "イベント名称をご記入ください";
     } else {
-      if(lblTitle) lblTitle.textContent = "記事タイトル"; if(lblLead) lblLead.textContent = "記事の概要";
+      if(lblTitle) lblTitle.textContent = "記事タイトル"; 
+      if(lblLead) lblLead.textContent = "記事の概要";
       if(inpTitle) inpTitle.placeholder = "読みたくなるタイトルをご記入ください";
     }
+
+    // 🍎 場所情報のバリデーション動的制御
     const isShop = type === 'shop';
     const zipInp = document.getElementById('zipCode');
     const addrInp = document.getElementById('addressField');
     const zipBadge = document.getElementById('zipBadge');
     const addrBadge = document.getElementById('addrBadge');
+    const lblNotes = document.getElementById('lbl-notes');
 
     if (zipInp && addrInp && zipBadge && addrBadge) {
+      // お店登録の時だけ「必須」にする
       zipInp.required = isShop;
       addrInp.required = isShop;
+      
+      // バッジのテキストと色を連動
       zipBadge.textContent = isShop ? '必須' : '任意';
       addrBadge.textContent = isShop ? '必須' : '任意';
-      // 任意の場合は背景色を少し変えて視覚的に補助（任意）
       zipBadge.style.background = isShop ? '#cf3a3a' : '#999';
       addrBadge.style.background = isShop ? '#cf3a3a' : '#999';
+    }
+
+    // 🍎 注意事項のラベルを切り替え
+    if (lblNotes) {
+      lblNotes.textContent = (type === 'event') ? '会場に関する注意事項' : '店舗/施設に関する注意事項';
     }
   }
   typeRadios.forEach(r => r.onchange = updateTypeView);

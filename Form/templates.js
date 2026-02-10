@@ -43,23 +43,28 @@ export const formHTML = `
         <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div></div>
 
 <div class="lz-section-head">場所の情報</div>
-<div class="lz-field">
-  <label class="lz-label"><span class="lz-badge">必須</span> 会場名</label>
-  <input type="text" name="ev_venue_name" class="lz-input" placeholder="飯綱町ふれあいパーク など">
+
+<div id="ev-venue-box" class="lz-field" style="display:none;">
+  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 会場名</label>
+  <input type="text" name="ev_venue_name" class="lz-input" placeholder="例：飯綱ふれあいパーク">
 </div>
+
 <div class="lz-grid">
   <div class="lz-field">
-    <label class="lz-label"><span class="lz-badge" id="zipBadge">必須</span> 郵便番号</label>
+    <label class="lz-label"><span id="zipBadge" class="lz-badge">必須</span> 郵便番号</label>
     <div style="display:flex; gap:10px;"><input type="text" id="zipCode" name="shop_zip" class="lz-input" placeholder="389-1211" style="flex:1;"><button type="button" class="lz-zip-btn" id="zipBtnAction">住所検索</button></div>
   </div>
   <div class="lz-field">
-    <label class="lz-label"><span class="lz-badge" id="addrBadge">必須</span> 住所</label>
+    <label class="lz-label"><span id="addrBadge" class="lz-badge">必須</span> 住所</label>
     <input type="text" id="addressField" name="shop_addr" class="lz-input" required>
   </div>
 </div>
+
 <div class="lz-field">
-  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 会場に関する注意事項</label>
-  <textarea name="ev_venue_notes" class="lz-textarea" rows="2" placeholder="駐車場は北側を利用してください、など"></textarea>
+  <label class="lz-label">
+    <span class="lz-badge opt" style="background:#999;">任意</span> 
+    <span id="lbl-notes">店舗/施設に関する注意事項</span> </label>
+  <textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="注意事項があればご記入ください"></textarea>
 </div>
 
         <div id="pane-shop-detail" class="lz-dynamic-detail" style="display:none;">
