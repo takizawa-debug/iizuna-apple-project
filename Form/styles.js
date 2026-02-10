@@ -14,9 +14,9 @@ export const formStyles = `
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
   
-  /* styles.js の .lz-input グループを検索して書き換え */
-.lz-input, .lz-textarea, .lz-select { 
-  padding: 0 16px; /* 🍎 上下のpaddingを0にし、高さ58pxの中で中央寄せにする */
+/* 🍎 入力項目全般：高さを58pxで統一し、中央寄せにする */
+.lz-input, .lz-select { 
+  padding: 0 16px !important; 
   border: 2px solid #eee; 
   border-radius: 12px; 
   font-size: 1.15rem; 
@@ -24,21 +24,29 @@ export const formStyles = `
   width: 100%; 
   box-sizing: border-box; 
   -webkit-appearance: none; 
-  height: 58px; /* 🍎 高さを58pxに固定 */
-  line-height: 54px; /* 🍎 高さから枠線分を引いた値でテキストを中央に配置 */
+  height: 58px !important; 
+  line-height: 54px; 
 }
 
-/* 🍎 日付入力欄（type="date"）の高さを他と完全に一致させるための補正 */
+/* 🍎 日付入力（開始日・終了日）：アイコンと文字のズレを強制補正 */
 input[type="date"].lz-input {
-  display: inline-flex;
-  align-items: center;
+  display: inline-flex !important;
+  align-items: center !important;
 }
 
-/* 🍎 textareaは複数行入力するため、高さ固定を解除して最低高さを設定 */
+/* 🍎 textarea：複数行のため高さは自動、パディングは上下にも入れる */
 .lz-textarea { 
+  padding: 16px !important; /* 上下左右に余白を戻す */
+  border: 2px solid #eee; 
+  border-radius: 12px; 
+  font-size: 1.15rem; 
+  background: #fafafa; 
+  width: 100%; 
+  box-sizing: border-box; 
   height: auto !important; 
   min-height: 80px; 
 }
+  
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
 /* 🍎 カテゴリー・チップ選択の最終確定スタイル */
