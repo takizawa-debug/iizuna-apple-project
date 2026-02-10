@@ -99,6 +99,7 @@ export const formStyles = `
   justify-content: flex-start !important; 
   width: 100% !important;
   margin-top: 8px;
+  margin-bottom: 25px !important;
 }
 
 .lz-day-chip { 
