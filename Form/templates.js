@@ -41,14 +41,10 @@ export const formHTML = `
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" placeholder="詳しい内容を教えてください" required></textarea></div>
 
         <div class="lz-section-head">画像・配布資料</div>
-        <div class="lz-field">
-          <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label>
-          <div id="imgPreviewArea" class="lz-img-preview-grid">
-            <div id="imgAddBtn" class="lz-img-add-btn">＋</div>
-          </div>
-          <input type="file" id="art_images_input" name="art_images" style="display:none;" accept="image/*" multiple>
+        <div class="lz-grid">
+          <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label><input type="file" name="art_images" class="lz-input" accept="image/*" multiple></div>
+          <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div>
         </div>
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div>
 
         <div class="lz-section-head">場所の情報</div>
         <div class="lz-grid">
@@ -145,16 +141,7 @@ export const formHTML = `
         <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付詳細</label><input type="text" name="cm_other_val" class="lz-input"></div>
 
         <div class="lz-section-head">事務局への連絡</div>
-        <div class="lz-field">
-  <label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label>
-  <div id="syncField" style="display:none; margin-bottom: 5px;">
-    <label class="lz-choice-item" style="width:fit-content;">
-      <input type="checkbox" id="syncCheck">
-      <span class="lz-choice-inner" style="min-height:30px; padding:5px 15px; font-size:0.9rem;">掲載用メールと同じにする</span>
-    </label>
-  </div>
-  <input type="email" id="adminEmail" name="admin_email" class="lz-input" required>
-</div>
+        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label><input type="email" id="adminEmail" name="admin_email" class="lz-input" required></div>
         <div id="syncField" style="display:none; margin-top:-10px;">
           <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" id="syncCheck" checked><span class="lz-choice-inner">掲載用メールも同じにする</span></label>
