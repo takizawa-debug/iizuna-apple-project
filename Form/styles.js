@@ -18,33 +18,18 @@ export const formStyles = `
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
   /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
-/* 🍎 カテゴリー選択：文字数に合わせる最適化（隙間を極限まで詰める設定） */
-  .lz-choice-flex { 
-    display: flex; 
-    flex-wrap: wrap; 
-    gap: 2px; /* 🍎 チップ同士の物理的な隙間（枠と枠の間） */
-    width: 100%; 
-  }
-  .lz-choice-item { 
-    position: relative; 
-    cursor: pointer; 
-    display: block; 
-    width: auto; 
-  }
+  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 3px; width: 100%; }
+  .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; }
+  /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
+.lz-sub-choice-item {
+  width: fit-content; 
+}
+  .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-inner { 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    padding: 8px 12px; /* 🍎 内部余白を削り、さらに密度をアップ */
-    background: #fff; 
-    border: 1px solid #eee; /* 🍎 枠線を1pxにして「白い空白」を削減 */
-    border-radius: 10px;
-    font-size: 1rem; 
-    font-weight: 800; 
-    color: #666; 
-    transition: all 0.2s ease;
-    min-height: 44px; /* 🍎 指で押せる最小サイズを維持しつつ高さを抑える */
-    box-sizing: border-box;
+    display: flex; align-items: center; justify-content: center; padding: 12px 10px;
+    background: #fff; border: 1px solid #eee; border-radius: 12px;
+    font-size: 1rem; font-weight: 800; color: #666; transition: all 0.2s ease;
+    min-height: 48px; box-sizing: border-box;
   }
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
