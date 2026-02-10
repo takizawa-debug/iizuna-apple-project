@@ -161,7 +161,7 @@ export async function initFormLogic() {
   if (evPeriodRadios && evEndDateBox) {
     evPeriodRadios.forEach(r => {
       r.addEventListener('change', (e) => {
-        evEndDateBox.style.display = isPeriod ? 'flex' : 'none';
+        evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none';
       });
     });
   }
