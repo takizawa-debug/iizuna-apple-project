@@ -71,8 +71,8 @@ export const formStyles = `
   .lz-time-row { display: flex; flex-direction: column; gap: 12px; width: 100%; }
   .lz-time-field { display: flex; align-items: center; gap: 10px; }
   .lz-time-label-sm { font-size: 0.9rem; font-weight: 800; color: #888; min-width: 75px; }
-  .lz-time-box { display: flex; align-items: center; gap: 4px; flex: 1; }
-  .lz-time-select { padding: 12px 4px; border-radius: 10px; border: 2px solid #eee; font-size: 1.1rem; cursor: pointer; background: #fff; flex: 1; text-align: center; }
+  .lz-time-box { display: flex; align-items: center; gap: 4px; width: fit-content !important; }
+  .lz-time-select { padding: 12px 4px; border-radius: 10px; border: 2px solid #eee; font-size: 1.1rem; cursor: pointer; background: #fff; width: 100px !important; text-align: center; }
   .lz-time-box.is-disabled { opacity: 0.2; pointer-events: none; }
 
   /* 曜日チップ */
