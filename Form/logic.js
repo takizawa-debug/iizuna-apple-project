@@ -3,8 +3,6 @@
  */
 import { utils } from './utils.js';
 
-const genreIdMap = { "飲食": "eat", "買い物": "buy", "宿泊": "stay", "観光": "tour", "相談": "consult", "産業": "industry", "暮らし": "life" };
-
 export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
@@ -34,17 +32,22 @@ export async function initFormLogic() {
       });
       html += '</div></div>';
 
-      // 各サブカテゴリ(L2)
-      Object.keys(genres).forEach(l1 => {
-        if (l1 === '大カテゴリその他' || l1 === 'その他') return;
-        const baseId = genreIdMap[l1] || 'custom';
-        html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-choice-flex">`;
-        genres[l1].forEach(l2 => {
-          const isOther = l2.includes('その他');
-          html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
-        });
-        html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
-      });
+      /* 🍎 名前ではなく、配列の順番（idx）で ID を作るように変更 */
+Object.keys(genres).forEach((l1, idx) => {
+  if (l1 === '大カテゴリその他' || l1 === 'その他') return;
+  const baseId = `gen-${idx}`; 
+  
+  // 🍎 大カテゴリのチェックボックスに「どのIDを操作するか」の目印（data-subid）を付与
+  const l1Checkboxes = document.querySelectorAll(`input[name="cat_l1"][value="${l1}"]`);
+  l1Checkboxes.forEach(cb => cb.setAttribute('data-subid', baseId));
+
+  html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-choice-flex">`;
+  genres[l1].forEach(l2 => {
+    const isOther = l2.includes('その他');
+    html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
+  });
+  html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
+});
       
       html += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
       
@@ -56,25 +59,30 @@ export async function initFormLogic() {
   }
 
   function bindDynamicEvents() {
-    document.getElementsByName('cat_l1').forEach(c => c.onchange = () => {
-      const v = Array.from(document.getElementsByName('cat_l1')).filter(i => i.checked).map(i => i.value);
-      Object.keys(genreIdMap).forEach(key => {
-        const el = document.getElementById(`sub-${genreIdMap[key]}`);
-        if(el) el.style.display = v.includes(key) ? 'flex' : 'none';
-      });
-      const otherRoot = document.getElementById('sub-cat-root-other');
-      const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => (i.value === '大カテゴリその他' || i.value === 'その他') && i.checked);
-      if(otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
-    });
+  /* 🍎 全ての大カテゴリに対して一律で連動ロジックを設定 */
+  document.getElementsByName('cat_l1').forEach(c => {
+    c.onchange = (e) => {
+      const targetId = e.target.getAttribute('data-subid');
+      const el = document.getElementById(`sub-${targetId}`);
+      if (el) el.style.display = e.target.checked ? 'flex' : 'none';
 
-    document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
-      trigger.onchange = (e) => {
-        const parent = e.target.closest('.lz-dynamic-sub-area');
-        const otherInput = parent ? parent.querySelector('.lz-sub-other-field') : null;
-        if(otherInput) otherInput.style.display = e.target.checked ? 'block' : 'none';
-      };
-    });
-  }
+      // その他（ルート）の自由記述欄の制御
+      const otherRoot = document.getElementById('sub-cat-root-other');
+      const isOtherChecked = Array.from(document.getElementsByName('cat_l1'))
+        .some(i => (i.value === '大カテゴリその他' || i.value === 'その他') && i.checked);
+      if (otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
+    };
+  });
+
+  document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
+    /* (既存のサブカテゴリー内「その他」処理はそのまま維持) */
+    trigger.onchange = (e) => {
+      const parent = e.target.closest('.lz-dynamic-sub-area');
+      const otherInput = parent ? parent.querySelector('.lz-sub-other-field') : null;
+      if(otherInput) otherInput.style.display = e.target.checked ? 'block' : 'none';
+    };
+  });
+}
 
   // --- 🍎 2. 曜日別設定：休業連動（無効化） ＆ スマホカード化 ---
   const customBody = document.getElementById('customSchedBody');
