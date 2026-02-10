@@ -16,7 +16,7 @@ export const formStyles = `
   
   /* styles.js の .lz-input グループを検索して書き換え */
 .lz-input, .lz-textarea, .lz-select { 
-  padding: 16px; 
+  padding: 0 16px; /* 🍎 上下のpaddingを0にし、高さ58pxの中で中央寄せにする */
   border: 2px solid #eee; 
   border-radius: 12px; 
   font-size: 1.15rem; 
@@ -25,6 +25,13 @@ export const formStyles = `
   box-sizing: border-box; 
   -webkit-appearance: none; 
   height: 58px; /* 🍎 高さを58pxに固定 */
+  line-height: 54px; /* 🍎 高さから枠線分を引いた値でテキストを中央に配置 */
+}
+
+/* 🍎 日付入力欄（type="date"）の高さを他と完全に一致させるための補正 */
+input[type="date"].lz-input {
+  display: inline-flex;
+  align-items: center;
 }
 
 /* 🍎 textareaは複数行入力するため、高さ固定を解除して最低高さを設定 */
