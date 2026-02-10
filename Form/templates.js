@@ -103,6 +103,7 @@ export const formHTML = `
         </div>
 
         <div id="box-sns-links" class="lz-field">
+        <div class="lz-section-head" style="margin-top:0;">各種リンク</div>
         <div class="lz-choice-flex">
         <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
         <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ec"><span class="lz-choice-inner">ECサイト</span></label>
