@@ -76,8 +76,25 @@ export const formStyles = `
   .lz-time-box.is-disabled { opacity: 0.2; pointer-events: none; }
 
   /* 曜日チップ */
-  .lz-day-selector { display: flex; flex-wrap: wrap; gap: 5px; }
-  .lz-day-chip { position: relative; cursor: pointer; }
+.lz-day-selector { 
+  display: flex !important; 
+  flex-wrap: wrap !important; 
+  /* 🍎 隙間を 4px（またはお好みで 2px）まで詰めます */
+  gap: 4px !important; 
+  /* 🍎 左詰めに固定します */
+  justify-content: flex-start !important; 
+  width: 100% !important;
+  margin-top: 5px;
+}
+
+.lz-day-chip { 
+  position: relative !important; 
+  cursor: pointer !important;
+  /* 🍎 勝手な余白をゼロにします（これが重要！） */
+  margin: 0 !important; 
+  padding: 0 !important;
+  flex: 0 0 auto !important;
+}
   .lz-day-chip input { position: absolute; opacity: 0; }
   .lz-day-text { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #fff; border: 2px solid #eee; border-radius: 50%; font-weight: 800; font-size: 1rem; color: #888; transition: 0.2s; }
   .lz-day-chip input:checked + .lz-day-text { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
