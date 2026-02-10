@@ -19,7 +19,11 @@ export const formStyles = `
 
   /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
   .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; }
-  .lz-choice-item { position: relative; cursor: pointer; display: block; width: fit-content; }
+  .lz-choice-item { position: relative; cursor: pointer; display: block; width:100%; }
+  /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
+.lz-sub-choice-item {
+  width: fit-content; 
+}
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-inner { 
     display: flex; align-items: center; justify-content: center; padding: 12px 10px;
@@ -30,7 +34,7 @@ export const formStyles = `
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
   /* 登録タイプ選択などの固定グリッド */
-  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 5px; width: 100%; }
+  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 5px; width: 100%; }
 
   /* 🍎 サブカテゴリーエリアの改善 */
   .lz-dynamic-sub-area { display: none; flex-direction: column; gap: 15px; padding: 15px 0 15px 15px; background: transparent; border-left: 6px solid #5b3a1e; margin: 10px 0; animation: lz-fade 0.3s ease; }
