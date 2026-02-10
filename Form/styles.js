@@ -10,7 +10,7 @@ export const formStyles = `
   @keyframes lz-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
   .lz-section-head { font-size: 1.45rem; font-weight: 900; color: #5b3a1e; border-left: 6px solid #cf3a3a; padding-left: 14px; margin: 30px 0 12px; line-height: 1.4; }
-  .lz-field { display: flex; flex-direction: column; gap: 30px; }
+  .lz-field { display: flex; flex-direction: column; gap: 12px; }
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
   
