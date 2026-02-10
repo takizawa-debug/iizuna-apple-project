@@ -17,26 +17,45 @@ export const formStyles = `
   .lz-input, .lz-textarea, .lz-select { padding: 14px; border: 2px solid #eee; border-radius: 12px; font-size: 1.05rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
-  /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
+/* 🍎 カテゴリー・チップ選択の最終確定スタイル */
 .lz-choice-flex { 
-  display: flex; 
-  flex-wrap: wrap; 
-  gap: 4px; /* 🍎 チップ同士の隙間。2px〜4pxが適切です */
-  justify-content: flex-start; /* 🍎 隙間を均等にせず、左に詰める命令 */
-  width: 100%; 
+  display: flex !important; 
+  flex-wrap: wrap !important; 
+  justify-content: flex-start !important; /* 左端から並べる */
+  align-items: flex-start !important;
+  gap: 4px !important; /* 隙間を4pxに固定 */
+  width: 100% !important;
+  text-align: left !important; /* 親からの中央揃えを打ち消す */
+  margin: 0 !important;
+  padding: 0 !important;
 }
-  .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; margin: 0; }
-  /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
-.lz-sub-choice-item {
-  width: fit-content; 
+
+.lz-choice-item { 
+  position: relative !important; 
+  cursor: pointer !important; 
+  display: block !important; 
+  width: auto !important; /* 文字幅で止める */
+  flex: 0 0 auto !important; /* 勝手に膨らませない */
+  margin: 0 !important; /* 👈 これが勝利の鍵 */
+  padding: 0 !important;
+}
+
+.lz-choice-inner { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  padding: 8px 16px; /* 密度を高めるための内側余白 */
+  background: #fff; 
+  border: 1px solid #eee; /* 枠線を細くして空白を削る */
+  border-radius: 10px;
+  font-size: 0.95rem; /* スマホで見やすい絶妙なサイズ */
+  font-weight: 800; 
+  color: #666; 
+  min-height: 42px; /* タップしやすさを維持 */
+  box-sizing: border-box;
 }
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
-  .lz-choice-inner { 
-    display: flex; align-items: center; justify-content: center; padding: 12px 10px;
-    background: #fff; border: 1px solid #eee; border-radius: 12px;
-    font-size: 1rem; font-weight: 800; color: #666; transition: all 0.2s ease;
-    min-height: 48px; box-sizing: border-box;
-  }
+
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
   /* 登録タイプ選択などの固定グリッド */
