@@ -18,7 +18,13 @@ export const formStyles = `
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
   /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
-  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 3px; width: 100%; }
+.lz-choice-flex { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 4px; /* 🍎 チップ同士の隙間。2px〜4pxが適切です */
+  justify-content: flex-start; /* 🍎 隙間を均等にせず、左に詰める命令 */
+  width: 100%; 
+}
   .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; }
   /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
 .lz-sub-choice-item {
@@ -34,7 +40,7 @@ export const formStyles = `
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
   /* 登録タイプ選択などの固定グリッド */
-  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); gap: 5px; width: 100%; }
+  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(90px, auto)); gap: 5px; width: 100%; }
 
   /* 🍎 サブカテゴリーエリアの改善 */
   .lz-dynamic-sub-area { display: none; flex-direction: column; gap: 15px; padding: 15px 0 15px 15px; background: transparent; border-left: 6px solid #5b3a1e; margin: 10px 0; animation: lz-fade 0.3s ease; }
