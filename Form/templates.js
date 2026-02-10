@@ -93,24 +93,35 @@ export const formHTML = `
         </div>
 
         <div id="box-sns-links" class="lz-field">
-          <div class="lz-section-head" style="margin-top:0;">公式・SNSリンク</div>
-          <label class="lz-label">設定するリンクを選択</label>
-          <div class="lz-choice-flex">
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ec"><span class="lz-choice-inner">通販</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ig"><span class="lz-choice-inner">Instagram</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="fb"><span class="lz-choice-inner">Facebook</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="x"><span class="lz-choice-inner">X</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="line"><span class="lz-choice-inner">LINE</span></label>
-          </div>
-          <div id="sns-inputs" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-            <div id="f-home" style="display:none;"><input type="url" name="url_home" class="lz-input" placeholder="HPのURL (https://...)"></div>
-            <div id="f-ec" style="display:none;"><input type="url" name="url_ec" class="lz-input" placeholder="通販サイトのURL (https://...)"></div>
-            <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="Instagram アカウント名"></div>
-            <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="Facebook ページURL"></div>
-            <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
-            <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
-          </div>
+          /* 🍎 選択肢に「関連リンク」を追加し、入力欄にURLとタイトルのセット（2件分）を用意 */
+<div class="lz-choice-flex">
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ec"><span class="lz-choice-inner">通販</span></label>
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ig"><span class="lz-choice-inner">Instagram</span></label>
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="fb"><span class="lz-choice-inner">Facebook</span></label>
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="x"><span class="lz-choice-inner">X</span></label>
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="line"><span class="lz-choice-inner">LINE</span></label>
+  <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="rel"><span class="lz-choice-inner">関連リンク</span></label>
+</div>
+<div id="sns-inputs" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+  <div id="f-home" style="display:none;"><input type="url" name="url_home" class="lz-input" placeholder="HPのURL (https://...)"></div>
+  <div id="f-ec" style="display:none;"><input type="url" name="url_ec" class="lz-input" placeholder="通販サイトのURL (https://...)"></div>
+  <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="Instagram アカウント名"></div>
+  <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="Facebook ページURL"></div>
+  <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
+  <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
+  
+  <div id="f-rel" style="display:none; flex-direction:column; gap:12px;">
+    <div class="lz-grid">
+      <input type="url" id="rel_url1" name="rel_url1" class="lz-input" placeholder="関連URL 1 (https://...)">
+      <input type="text" id="rel_title1" name="rel_title1" class="lz-input" placeholder="リンクのタイトル 1">
+    </div>
+    <div id="rel-link2-row" class="lz-grid" style="display:none;">
+      <input type="url" id="rel_url2" name="rel_url2" class="lz-input" placeholder="関連URL 2 (https://...)">
+      <input type="text" id="rel_title2" name="rel_title2" class="lz-input" placeholder="リンクのタイトル 2">
+    </div>
+  </div>
+</div>
         </div>
 
         <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">

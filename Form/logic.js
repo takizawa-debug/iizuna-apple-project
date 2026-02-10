@@ -159,16 +159,31 @@ export async function initFormLogic() {
   typeRadios.forEach(r => r.onchange = updateTypeView);
   updateTypeView();
 
-  const snsTriggers = document.getElementsByName('sns_trigger');
-  snsTriggers.forEach(trigger => {
-    trigger.onchange = () => {
-      const vals = Array.from(snsTriggers).filter(i => i.checked).map(i => i.value);
-      ['home', 'ec', 'ig', 'fb', 'x', 'line'].forEach(t => {
-        const box = document.getElementById(`f-${t}`);
-        if(box) box.style.display = vals.includes(t) ? 'block' : 'none';
-      });
-    };
-  });
+  /* 🍎 選択肢に rel を追加し、入力検知ロジックを連結 */
+const snsTriggers = document.getElementsByName('sns_trigger');
+snsTriggers.forEach(trigger => {
+  trigger.onchange = () => {
+    const vals = Array.from(snsTriggers).filter(i => i.checked).map(i => i.value);
+    // 関連リンク（rel）はflex配置にするため条件分け
+    ['home', 'ec', 'ig', 'fb', 'x', 'line', 'rel'].forEach(t => {
+      const box = document.getElementById(`f-${t}`);
+      if(box) box.style.display = vals.includes(t) ? (t === 'rel' ? 'flex' : 'block') : 'none';
+    });
+  };
+});
+
+// 🍎 関連リンクの2件目自動表示ロジック
+const relUrl1 = document.getElementById('rel_url1');
+const relTitle1 = document.getElementById('rel_title1');
+const rel2Row = document.getElementById('rel-link2-row');
+if (relUrl1 && relTitle1 && rel2Row) {
+  const toggleRel2 = () => {
+    const hasContent = relUrl1.value.trim() !== "" || relTitle1.value.trim() !== "";
+    rel2Row.style.display = hasContent ? 'grid' : 'none';
+  };
+  relUrl1.oninput = toggleRel2;
+  relTitle1.oninput = toggleRel2;
+}
 
   document.getElementsByName('shop_mode').forEach(r => r.onchange = (e) => {
     const s = document.getElementById('shop-simple'), c = document.getElementById('shop-custom');
