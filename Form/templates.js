@@ -1,5 +1,5 @@
 /**
- * templates.js - フォーム構造定義（営業時間UI刷新版）
+ * templates.js - フォーム構造定義
  */
 
 export const formHTML = `
@@ -74,11 +74,16 @@ export const formHTML = `
           </div>
 
           <div id="shop-custom" style="display:none;">
-            <table class="lz-schedule-table"><tbody id="customSchedBody"></tbody></table>
+            <div class="lz-schedule-container">
+              <table class="lz-schedule-table">
+                <thead><tr><th>曜日</th><th>休業</th><th>開店時間</th><th>閉店時間</th></tr></thead>
+                <tbody id="customSchedBody"></tbody>
+              </table>
+            </div>
           </div>
 
           <div class="lz-field"><label class="lz-label">祝日の営業</label><select name="shop_holiday_type" class="lz-select"><option value="">設定しない</option><option value="follow">曜日通りに営業</option><option value="closed">祝日は休業</option><option value="irregular">祝日は不定休（注意事項に記載）</option></select></div>
-          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。"></textarea></div>
+          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。"></textarea></div>
         </div>
 
         <div id="box-sns-links" class="lz-field">

@@ -1,5 +1,5 @@
 /**
- * logic.js - 動的データ連動・UI最適化・バリデーション強化版
+ * logic.js - 動的データ連動・バリデーション強化版
  */
 import { utils } from './utils.js';
 
@@ -9,7 +9,7 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
 
-  // --- 🍎 1. カテゴリーのチップ形式生成 ＆ 初期非表示設定 ---
+  // --- 🍎 1. カテゴリー：チップ形式生成 ＆ 初期非表示 ---
   async function loadAndBuildGenres() {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
@@ -23,14 +23,15 @@ export async function initFormLogic() {
       // 大カテゴリ(L1)
       html += '<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> この場所でできること（複数選択可）</label><div class="lz-choice-grid">';
       Object.keys(genres).forEach(l1 => {
-        const idAttr = l1 === '大カテゴリその他' ? 'id="catRootOtherCheck"' : '';
+        const isRootOther = l1 === '大カテゴリその他' || l1 === 'その他';
+        const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
         html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr}><span class="lz-choice-inner">${l1}</span></label>`;
       });
       html += '</div></div>';
 
-      // サブカテゴリ(L2) - 🍎 初期状態で display:none を徹底
+      // 各サブカテゴリ(L2)
       Object.keys(genres).forEach(l1 => {
-        if (l1 === '大カテゴリその他') return;
+        if (l1 === '大カテゴリその他' || l1 === 'その他') return;
         const baseId = genreIdMap[l1] || 'custom';
         html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-sub-choice-grid">`;
         genres[l1].forEach(l2 => {
@@ -40,8 +41,8 @@ export async function initFormLogic() {
         html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
       });
       
-      // 大カテゴリ「その他」用
-      html += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a; margin-left: 0;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
+      // 🍎 大カテゴリ「その他」自由記述連動
+      html += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
       
       container.innerHTML = html;
       bindDynamicEvents();
@@ -49,20 +50,20 @@ export async function initFormLogic() {
   }
 
   function bindDynamicEvents() {
-    // 🍎 L1 -> L2 連動 ＆ 大カテゴリその他対応
+    // L1 -> L2 連動
     document.getElementsByName('cat_l1').forEach(c => c.onchange = () => {
       const v = Array.from(document.getElementsByName('cat_l1')).filter(i => i.checked).map(i => i.value);
-      // 通常の連動
       Object.keys(genreIdMap).forEach(key => {
         const el = document.getElementById(`sub-${genreIdMap[key]}`);
         if(el) el.style.display = v.includes(key) ? 'flex' : 'none';
       });
-      // 大カテゴリその他の連動
+      // 🍎 大カテゴリ「その他」の表示制御
       const otherRoot = document.getElementById('sub-cat-root-other');
-      const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => i.value === '大カテゴリその他' && i.checked);
+      const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => (i.value === '大カテゴリその他' || i.value === 'その他') && i.checked);
       if(otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
     });
 
+    // サブカテゴリ内「その他」の記述欄表示
     document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
       trigger.onchange = (e) => {
         const parent = e.target.closest('.lz-dynamic-sub-area');
@@ -72,7 +73,7 @@ export async function initFormLogic() {
     });
   }
 
-  // --- 🍎 2. 曜日別設定：休業連動ロジック ---
+  // --- 🍎 2. 曜日別設定：休業連動（無効化） ---
   const customBody = document.getElementById('customSchedBody');
   if (customBody) {
     days.forEach(d => {
@@ -85,12 +86,12 @@ export async function initFormLogic() {
       `;
       customBody.appendChild(tr);
 
-      // 🍎 休業チェック時に時間を無効化
+      // 休業時の無効化処理
       const trigger = tr.querySelector('.lz-closed-trigger');
       const timeBoxes = tr.querySelectorAll('.lz-time-box');
       trigger.onchange = (e) => {
         const isClosed = e.target.checked;
-        tr.style.opacity = isClosed ? "0.5" : "1";
+        tr.style.opacity = isClosed ? "0.4" : "1";
         timeBoxes.forEach(box => {
           box.classList.toggle('is-disabled', isClosed);
           box.querySelectorAll('select').forEach(sel => sel.disabled = isClosed);
@@ -99,7 +100,7 @@ export async function initFormLogic() {
     });
   }
 
-  // 標準設定の曜日チップ
+  // 標準設定の曜日
   const simpleBox = document.getElementById('box-simple-days');
   if (simpleBox) {
     days.forEach(d => {
@@ -109,13 +110,14 @@ export async function initFormLogic() {
     });
   }
 
+  // 時間セレクター初期化
   const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
   setHtml('sel-simple-start', utils.createTimeSelectorHTML('simple_s'));
   setHtml('sel-simple-end', utils.createTimeSelectorHTML('simple_e'));
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
-  // --- タブ・住所・タイプ選択等の基本機能は維持 ---
+  // タブ・住所検索等
   const tabs = document.querySelectorAll('.lz-form-tab');
   tabs.forEach(t => t.onclick = () => {
     tabs.forEach(x => x.classList.toggle('is-active', x === t));
@@ -137,6 +139,7 @@ export async function initFormLogic() {
     };
   }
 
+  // タイプ別表示
   const typeRadios = document.getElementsByName('art_type');
   const fieldsContainer = document.getElementById('article-fields-container');
   const lblTitle = document.getElementById('lbl-title');
@@ -165,6 +168,7 @@ export async function initFormLogic() {
   typeRadios.forEach(r => r.onchange = updateTypeView);
   updateTypeView();
 
+  // リンク連動・モード切替・メール同期
   const snsTriggers = document.getElementsByName('sns_trigger');
   snsTriggers.forEach(trigger => {
     trigger.onchange = () => {
