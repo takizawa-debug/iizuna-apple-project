@@ -16,47 +16,47 @@ export async function initFormLogic() {
     container.innerHTML = '<div style="font-size:0.9rem; color:#888;">カテゴリーを取得中...</div>';
 
     try {
-      // 🍎 type 引数によって取得するデータを切り替える（GAS側で対応が必要）
       const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}`);
       const json = await res.json();
       if (!json.ok) throw new Error("取得失敗");
       const genres = json.items;
-      let html = '';
+      
+      // 🍎 変数の初期化
+      let l1Html = '<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> この場所でできること（複数選択可）</label><div class="lz-choice-flex">';
+      let l2Html = '';
 
-      // 大カテゴリ(L1)
-      html += '<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> この場所でできること（複数選択可）</label><div class="lz-choice-flex">';
-      Object.keys(genres).forEach(l1 => {
+      // 大カテゴリとサブカテゴリを同時に組み立てる
+      Object.keys(genres).forEach((l1, idx) => {
+        const baseId = `gen-${idx}`;
         const isRootOther = l1 === '大カテゴリその他' || l1 === 'その他';
         const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
-        html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr}><span class="lz-choice-inner">${l1}</span></label>`;
+        
+        // 大カテゴリ（チップ）に data-subid を直接付与
+        l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}"><span class="lz-choice-inner">${l1}</span></label>`;
+
+        // サブカテゴリ（ジャンル）のエリアを作成
+        if (!isRootOther) {
+          l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-choice-flex">`;
+          genres[l1].forEach(l2 => {
+            const isOther = l2.includes('その他');
+            l2Html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
+          });
+          l2Html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
+        }
       });
-      html += '</div></div>';
 
-      /* 🍎 名前ではなく、配列の順番（idx）で ID を作るように変更 */
-Object.keys(genres).forEach((l1, idx) => {
-  if (l1 === '大カテゴリその他' || l1 === 'その他') return;
-  const baseId = `gen-${idx}`; 
-  
-  // 🍎 大カテゴリのチェックボックスに「どのIDを操作するか」の目印（data-subid）を付与
-  const l1Checkboxes = document.querySelectorAll(`input[name="cat_l1"][value="${l1}"]`);
-  l1Checkboxes.forEach(cb => cb.setAttribute('data-subid', baseId));
-
-  html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-choice-flex">`;
-  genres[l1].forEach(l2 => {
-    const isOther = l2.includes('その他');
-    html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
-  });
-  html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
-});
+      // 🍎 最後にすべてのHTMLを結合
+      let finalHtml = l1Html + '</div></div>' + l2Html;
       
-      html += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
+      // ルートの「その他」自由記述欄を追加
+      finalHtml += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
       
-      container.innerHTML = html;
-      bindDynamicEvents();
+      container.innerHTML = finalHtml;
+      bindDynamicEvents(); // イベントを再バインド
     } catch (e) { 
       container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; 
     }
-  }
+}
 
   function bindDynamicEvents() {
   /* 🍎 全ての大カテゴリに対して一律で連動ロジックを設定 */
