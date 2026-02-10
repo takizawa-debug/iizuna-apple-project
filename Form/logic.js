@@ -191,5 +191,40 @@ export async function initFormLogic() {
     syncCheck.onchange = () => { pubMail.readOnly = syncCheck.checked; if(syncCheck.checked) pubMail.value = admMail.value; };
   }
 
+  // --- 🍎 画像プレビュー＆追加・削除ロジック ---
+  let uploadedFiles = []; // 画像データを保持する配列
+  const imgInput = document.getElementById('art_images_input');
+  const imgAddBtn = document.getElementById('imgAddBtn');
+  const previewArea = document.getElementById('imgPreviewArea');
+
+  if (imgAddBtn && imgInput) {
+    imgAddBtn.onclick = () => imgInput.click();
+    imgInput.onchange = (e) => {
+      Array.from(e.target.files).forEach(file => {
+        if (uploadedFiles.length >= 6) return; // 6枚制限
+        uploadedFiles.push(file);
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const div = document.createElement('div');
+          div.className = 'lz-img-container';
+          div.innerHTML = `<img src="${event.target.result}"><div class="lz-img-remove">×</div>`;
+          
+          // 削除ボタンの挙動
+          div.querySelector('.lz-img-remove').onclick = () => {
+            div.remove();
+            uploadedFiles = uploadedFiles.filter(f => f !== file);
+            imgAddBtn.style.display = 'flex'; // 削除されたら追加ボタンを再表示
+          };
+          
+          previewArea.insertBefore(div, imgAddBtn);
+          if (uploadedFiles.length >= 6) imgAddBtn.style.display = 'none'; // 6枚で追加ボタンを隠す
+        };
+        reader.readAsDataURL(file);
+      });
+      imgInput.value = ""; // 同じファイルの再選択を許可
+    };
+  }
+  
   await loadAndBuildGenres();
 }

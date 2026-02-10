@@ -40,11 +40,18 @@ export const formHTML = `
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-lead">概要</span>（100文字以内）</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" placeholder="お店やイベントを一言で表すと？" required></textarea></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" placeholder="詳しい内容を教えてください" required></textarea></div>
 
-        <div class="lz-section-head">画像・配布資料</div>
-        <div class="lz-grid">
-          <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label><input type="file" name="art_images" class="lz-input" accept="image/*" multiple></div>
-          <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div>
-        </div>
+       /* templates.js の「画像・配布資料」部分を以下に差し替え */
+<div class="lz-section-head">画像・配布資料</div>
+<div class="lz-grid">
+  <div class="lz-field">
+    <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label>
+    <div id="imgPreviewArea" class="lz-img-preview-grid">
+      <div id="imgAddBtn" class="lz-img-add-btn">＋</div>
+    </div>
+    <input type="file" id="art_images_input" style="display:none;" accept="image/*" multiple>
+  </div>
+  <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div>
+</div>
 
         <div class="lz-section-head">場所の情報</div>
         <div class="lz-grid">

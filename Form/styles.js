@@ -112,6 +112,24 @@ export const formStyles = `
     .lz-schedule-table td:first-child::before { display: none; }
   }
 
+  /* 🍎 画像プレビュー（正方形・×ボタン） */
+  .lz-img-preview-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+  .lz-img-container { position: relative; width: 110px; height: 110px; }
+  .lz-img-container img { width: 100%; height: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #eee; }
+  .lz-img-remove { 
+    position: absolute; top: -8px; right: -8px; width: 28px; height: 28px; 
+    background: #cf3a3a; color: #fff; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 18px; cursor: pointer; border: 2px solid #fff; font-weight: bold; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+  .lz-img-add-btn { 
+    width: 110px; height: 110px; border: 2px dashed #ccc; border-radius: 12px; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 32px; color: #999; cursor: pointer; transition: 0.3s; background: #fafafa;
+  }
+  .lz-img-add-btn:hover { border-color: #cf3a3a; color: #cf3a3a; background: #fff; }
+
   .lz-zip-btn { background: #5b3a1e; color: #fff; border: none; padding: 0 18px; border-radius: 12px; font-weight: 800; cursor: pointer; height: 58px; font-size: 1.15rem; }
   .lz-send-btn { background: #cf3a3a; color: #fff; padding: 24px; border: none; border-radius: 99px; font-weight: 900; font-size: 1.5rem; cursor: pointer; transition: 0.4s; margin-top: 60px; width: 100%; box-shadow: 0 10px 25px rgba(207, 58, 58, 0.2); }
   
