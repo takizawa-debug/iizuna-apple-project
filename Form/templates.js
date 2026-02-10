@@ -42,14 +42,25 @@ export const formHTML = `
         <div class="lz-section-head">画像・配布資料</div><div class="lz-grid"><div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label><div id="imgPreviewArea" class="lz-img-preview-grid"><div id="imgAddBtn" class="lz-img-add-btn">＋</div></div><input type="file" id="art_images_input" style="display:none;" accept="image/*" multiple></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div></div>
 
-        <div class="lz-section-head">場所の情報</div>
-        <div class="lz-grid">
-          <div class="lz-field">
-            <label class="lz-label"><span class="lz-badge">必須</span> 郵便番号</label>
-            <div style="display:flex; gap:10px;"><input type="text" id="zipCode" name="shop_zip" class="lz-input" placeholder="389-1211" style="flex:1;"><button type="button" class="lz-zip-btn" id="zipBtnAction">住所検索</button></div>
-          </div>
-          <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 住所</label><input type="text" id="addressField" name="shop_addr" class="lz-input" required></div>
-        </div>
+<div class="lz-section-head">場所の情報</div>
+<div class="lz-field">
+  <label class="lz-label"><span class="lz-badge">必須</span> 会場名</label>
+  <input type="text" name="ev_venue_name" class="lz-input" placeholder="飯綱町ふれあいパーク など">
+</div>
+<div class="lz-grid">
+  <div class="lz-field">
+    <label class="lz-label"><span class="lz-badge" id="zipBadge">必須</span> 郵便番号</label>
+    <div style="display:flex; gap:10px;"><input type="text" id="zipCode" name="shop_zip" class="lz-input" placeholder="389-1211" style="flex:1;"><button type="button" class="lz-zip-btn" id="zipBtnAction">住所検索</button></div>
+  </div>
+  <div class="lz-field">
+    <label class="lz-label"><span class="lz-badge" id="addrBadge">必須</span> 住所</label>
+    <input type="text" id="addressField" name="shop_addr" class="lz-input" required>
+  </div>
+</div>
+<div class="lz-field">
+  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 会場に関する注意事項</label>
+  <textarea name="ev_venue_notes" class="lz-textarea" rows="2" placeholder="駐車場は北側を利用してください、など"></textarea>
+</div>
 
         <div id="pane-shop-detail" class="lz-dynamic-detail" style="display:none;">
           <div class="lz-section-head" style="margin-top:0;">営業に関する情報</div>
@@ -93,14 +104,33 @@ export const formHTML = `
         </div>
 
 
-         <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
-          <div class="lz-section-head" style="margin-top:0;">開催詳細</div>
-          <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始日</label><input type="date" name="ev_sdate" class="lz-input"></div><div class="lz-field"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div></div>
-          <div class="lz-grid">
-            <div class="lz-field"><label class="lz-label">開始時刻</label><div id="sel-ev-start" class="lz-time-row"><div class="lz-time-box" id="sel-ev-s"></div></div></div>
-            <div class="lz-field"><label class="lz-label">終了時刻</label><div id="sel-ev-end" class="lz-time-row"><div class="lz-time-box" id="sel-ev-e"></div></div></div>
-          </div>
-        </div>
+<div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
+  <div class="lz-section-head" style="margin-top:0;">開催日時</div>
+  <div class="lz-field">
+    <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
+      <label class="lz-choice-item"><input type="radio" name="ev_period_type" value="single" checked><span class="lz-choice-inner">1日のみ</span></label>
+      <label class="lz-choice-item"><input type="radio" name="ev_period_type" value="period"><span class="lz-choice-inner">期間あり</span></label>
+    </div>
+  </div>
+  <div class="lz-grid">
+    <div class="lz-field"><label class="lz-label">開催日（開始日）</label><input type="date" name="ev_sdate" class="lz-input"></div>
+    <div class="lz-field" id="ev-end-date-box" style="display:none;"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div>
+  </div>
+  <div class="lz-grid">
+    <div class="lz-field"><label class="lz-label">開始時刻</label><div class="lz-time-row"><div class="lz-time-box" id="sel-ev-s"></div></div></div>
+    <div class="lz-field"><label class="lz-label">終了時刻</label><div class="lz-time-row"><div class="lz-time-box" id="sel-ev-e"></div></div></div>
+  </div>
+
+  <div class="lz-section-head">開催詳細</div>
+  <div class="lz-field"><label class="lz-label">参加費</label><input type="text" name="ev_fee" class="lz-input" placeholder="無料、500円 など"></div>
+  <div class="lz-field"><label class="lz-label">参加者のもちもの</label><input type="text" name="ev_items" class="lz-input" placeholder="筆記用具、室内履き など"></div>
+  <div class="lz-field"><label class="lz-label">対象</label><input type="text" name="ev_target" class="lz-input" placeholder="町内在住の方、小学生以上 など"></div>
+
+  <div class="lz-section-head">主催・申し込み</div>
+  <div class="lz-field"><label class="lz-label">主催者名</label><input type="text" name="ev_org_name" class="lz-input"></div>
+  <div class="lz-field"><label class="lz-label">主催者連絡先</label><input type="text" name="ev_org_contact" class="lz-input" placeholder="電話番号やメールアドレス"></div>
+  <div class="lz-field"><label class="lz-label">申し込み方法</label><textarea name="ev_entry_method" class="lz-textarea" rows="2" placeholder="当日受付、またはGoogleフォームより申し込み、など"></textarea></div>
+</div>
 
         <div id="box-sns-links" class="lz-field">
         <div class="lz-section-head">各種リンク</div>

@@ -152,6 +152,20 @@ export async function initFormLogic() {
   const lblLead = document.getElementById('lbl-lead');
   const inpTitle = document.getElementById('inp-title');
 
+  /* logic.js の initFormLogic 内に追記 */
+
+  // 🍎 イベントの「1日のみ/期間あり」切り替えロジック
+  const evPeriodRadios = document.getElementsByName('ev_period_type');
+  const evEndDateBox = document.getElementById('ev-end-date-box');
+  
+  if (evPeriodRadios && evEndDateBox) {
+    evPeriodRadios.forEach(r => {
+      r.addEventListener('change', (e) => {
+        evEndDateBox.style.display = e.target.value === 'period' ? 'block' : 'none';
+      });
+    });
+  }
+
   function updateTypeView() {
     const selected = Array.from(typeRadios).find(r => r.checked);
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
@@ -172,6 +186,21 @@ export async function initFormLogic() {
     } else {
       if(lblTitle) lblTitle.textContent = "記事タイトル"; if(lblLead) lblLead.textContent = "記事の概要";
       if(inpTitle) inpTitle.placeholder = "読みたくなるタイトルをご記入ください";
+    }
+    const isShop = type === 'shop';
+    const zipInp = document.getElementById('zipCode');
+    const addrInp = document.getElementById('addressField');
+    const zipBadge = document.getElementById('zipBadge');
+    const addrBadge = document.getElementById('addrBadge');
+
+    if (zipInp && addrInp && zipBadge && addrBadge) {
+      zipInp.required = isShop;
+      addrInp.required = isShop;
+      zipBadge.textContent = isShop ? '必須' : '任意';
+      addrBadge.textContent = isShop ? '必須' : '任意';
+      // 任意の場合は背景色を少し変えて視覚的に補助（任意）
+      zipBadge.style.background = isShop ? '#cf3a3a' : '#999';
+      addrBadge.style.background = isShop ? '#cf3a3a' : '#999';
     }
   }
   typeRadios.forEach(r => r.onchange = updateTypeView);
