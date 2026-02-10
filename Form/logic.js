@@ -9,12 +9,17 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
 
-  // --- 🍎 1. カテゴリー：チップ形式生成 ＆ 初期非表示 ---
-  async function loadAndBuildGenres() {
+  /* logic.js の loadAndBuildGenres 関数を以下に置き換え */
+  async function loadAndBuildGenres(type = 'shop') {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
+    
+    // 読み込み中の表示
+    container.innerHTML = '<div style="font-size:0.9rem; color:#888;">カテゴリーを取得中...</div>';
+
     try {
-      const res = await fetch(`${ENDPOINT}?mode=form_genres`);
+      // 🍎 type 引数によって取得するデータを切り替える（GAS側で対応が必要）
+      const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}`);
       const json = await res.json();
       if (!json.ok) throw new Error("取得失敗");
       const genres = json.items;
@@ -45,7 +50,9 @@ export async function initFormLogic() {
       
       container.innerHTML = html;
       bindDynamicEvents();
-    } catch (e) { container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; }
+    } catch (e) { 
+      container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; 
+    }
   }
 
   function bindDynamicEvents() {
@@ -142,6 +149,9 @@ export async function initFormLogic() {
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
     const type = selected.value;
+
+    loadAndBuildGenres(type);
+
     const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
