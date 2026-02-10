@@ -1,6 +1,5 @@
 /**
- * templates.js - フォーム構造定義（完全動的・データ同期版）
- * 役割: スプレッドシートから取得したカテゴリーを注入するための構造を定義。
+ * templates.js - フォーム構造定義（UI改善・注意事項強化版）
  */
 
 export const formHTML = `
@@ -47,7 +46,6 @@ export const formHTML = `
         </div>
 
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-lead">概要</span>（100文字以内）</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" required></textarea></div>
-
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" required></textarea></div>
 
         <div class="lz-section-head">画像・配布資料</div>
@@ -69,11 +67,21 @@ export const formHTML = `
             <label class="lz-choice-label"><input type="radio" name="shop_mode" value="custom"> 曜日別に詳細設定</label>
           </div>
           <div id="shop-simple">
-            <div class="lz-field"><label class="lz-label">営業曜日</label><div class="lz-choice-group-main" id="box-simple-days"></div></div>
+            <div class="lz-field">
+              <label class="lz-label">営業曜日</label>
+              <div id="box-simple-days" class="lz-day-selector"></div>
+            </div>
             <div class="lz-field"><label class="lz-label">標準営業時間</label><div style="display:flex; align-items:center; gap:10px;" id="sel-simple-time"></div></div>
           </div>
-          <div id="shop-custom" style="display:none;"><table class="lz-schedule-table"><thead><tr><th>曜日</th><th>休業</th><th>開店</th><th>閉店</th></tr></thead><tbody id="customSchedBody"></tbody></table></div>
-          <div class="lz-field"><label class="lz-label">最新情報の案内（SNS等）</label><textarea name="shop_notes" class="lz-textarea" rows="2" placeholder="公式Instagramをご覧ください、等"></textarea></div>
+          <div id="shop-custom" style="display:none;">
+            <div class="lz-schedule-container">
+              <table class="lz-schedule-table"><thead><tr><th>曜日</th><th>休業</th><th>開店</th><th>閉店</th></tr></thead><tbody id="customSchedBody"></tbody></table>
+            </div>
+          </div>
+          <div class="lz-field">
+            <label class="lz-label">営業に関する注意事項</label>
+            <textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。最新情報は公式Instagramをご確認ください。"></textarea>
+          </div>
         </div>
 
         <div id="box-sns-links" class="lz-field">

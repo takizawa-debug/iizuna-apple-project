@@ -16,29 +16,42 @@ export const formStyles = `
   .lz-input, .lz-textarea, .lz-select { padding: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1.1rem; background: #fafafa; width: 100%; box-sizing: border-box; }
   .lz-input:focus, .lz-textarea:focus { border-color: #cf3a3a; background: #fff; outline: none; }
 
-  /* 本カテゴリー（Red階層） */
+  /* 🍎 コンパクトな曜日チップセレクター */
+  .lz-day-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
+  .lz-day-chip { position: relative; cursor: pointer; }
+  .lz-day-chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .lz-day-text { 
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 44px; height: 44px; background: #fff; border: 2px solid #eee; 
+    border-radius: 50%; font-weight: 800; font-size: 1.1rem; color: #888;
+    transition: all 0.2s;
+  }
+  .lz-day-chip input:checked + .lz-day-text { 
+    background: #cf3a3a; border-color: #cf3a3a; color: #fff; transform: scale(1.1);
+  }
+
+  /* 🍎 テーブルのモバイル対応 */
+  .lz-schedule-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .lz-schedule-table { width: 100%; border-collapse: collapse; min-width: 450px; background: #fff; border-radius: 12px; }
+  .lz-schedule-table th, .lz-schedule-table td { padding: 12px 8px; border: 1px solid #eee; text-align: center; font-size: 1rem; }
+  .lz-schedule-table th { background: #fdfaf8; color: #5b3a1e; font-weight: 800; }
+
   .lz-choice-group-main { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px; background: #fff; border: 2px solid #eee; border-radius: 16px; }
   .lz-main-label { font-size: 1.2rem; font-weight: 800; display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 12px 18px; border-radius: 10px; background: #fdfaf8; border: 1px solid #f0e6e0; }
   .lz-main-label input { width: 24px; height: 24px; accent-color: #cf3a3a; cursor: pointer; }
 
-  /* サブカテゴリー（Brown階層・インデント） */
   .lz-dynamic-sub-area { display: none; flex-direction: column; gap: 15px; padding: 25px; background: #fcfcfc; border: 1px solid #eee; border-radius: 16px; margin-top: -15px; margin-left: 20px; border-left: 5px solid #5b3a1e; animation: lz-fade 0.3s ease; }
   .lz-choice-group-sub { display: flex; flex-wrap: wrap; gap: 10px; }
   .lz-sub-label { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; cursor: pointer; padding: 10px 16px; background: #fff; border: 1px solid #ddd; border-radius: 8px; color: #666; }
   .lz-sub-label input { width: 20px; height: 20px; accent-color: #5b3a1e; }
-  
   .lz-sub-other-field { display: none; margin-top: 10px; }
 
-  /* 住所検索・スケジュール */
   .lz-zip-btn { background: #5b3a1e; color: #fff; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; white-space: nowrap; }
   .lz-dynamic-detail { display: none; flex-direction: column; gap: 24px; padding: 25px; background: rgba(91, 58, 30, 0.03); border-radius: 16px; border: 1px dashed #ddd; }
-  .lz-schedule-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
-  .lz-schedule-table th, .lz-schedule-table td { padding: 10px; border: 1px solid #eee; text-align: center; }
   .lz-time-box { display: flex; align-items: center; gap: 5px; justify-content: center; }
   .lz-time-select { padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 1rem; cursor: pointer; background: #fff; }
 
   .lz-send-btn { background: #cf3a3a; color: #fff; padding: 22px; border: none; border-radius: 99px; font-weight: 900; font-size: 1.4rem; cursor: pointer; transition: 0.4s; margin-top: 50px; width: 100%; }
-  
   .lz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   @media (max-width: 600px) { .lz-grid { grid-template-columns: 1fr; } .lz-dynamic-sub-area { margin-left: 10px; } }
 `;
