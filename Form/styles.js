@@ -22,7 +22,7 @@ export const formStyles = `
   .lz-choice-item { position: relative; cursor: pointer; display: block; width: fit-content; }
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-inner { 
-    display: flex; align-items: center; justify-content: center; padding: 12px 18px;
+    display: flex; align-items: center; justify-content: center; padding: 12px 10px;
     background: #fff; border: 2px solid #eee; border-radius: 12px;
     font-size: 1rem; font-weight: 800; color: #666; transition: all 0.2s ease;
     min-height: 48px; box-sizing: border-box;
@@ -34,7 +34,7 @@ export const formStyles = `
 
   /* 🍎 サブカテゴリーエリアの改善 */
   .lz-dynamic-sub-area { display: none; flex-direction: column; gap: 15px; padding: 15px 0 15px 15px; background: transparent; border-left: 6px solid #5b3a1e; margin: 10px 0; animation: lz-fade 0.3s ease; }
-  .lz-sub-choice-item .lz-choice-inner { min-height: 40px; padding: 8px 16px; border-radius: 30px; font-size: 0.95rem; }
+  .lz-sub-choice-item .lz-choice-inner { min-height: 40px; padding: 8px 10px; border-radius: 30px; font-size: 0.95rem; }
   .lz-sub-choice-item input:checked + .lz-choice-inner { background: #5b3a1e; border-color: #5b3a1e; }
   .lz-sub-other-field { display: none; margin-top: 5px; }
 
