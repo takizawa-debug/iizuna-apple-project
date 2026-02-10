@@ -165,7 +165,7 @@ snsTriggers.forEach(trigger => {
   trigger.onchange = () => {
     const vals = Array.from(snsTriggers).filter(i => i.checked).map(i => i.value);
     // 関連リンク（rel）はflex配置にするため条件分け
-    ['home', 'ec', 'ig', 'fb', 'x', 'line', 'rel'].forEach(t => {
+    ['home', 'ec', 'rel', 'ig', 'fb', 'x', 'line','tt'].forEach(t => {
       const box = document.getElementById(`f-${t}`);
       if(box) box.style.display = vals.includes(t) ? (t === 'rel' ? 'flex' : 'block') : 'none';
     });
