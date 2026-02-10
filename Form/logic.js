@@ -1,3 +1,6 @@
+/**
+ * logic.js - 統合完成版
+ */
 import { utils } from './utils.js';
 
 const genreIdMap = { "飲食": "eat", "買い物": "buy", "宿泊": "stay", "観光": "tour", "相談": "consult", "産業": "industry", "暮らし": "life" };
@@ -6,7 +9,7 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
 
-  // --- 🍎 カテゴリー生成 ---
+  // 1. カテゴリー生成
   async function loadAndBuildGenres() {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
@@ -35,7 +38,7 @@ export async function initFormLogic() {
     });
   }
 
-  // --- 🍎 各種UI制御（現状維持・タブ復元） ---
+  // 2. 曜日・時間・タブ制御
   const customBody = document.getElementById('customSchedBody');
   if (customBody) {
     days.forEach(d => {
@@ -44,13 +47,10 @@ export async function initFormLogic() {
       customBody.appendChild(tr);
     });
   }
-
   const simpleBox = document.getElementById('box-simple-days');
   if (simpleBox) { days.forEach(d => { simpleBox.insertAdjacentHTML('beforeend', `<label class="lz-day-chip"><input type="checkbox" name="simple_days" value="${d}"><span class="lz-day-text">${d}</span></label>`); }); }
-
   const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
   setHtml('sel-simple-start', utils.createTimeSelectorHTML('simple_s')); setHtml('sel-simple-end', utils.createTimeSelectorHTML('simple_e'));
-
   const tabs = document.querySelectorAll('.lz-form-tab');
   tabs.forEach(t => t.onclick = () => {
     tabs.forEach(x => x.classList.toggle('is-active', x === t));
@@ -59,36 +59,29 @@ export async function initFormLogic() {
     if (target) target.classList.add('is-active');
   });
 
+  // 3. 郵便番号・タイプ連動
   const zipBtn = document.getElementById('zipBtnAction');
   if (zipBtn) {
     zipBtn.onclick = async () => {
-      const zip = document.getElementById('zipCode').value;
-      try { const addr = await utils.fetchAddress(zip); document.getElementById('addressField').value = addr; } catch(e) { alert(e.message); }
+      const zipField = document.getElementById('zipCode');
+      if (!zipField.value) return alert('郵便番号を入力してください');
+      try { const addr = await utils.fetchAddress(zipField.value); document.getElementById('addressField').value = addr; } catch(e) { alert(e.message); }
     };
   }
-
-  const typeRadios = document.getElementsByName('art_type');
-  typeRadios.forEach(r => r.onchange = () => {
+  document.getElementsByName('art_type').forEach(r => r.onchange = () => {
     document.getElementById('article-fields-container').style.display = 'flex';
     document.getElementById('pane-shop-detail').style.display = r.value === 'shop' ? 'block' : 'none';
   });
-
   document.getElementsByName('shop_mode').forEach(r => r.onchange = (e) => {
     document.getElementById('shop-simple').style.display = e.target.value === 'simple' ? 'block' : 'none';
     document.getElementById('shop-custom').style.display = e.target.value === 'custom' ? 'block' : 'none';
   });
 
-  document.getElementsByName('cm').forEach(c => c.onchange = () => {
-    document.getElementById('cm-email-box').style.display = Array.from(document.getElementsByName('cm')).some(i => i.value === 'email' && i.checked) ? 'block' : 'none';
-    updateSync();
-  });
-
-  // --- 🍎 画像プレビュー＆追加・削除ロジック ---
+  // 4. 🍎 画像プレビュー＆追加・削除ロジック
   let uploadedFiles = [];
   const imgInput = document.getElementById('art_images_input');
   const imgAddBtn = document.getElementById('imgAddBtn');
   const previewArea = document.getElementById('imgPreviewArea');
-
   if (imgAddBtn && imgInput) {
     imgAddBtn.onclick = () => imgInput.click();
     imgInput.onchange = (e) => {
@@ -114,13 +107,13 @@ export async function initFormLogic() {
     };
   }
 
-  // --- 🍎 メールアドレス同期ロジック（統合版） ---
+  // 5. 🍎 メールアドレス同期・表示制御
   const pubMail = document.getElementById('pubEmail');
   const admMail = document.getElementById('adminEmail');
   const syncCheck = document.getElementById('syncCheck');
   const syncField = document.getElementById('syncField');
 
-  function updateSync() {
+  function updateSyncState() {
     if (!pubMail || !admMail || !syncCheck) return;
     const isEmailMode = Array.from(document.getElementsByName('cm')).some(i => i.value === 'email' && i.checked);
     const hasPubValue = pubMail.value.trim() !== "";
@@ -133,8 +126,9 @@ export async function initFormLogic() {
     }
   }
 
-  if (pubMail) pubMail.oninput = updateSync;
-  if (syncCheck) syncCheck.onchange = updateSync;
+  if (pubMail) pubMail.oninput = updateSyncState;
+  if (syncCheck) syncCheck.onchange = updateSyncState;
+  document.getElementsByName('cm').forEach(c => c.addEventListener('change', updateSyncState));
 
   await loadAndBuildGenres();
 }
