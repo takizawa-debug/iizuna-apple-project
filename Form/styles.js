@@ -14,18 +14,48 @@ export const formStyles = `
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
   
-  /* 入力フォーム：郵便番号ボタンと高さを58pxで統一 */
-  .lz-input, .lz-textarea, .lz-select { padding: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1.15rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; height: 58px; }
-  .lz-textarea { height: auto; }
+  .lz-input, .lz-textarea, .lz-select { padding: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1.15rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
-/* チップ選択 */
-  .lz-choice-flex { display: flex !important; flex-wrap: wrap !important; justify-content: flex-start !important; gap: 6px !important; width: 100% !important; text-align: left !important; margin: 0 !important; }
-  .lz-choice-item { position: relative !important; cursor: pointer !important; display: block !important; width: auto !important; flex: 0 0 auto !important; margin: 0 !important; }
-  .lz-choice-inner { display: flex; align-items: center; justify-content: center; padding: 10px 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; font-size: 1.1rem; font-weight: 800; color: #666; transition: all 0.2s ease; min-height: 50px; box-sizing: border-box; }
+/* 🍎 カテゴリー・チップ選択の最終確定スタイル */
+.lz-choice-flex { 
+  display: flex !important; 
+  flex-wrap: wrap !important; 
+  justify-content: flex-start !important; 
+  align-items: flex-start !important;
+  gap: 6px !important; 
+  width: 100% !important;
+  text-align: left !important; 
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.lz-choice-item { 
+  position: relative !important; 
+  cursor: pointer !important; 
+  display: block !important; 
+  width: auto !important; 
+  flex: 0 0 auto !important; 
+  margin: 0 !important; 
+  padding: 0 !important;
+}
+
+.lz-choice-inner { 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  padding: 10px 18px; 
+  background: #fff; 
+  border: 1px solid #eee; 
+  border-radius: 12px;
+  font-size: 1.1rem; 
+  font-weight: 800; 
+  color: #666; 
+  min-height: 50px; 
+  box-sizing: border-box;
+}
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
-
 
   /* 登録タイプ選択：文字に合わせて最小幅を微調整 */
   .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, auto)); gap: 8px; width: 100%; }
@@ -35,18 +65,6 @@ export const formStyles = `
   .lz-sub-choice-item .lz-choice-inner { min-height: 44px; padding: 8px 18px; border-radius: 30px; font-size: 1.05rem; }
   .lz-sub-choice-item input:checked + .lz-choice-inner { background: #5b3a1e; border-color: #5b3a1e; }
   .lz-sub-other-field { display: none; margin-top: 5px; }
-
-/* 画像プレビュー機能：正方形 1:1 */
-  .lz-img-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px; margin-top: 15px; }
-  .lz-img-item { position: relative; width: 100%; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden; border: 2px solid #eee; background: #f9f9f9; }
-  .lz-img-item img { width: 100%; height: 100%; object-fit: cover; }
-  .lz-img-del { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; border: none; font-weight: bold; }
-  .lz-img-add-btn { width: 100%; aspect-ratio: 1/1; border: 2px dashed #ccc; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; font-size: 0.9rem; font-weight: 800; transition: 0.3s; }
-  .lz-img-add-btn:hover { border-color: #cf3a3a; color: #cf3a3a; }
-
-  /* 営業時間の余白調整 */
-  #lz-standard-hours-label { margin-top: 25px; }
-
 
   /* 🍎 営業時間：スマホでの切れ防止・ラベル化 */
   .lz-time-row { display: flex; flex-direction: column; gap: 14px; width: 100%; }
