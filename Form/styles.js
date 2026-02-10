@@ -14,7 +14,24 @@ export const formStyles = `
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
   
-  .lz-input, .lz-textarea, .lz-select { padding: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1.15rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
+  /* styles.js の .lz-input グループを検索して書き換え */
+.lz-input, .lz-textarea, .lz-select { 
+  padding: 16px; 
+  border: 2px solid #eee; 
+  border-radius: 12px; 
+  font-size: 1.15rem; 
+  background: #fafafa; 
+  width: 100%; 
+  box-sizing: border-box; 
+  -webkit-appearance: none; 
+  height: 58px; /* 🍎 高さを58pxに固定 */
+}
+
+/* 🍎 textareaは複数行入力するため、高さ固定を解除して最低高さを設定 */
+.lz-textarea { 
+  height: auto !important; 
+  min-height: 120px; 
+}
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
 /* 🍎 カテゴリー・チップ選択の最終確定スタイル */
@@ -130,7 +147,21 @@ export const formStyles = `
   }
   .lz-img-add-btn:hover { border-color: #cf3a3a; color: #cf3a3a; background: #fff; }
 
-  .lz-zip-btn { background: #5b3a1e; color: #fff; border: none; padding: 0 18px; border-radius: 12px; font-weight: 800; cursor: pointer; height: 58px; font-size: 1.15rem; }
+  /* styles.js の .lz-zip-btn を検索して書き換え */
+.lz-zip-btn { 
+  background: #5b3a1e; 
+  color: #fff; 
+  border: none; 
+  padding: 0 18px; 
+  border-radius: 12px; 
+  font-weight: 800; 
+  cursor: pointer; 
+  height: 58px; 
+  font-size: 1.15rem; 
+  display: flex;          /* 🍎 追加 */
+  align-items: center;    /* 🍎 追加 */
+  justify-content: center; /* 🍎 追加 */
+}
   .lz-send-btn { background: #cf3a3a; color: #fff; padding: 24px; border: none; border-radius: 99px; font-weight: 900; font-size: 1.5rem; cursor: pointer; transition: 0.4s; margin-top: 60px; width: 100%; box-shadow: 0 10px 25px rgba(207, 58, 58, 0.2); }
   
   .lz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
