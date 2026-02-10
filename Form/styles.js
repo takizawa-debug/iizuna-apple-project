@@ -18,7 +18,7 @@ export const formStyles = `
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
   /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
-  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 10px; width: 100%; }
+  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; }
   .lz-choice-item { position: relative; cursor: pointer; display: block; width: fit-content; }
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-inner { 
@@ -30,11 +30,11 @@ export const formStyles = `
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
   /* 登録タイプ選択などの固定グリッド */
-  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; width: 100%; }
+  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 5px; width: 100%; }
 
   /* 🍎 サブカテゴリーエリアの改善 */
   .lz-dynamic-sub-area { display: none; flex-direction: column; gap: 15px; padding: 15px 0 15px 15px; background: transparent; border-left: 6px solid #5b3a1e; margin: 10px 0; animation: lz-fade 0.3s ease; }
-  .lz-sub-choice-item .lz-choice-inner { min-height: 40px; padding: 8px 10px; border-radius: 30px; font-size: 0.95rem; }
+  .lz-sub-choice-item .lz-choice-inner { min-height: 40px; padding: 8px 16px; border-radius: 30px; font-size: 0.95rem; }
   .lz-sub-choice-item input:checked + .lz-choice-inner { background: #5b3a1e; border-color: #5b3a1e; }
   .lz-sub-other-field { display: none; margin-top: 5px; }
 
@@ -47,7 +47,7 @@ export const formStyles = `
   .lz-time-box.is-disabled { opacity: 0.2; pointer-events: none; }
 
   /* 曜日チップ */
-  .lz-day-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+  .lz-day-selector { display: flex; flex-wrap: wrap; gap: 5px; }
   .lz-day-chip { position: relative; cursor: pointer; }
   .lz-day-chip input { position: absolute; opacity: 0; }
   .lz-day-text { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; background: #fff; border: 2px solid #eee; border-radius: 50%; font-weight: 800; font-size: 1rem; color: #888; transition: 0.2s; }
@@ -57,7 +57,7 @@ export const formStyles = `
   .lz-dynamic-detail { display: none; flex-direction: column; gap: 24px; padding: 0; background: transparent; border: none; }
   .lz-schedule-container { width: 100%; box-sizing: border-box; }
   .lz-schedule-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; }
-  .lz-schedule-table th, .lz-schedule-table td { padding: 12px 10px; border: 1px solid #eee; text-align: center; }
+  .lz-schedule-table th, .lz-schedule-table td { padding: 12px 18px; border: 1px solid #eee; text-align: center; }
   .lz-schedule-table th { background: #fdfaf8; color: #5b3a1e; font-weight: 800; font-size: 0.9rem; }
 
   @media (max-width: 600px) {
