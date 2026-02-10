@@ -117,12 +117,6 @@ export const formHTML = `
 <div id="sns-inputs" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
   <div id="f-home" style="display:none;"><input type="url" name="url_home" class="lz-input" placeholder="HPのURL (https://...)"></div>
   <div id="f-ec" style="display:none;"><input type="url" name="url_ec" class="lz-input" placeholder="通販サイトのURL (https://...)"></div>
-  <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="Instagram アカウント名"></div>
-  <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="Facebook ページURL"></div>
-  <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
-  <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
-  <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="TikTokアカウントURL"></div>
-  
   <div id="f-rel" style="display:none; flex-direction:column; gap:12px;">
     <div class="lz-grid">
       <input type="url" id="rel_url1" name="rel_url1" class="lz-input" placeholder="関連URL 1 (https://...)">
@@ -132,9 +126,14 @@ export const formHTML = `
       <input type="url" id="rel_url2" name="rel_url2" class="lz-input" placeholder="関連URL 2 (https://...)">
       <input type="text" id="rel_title2" name="rel_title2" class="lz-input" placeholder="リンクのタイトル 2">
     </div>
+    </div>
+  <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="Instagram アカウント名"></div>
+  <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="Facebook ページURL"></div>
+  <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
+  <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
+  <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="TikTokアカウントURL"></div>
   </div>
 </div>
-        </div>
 
 
         <div class="lz-section-head">問い合わせ先（公開）</div>
