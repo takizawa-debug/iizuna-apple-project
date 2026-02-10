@@ -1,6 +1,6 @@
 export const formStyles = `
   /* 基盤デザイン */
-  .lz-form-wrap { padding: 40px 20px 120px; background: #fff; max-width: 1000px; margin: 0 auto; font-family: sans-serif; color: #333; }
+  .lz-form-wrap { padding: 20px 10px 60px; background: #fff; max-width: 1000px; margin: 0 auto; font-family: sans-serif; color: #333; }
   .lz-form-tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #f0f0f0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .lz-form-tab { padding: 16px 12px; cursor: pointer; font-weight: 800; font-size: 1.15rem; color: #aaa; flex: 1; text-align: center; border-bottom: 4px solid transparent; transition: 0.3s; white-space: nowrap; }
   .lz-form-tab.is-active { color: #cf3a3a; border-bottom-color: #cf3a3a; }
