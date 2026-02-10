@@ -95,7 +95,7 @@ export const formStyles = `
 .lz-day-selector { 
   display: flex !important; 
   flex-wrap: wrap !important; 
-  gap: 6px !important; 
+  gap: 4px !important; 
   justify-content: flex-start !important; 
   width: 100% !important;
   margin-top: 8px;
