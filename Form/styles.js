@@ -17,50 +17,48 @@ export const formStyles = `
   .lz-input, .lz-textarea, .lz-select { padding: 14px; border: 2px solid #eee; border-radius: 12px; font-size: 1.05rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
-  /* 選択系UI：大きなカード型 */
-  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; width: 100%; }
+  /* 選択系UI：チップ型 */
+  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; width: 100%; }
   .lz-choice-item { position: relative; cursor: pointer; display: block; }
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-inner { 
-    display: flex; align-items: center; justify-content: center; padding: 14px 10px;
+    display: flex; align-items: center; justify-content: center; padding: 14px 8px;
     background: #fff; border: 2px solid #eee; border-radius: 12px;
     font-size: 1rem; font-weight: 800; color: #666; transition: all 0.2s ease;
     text-align: center; min-height: 54px; box-sizing: border-box;
   }
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
-  /* サブカテゴリ用：さらにコンパクトなチップ */
   .lz-sub-choice-grid { display: flex; flex-wrap: wrap; gap: 8px; }
   .lz-sub-choice-item .lz-choice-inner { min-height: 44px; padding: 10px 16px; border-radius: 30px; font-size: 0.95rem; }
-  .lz-sub-choice-item input:checked + .lz-choice-inner { background: #5b3a1e; border-color: #5b3a1e; color: #fff; }
+  .lz-sub-choice-item input:checked + .lz-choice-inner { background: #5b3a1e; border-color: #5b3a1e; }
 
-  /* 曜日セレクター (円形チップ) */
+  /* 時間選択（スマホでの切れ防止・ラベル化） */
+  .lz-time-row { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+  .lz-time-field { display: flex; align-items: center; gap: 10px; }
+  .lz-time-label-sm { font-size: 0.9rem; font-weight: 800; color: #888; min-width: 70px; }
+  .lz-time-box { display: flex; align-items: center; gap: 4px; flex: 1; }
+  .lz-time-select { padding: 12px 2px; border-radius: 10px; border: 2px solid #eee; font-size: 1.1rem; cursor: pointer; background: #fff; flex: 1; text-align: center; }
+  
+  /* 休業時の時間選択無効化 */
+  .lz-time-box.is-disabled { opacity: 0.3; pointer-events: none; filter: grayscale(1); }
+
+  /* 曜日チップ */
   .lz-day-selector { display: flex; flex-wrap: wrap; gap: 8px; }
   .lz-day-chip { position: relative; cursor: pointer; }
   .lz-day-chip input { position: absolute; opacity: 0; }
-  .lz-day-text { 
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 46px; height: 46px; background: #fff; border: 2px solid #eee; 
-    border-radius: 50%; font-weight: 800; font-size: 1rem; color: #888; transition: 0.2s;
-  }
+  .lz-day-text { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: #fff; border: 2px solid #eee; border-radius: 50%; font-weight: 800; font-size: 0.95rem; color: #888; transition: 0.2s; }
   .lz-day-chip input:checked + .lz-day-text { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
-  /* 🍎 時間選択の改善：モバイルで切れない幅設定 */
-  .lz-time-box { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
-  .lz-time-select { padding: 12px 2px; border-radius: 10px; border: 2px solid #eee; font-size: 1.1rem; cursor: pointer; background: #fff; flex: 1; text-align: center; min-width: 0; }
-  .lz-time-select:disabled { background: #f0f0f0; border-color: #ddd; color: #bbb; cursor: not-allowed; }
-
-  /* スケジュール・テーブルのスマホ対応（カード化） */
+  /* スケジュール・テーブルのスマホ最適化 */
   @media (max-width: 600px) {
-    .lz-schedule-table, .lz-schedule-table tr, .lz-schedule-table td { display: block; width: 100%; border: none; box-sizing: border-box; }
+    .lz-schedule-table, .lz-schedule-table tr, .lz-schedule-table td { display: block; width: 100%; border: none; }
     .lz-schedule-table thead { display: none; }
-    .lz-schedule-table tr { border: 2px solid #f0e6e0; border-radius: 16px; padding: 15px; margin-bottom: 12px; background: #fff; }
-    .lz-schedule-table td { position: relative; padding: 6px 0 6px 100px; text-align: left; min-height: 44px; display: flex; align-items: center; width: 100% !important; overflow: hidden; }
-    .lz-schedule-table td::before { content: attr(data-label); position: absolute; left: 0; font-weight: 900; color: #5b3a1e; font-size: 0.85rem; width: 90px; }
+    .lz-schedule-table tr { border: 2px solid #f0e6e0; border-radius: 16px; padding: 15px; margin-bottom: 12px; background: #fff; box-shadow: 0 4px 12px rgba(0,0,0,0.02); box-sizing: border-box; }
+    .lz-schedule-table td { position: relative; padding: 8px 0 8px 100px; text-align: left; min-height: 44px; display: flex; align-items: center; box-sizing: border-box; }
+    .lz-schedule-table td::before { content: attr(data-label); position: absolute; left: 0; font-weight: 900; color: #5b3a1e; font-size: 0.85rem; }
     .lz-schedule-table td:first-child { padding: 0; margin-bottom: 10px; font-size: 1.1rem; color: #cf3a3a; border-bottom: 1px solid #eee; padding-bottom: 8px; }
     .lz-schedule-table td:first-child::before { display: none; }
-    /* モバイル時のみ、時間入力のラベル調整 */
-    .lz-time-box { width: 100%; }
   }
 
   .lz-zip-btn { background: #5b3a1e; color: #fff; border: none; padding: 0 15px; border-radius: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; height: 54px; font-size: 1rem; }

@@ -1,5 +1,5 @@
 /**
- * logic.js - 動的データ連動・UI最適化版 (カテゴリー初期非表示・休業連動版)
+ * logic.js - 動的データ連動・UI最適化・バリデーション強化版
  */
 import { utils } from './utils.js';
 
@@ -9,7 +9,7 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
 
-  // --- 🍎 1. カテゴリーの生成 (初期状態でサブエリアを隠す) ---
+  // --- 🍎 1. カテゴリーのチップ形式生成 ＆ 初期非表示設定 ---
   async function loadAndBuildGenres() {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
@@ -20,15 +20,15 @@ export async function initFormLogic() {
       const genres = json.items;
       let html = '';
 
-      // 大カテゴリ(L1)チップ形式
+      // 大カテゴリ(L1)
       html += '<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> この場所でできること（複数選択可）</label><div class="lz-choice-grid">';
       Object.keys(genres).forEach(l1 => {
-        const id = l1 === '大カテゴリその他' ? 'id="catRootOtherCheck"' : '';
-        html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${id}><span class="lz-choice-inner">${l1}</span></label>`;
+        const idAttr = l1 === '大カテゴリその他' ? 'id="catRootOtherCheck"' : '';
+        html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr}><span class="lz-choice-inner">${l1}</span></label>`;
       });
       html += '</div></div>';
 
-      // 各サブカテゴリ(L2)チップ形式 (style="display:none"を付与)
+      // サブカテゴリ(L2) - 🍎 初期状態で display:none を徹底
       Object.keys(genres).forEach(l1 => {
         if (l1 === '大カテゴリその他') return;
         const baseId = genreIdMap[l1] || 'custom';
@@ -40,24 +40,27 @@ export async function initFormLogic() {
         html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
       });
       
-      // 大カテゴリ「その他」用自由記述 (初期非表示)
+      // 大カテゴリ「その他」用
       html += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a; margin-left: 0;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
+      
       container.innerHTML = html;
       bindDynamicEvents();
     } catch (e) { container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; }
   }
 
-  // --- 🍎 2. 動的要素へのイベントバインド (大カテゴリその他連動含む) ---
   function bindDynamicEvents() {
+    // 🍎 L1 -> L2 連動 ＆ 大カテゴリその他対応
     document.getElementsByName('cat_l1').forEach(c => c.onchange = () => {
       const v = Array.from(document.getElementsByName('cat_l1')).filter(i => i.checked).map(i => i.value);
+      // 通常の連動
       Object.keys(genreIdMap).forEach(key => {
         const el = document.getElementById(`sub-${genreIdMap[key]}`);
         if(el) el.style.display = v.includes(key) ? 'flex' : 'none';
       });
-      // 大カテゴリ「その他」のボタン連動修正
+      // 大カテゴリその他の連動
       const otherRoot = document.getElementById('sub-cat-root-other');
-      if(otherRoot) otherRoot.style.display = v.includes('大カテゴリその他') ? 'flex' : 'none';
+      const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => i.value === '大カテゴリその他' && i.checked);
+      if(otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
     });
 
     document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
@@ -69,37 +72,50 @@ export async function initFormLogic() {
     });
   }
 
-  // スケジュール：休業チェック時の無効化ロジック
+  // --- 🍎 2. 曜日別設定：休業連動ロジック ---
   const customBody = document.getElementById('customSchedBody');
   if (customBody) {
     days.forEach(d => {
       const tr = document.createElement('tr'); tr.id = `row-${d}`;
       tr.innerHTML = `
         <td><strong>${d}曜日</strong></td>
-        <td data-label="休業"><input type="checkbox" name="c_closed_${d}" class="lz-closed-check"></td>
+        <td data-label="休業"><input type="checkbox" name="c_closed_${d}" class="lz-closed-trigger"></td>
         <td data-label="開店時間"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_'+d)}</div></td>
         <td data-label="閉店時間"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_'+d)}</div></td>
       `;
       customBody.appendChild(tr);
-      
-      const closedCheck = tr.querySelector('.lz-closed-check');
-      const timeSelects = tr.querySelectorAll('select');
-      closedCheck.onchange = (e) => {
+
+      // 🍎 休業チェック時に時間を無効化
+      const trigger = tr.querySelector('.lz-closed-trigger');
+      const timeBoxes = tr.querySelectorAll('.lz-time-box');
+      trigger.onchange = (e) => {
         const isClosed = e.target.checked;
-        tr.style.opacity = isClosed ? "0.4" : "1";
-        timeSelects.forEach(sel => sel.disabled = isClosed); // 入力を禁止
+        tr.style.opacity = isClosed ? "0.5" : "1";
+        timeBoxes.forEach(box => {
+          box.classList.toggle('is-disabled', isClosed);
+          box.querySelectorAll('select').forEach(sel => sel.disabled = isClosed);
+        });
       };
     });
   }
 
-  // 各種セレクターのセット
+  // 標準設定の曜日チップ
+  const simpleBox = document.getElementById('box-simple-days');
+  if (simpleBox) {
+    days.forEach(d => {
+      const l = document.createElement('label'); l.className = 'lz-day-chip';
+      l.innerHTML = `<input type="checkbox" name="simple_days" value="${d}"><span class="lz-day-text">${d}</span>`;
+      simpleBox.appendChild(l);
+    });
+  }
+
   const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
   setHtml('sel-simple-start', utils.createTimeSelectorHTML('simple_s'));
   setHtml('sel-simple-end', utils.createTimeSelectorHTML('simple_e'));
-  setHtml('sel-ev-start', utils.createTimeSelectorHTML('ev_s'));
-  setHtml('sel-ev-end', utils.createTimeSelectorHTML('ev_e'));
+  setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
+  setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
-  // 既存のタブ、住所検索、タイプ別表示、SNS連動ロジックは維持
+  // --- タブ・住所・タイプ選択等の基本機能は維持 ---
   const tabs = document.querySelectorAll('.lz-form-tab');
   tabs.forEach(t => t.onclick = () => {
     tabs.forEach(x => x.classList.toggle('is-active', x === t));
@@ -123,6 +139,10 @@ export async function initFormLogic() {
 
   const typeRadios = document.getElementsByName('art_type');
   const fieldsContainer = document.getElementById('article-fields-container');
+  const lblTitle = document.getElementById('lbl-title');
+  const lblLead = document.getElementById('lbl-lead');
+  const inpTitle = document.getElementById('inp-title');
+
   function updateTypeView() {
     const selected = Array.from(typeRadios).find(r => r.checked);
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
@@ -131,7 +151,6 @@ export async function initFormLogic() {
     const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
-    const lblTitle = document.getElementById('lbl-title'), lblLead = document.getElementById('lbl-lead'), inpTitle = document.getElementById('inp-title');
     if (type === 'shop') {
       if(lblTitle) lblTitle.textContent = "店名・施設名"; if(lblLead) lblLead.textContent = "お店の概要";
       if(inpTitle) inpTitle.placeholder = "正式な店舗名をご記入ください";

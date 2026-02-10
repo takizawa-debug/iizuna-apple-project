@@ -1,5 +1,5 @@
 /**
- * templates.js - フォーム構造定義（UX改善・標準営業時間分離版）
+ * templates.js - フォーム構造定義（営業時間UI刷新版）
  */
 
 export const formHTML = `
@@ -64,20 +64,21 @@ export const formHTML = `
           
           <div id="shop-simple">
             <div class="lz-field"><label class="lz-label">営業曜日</label><div id="box-simple-days" class="lz-day-selector"></div></div>
-            <div class="lz-grid">
-              <div class="lz-field"><label class="lz-label" style="font-size:0.9rem;">営業開始</label><div id="sel-simple-start" class="lz-time-box"></div></div>
-              <div class="lz-field"><label class="lz-label" style="font-size:0.9rem;">営業終了</label><div id="sel-simple-end" class="lz-time-box"></div></div>
+            <div class="lz-field">
+              <label class="lz-label">標準営業時間</label>
+              <div class="lz-time-row">
+                <div class="lz-time-field"><span class="lz-time-label-sm">営業開始</span><div id="sel-simple-start" class="lz-time-box"></div></div>
+                <div class="lz-time-field"><span class="lz-time-label-sm">営業終了</span><div id="sel-simple-end" class="lz-time-box"></div></div>
+              </div>
             </div>
           </div>
 
           <div id="shop-custom" style="display:none;">
-            <div class="lz-schedule-container">
-              <table class="lz-schedule-table"><tbody id="customSchedBody"></tbody></table>
-            </div>
+            <table class="lz-schedule-table"><tbody id="customSchedBody"></tbody></table>
           </div>
 
-          <div class="lz-field"><label class="lz-label">祝日の営業</label><select name="shop_holiday_type" class="lz-select"><option value="">設定しない</option><option value="follow">曜日通りに営業</option><option value="closed">祝日は休業</option><option value="irregular">祝日は不定休</option></select></div>
-          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。"></textarea></div>
+          <div class="lz-field"><label class="lz-label">祝日の営業</label><select name="shop_holiday_type" class="lz-select"><option value="">設定しない</option><option value="follow">曜日通りに営業</option><option value="closed">祝日は休業</option><option value="irregular">祝日は不定休（注意事項に記載）</option></select></div>
+          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。"></textarea></div>
         </div>
 
         <div id="box-sns-links" class="lz-field">
@@ -104,10 +105,7 @@ export const formHTML = `
         <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
           <div class="lz-section-head" style="margin-top:0;">開催詳細</div>
           <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始日</label><input type="date" name="ev_sdate" class="lz-input"></div><div class="lz-field"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div></div>
-          <div class="lz-grid">
-            <div class="lz-field"><label class="lz-label" style="font-size:0.9rem;">開始時刻</label><div id="sel-ev-start" class="lz-time-box"></div></div>
-            <div class="lz-field"><label class="lz-label" style="font-size:0.9rem;">終了時刻</label><div id="sel-ev-end" class="lz-time-box"></div></div>
-          </div>
+          <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始時刻</label><div class="lz-time-box" id="sel-ev-s"></div></div><div class="lz-field"><label class="lz-label">終了時刻</label><div class="lz-time-box" id="sel-ev-e"></div></div></div>
         </div>
 
         <div class="lz-section-head">問い合わせ・公開設定</div>
