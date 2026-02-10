@@ -30,7 +30,7 @@ export const formStyles = `
 /* 🍎 textareaは複数行入力するため、高さ固定を解除して最低高さを設定 */
 .lz-textarea { 
   height: auto !important; 
-  min-height: 120px; 
+  min-height: 80px; 
 }
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
