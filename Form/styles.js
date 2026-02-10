@@ -18,7 +18,7 @@ export const formStyles = `
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
   /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
-  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 2px; width: 100%; }
+  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; }
   .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; }
   /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
 .lz-sub-choice-item {
@@ -27,7 +27,7 @@ export const formStyles = `
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-inner { 
     display: flex; align-items: center; justify-content: center; padding: 12px 10px;
-    background: #fff; border: 1px solid #eee; border-radius: 12px;
+    background: #fff; border: 2px solid #eee; border-radius: 12px;
     font-size: 1rem; font-weight: 800; color: #666; transition: all 0.2s ease;
     min-height: 48px; box-sizing: border-box;
   }
