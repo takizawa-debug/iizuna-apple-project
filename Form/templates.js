@@ -83,13 +83,13 @@ export const formHTML = `
           </div>
 
           <div class="lz-field"><label class="lz-label">祝日の営業</label><select name="shop_holiday_type" class="lz-select"><option value="">設定しない</option><option value="follow">曜日通りに営業</option><option value="closed">祝日は休業</option><option value="irregular">祝日は不定休（注意事項に記載）</option></select></div>
-          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。"></textarea></div>
+          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。"></textarea></div>
         </div>
 
         <div id="box-sns-links" class="lz-field">
           <div class="lz-section-head" style="margin-top:0;">公式・SNSリンク</div>
           <label class="lz-label">設定するリンクを選択</label>
-          <div class="lz-sub-choice-grid">
+          <div class="lz-choice-flex">
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ec"><span class="lz-choice-inner">通販</span></label>
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ig"><span class="lz-choice-inner">Instagram</span></label>
@@ -110,12 +110,15 @@ export const formHTML = `
         <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
           <div class="lz-section-head" style="margin-top:0;">開催詳細</div>
           <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始日</label><input type="date" name="ev_sdate" class="lz-input"></div><div class="lz-field"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div></div>
-          <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始時刻</label><div class="lz-time-box" id="sel-ev-s"></div></div><div class="lz-field"><label class="lz-label">終了時刻</label><div class="lz-time-box" id="sel-ev-e"></div></div></div>
+          <div class="lz-grid">
+            <div class="lz-field"><label class="lz-label">開始時刻</label><div id="sel-ev-start" class="lz-time-row"><div class="lz-time-box" id="sel-ev-s"></div></div></div>
+            <div class="lz-field"><label class="lz-label">終了時刻</label><div id="sel-ev-end" class="lz-time-row"><div class="lz-time-box" id="sel-ev-e"></div></div></div>
+          </div>
         </div>
 
         <div class="lz-section-head">問い合わせ・公開設定</div>
         <div class="lz-field">
-          <div class="lz-sub-choice-grid">
+          <div class="lz-choice-flex">
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">専用フォーム</span></label>
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="email"><span class="lz-choice-inner">メール</span></label>
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="tel"><span class="lz-choice-inner">電話番号</span></label>
@@ -130,7 +133,9 @@ export const formHTML = `
         <div class="lz-section-head">事務局への連絡</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label><input type="email" id="adminEmail" name="admin_email" class="lz-input" required></div>
-        <div id="syncField" style="display:none; margin-top:-15px;"><label class="lz-choice-item lz-sub-choice-item" style="width:fit-content;"><input type="checkbox" id="syncCheck" checked><span class="lz-choice-inner">掲載用メールも同じにする</span></label></div>
+        <div id="syncField" style="display:none; margin-top:-10px;">
+          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" id="syncCheck" checked><span class="lz-choice-inner">掲載用メールも同じにする</span></label>
+        </div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">非公開</span> 事務局へのメッセージ</label><textarea name="admin_msg" class="lz-textarea" rows="4"></textarea></div>
 
         <button type="submit" class="lz-send-btn" id="lzBtn">この内容で送信する</button>
