@@ -14,59 +14,33 @@ export const formStyles = `
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
   
-  .lz-input, .lz-textarea, .lz-select { padding: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1.15rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; }
+  /* 入力欄の高さ統一設定 */
+  .lz-input, .lz-textarea, .lz-select { padding: 16px; border: 2px solid #eee; border-radius: 12px; font-size: 1.15rem; background: #fafafa; width: 100%; box-sizing: border-box; -webkit-appearance: none; height: auto; }
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
-/* 🍎 カテゴリー・チップ選択の最終確定スタイル */
-.lz-choice-flex { 
-  display: flex !important; 
-  flex-wrap: wrap !important; 
-  justify-content: flex-start !important; 
-  align-items: flex-start !important;
-  gap: 6px !important; 
-  width: 100% !important;
-  text-align: left !important; 
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.lz-choice-item { 
-  position: relative !important; 
-  cursor: pointer !important; 
-  display: block !important; 
-  width: auto !important; 
-  flex: 0 0 auto !important; 
-  margin: 0 !important; 
-  padding: 0 !important;
-}
-
-.lz-choice-inner { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  padding: 10px 18px; 
-  background: #fff; 
-  border: 1px solid #eee; 
-  border-radius: 12px;
-  font-size: 1.1rem; 
-  font-weight: 800; 
-  color: #666; 
-  min-height: 50px; 
-  box-sizing: border-box;
-}
+  /* チップ選択 */
+  .lz-choice-flex { display: flex !important; flex-wrap: wrap !important; justify-content: flex-start !important; align-items: flex-start !important; gap: 6px !important; width: 100% !important; margin-bottom: 10px !important; }
+  .lz-choice-item { position: relative !important; cursor: pointer !important; display: block !important; width: auto !important; flex: 0 0 auto !important; margin: 0 !important; }
+  .lz-choice-inner { display: flex; align-items: center; justify-content: center; padding: 10px 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; font-size: 1.1rem; font-weight: 800; color: #666; transition: 0.2s; min-height: 50px; box-sizing: border-box; }
   .lz-choice-item input { position: absolute; opacity: 0; pointer-events: none; }
   .lz-choice-item input:checked + .lz-choice-inner { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
-  /* 登録タイプ選択：文字に合わせて最小幅を微調整 */
-  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, auto)); gap: 8px; width: 100%; }
+  /* 🍎 画像アップロード・プレビュー */
+  .lz-image-upload-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+  .lz-image-preview { position: relative; width: 100px; height: 100px; border-radius: 12px; overflow: hidden; border: 2px solid #eee; background: #f9f9f9; }
+  .lz-image-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .lz-image-delete { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(0,0,0,0.6); color: #fff; border: none; border-radius: 50%; font-size: 14px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .lz-image-add-btn { width: 100px; height: 100px; border: 2px dashed #ccc; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: #999; transition: 0.3s; background: #fafafa; }
+  .lz-image-add-btn:hover { border-color: #cf3a3a; color: #cf3a3a; background: #fff; }
+  .lz-image-add-btn span { font-size: 24px; font-weight: bold; }
+  .lz-image-add-btn small { font-size: 10px; font-weight: 800; }
 
-  /* 🍎 サブカテゴリーエリアの改善 */
-  .lz-dynamic-sub-area { display: none; flex-direction: column; gap: 18px; padding: 15px 0 15px 15px; background: transparent; border-left: 6px solid #5b3a1e; margin: 12px 0; animation: lz-fade 0.3s ease; }
-  .lz-sub-choice-item .lz-choice-inner { min-height: 44px; padding: 8px 18px; border-radius: 30px; font-size: 1.05rem; }
-  .lz-sub-choice-item input:checked + .lz-choice-inner { background: #5b3a1e; border-color: #5b3a1e; }
-  .lz-sub-other-field { display: none; margin-top: 5px; }
+  /* 曜日チップ下の余白調整 */
+  .lz-day-selector { display: flex !important; flex-wrap: wrap !important; gap: 6px !important; margin-bottom: 24px !important; margin-top: 8px !important; }
+  .lz-day-text { display: inline-flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #fff; border: 2px solid #eee; border-radius: 50%; font-weight: 800; font-size: 1.1rem; color: #888; }
+  .lz-day-chip input:checked + .lz-day-text { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
 
-  /* 🍎 営業時間：スマホでの切れ防止・ラベル化 */
+  /* 営業時間・定休日（安定版ベース） */
   .lz-time-row { display: flex; flex-direction: column; gap: 14px; width: 100%; }
   .lz-time-field { display: flex; align-items: center; gap: 12px; }
   .lz-time-label-sm { font-size: 1rem; font-weight: 800; color: #888; min-width: 85px; }
@@ -74,47 +48,21 @@ export const formStyles = `
   .lz-time-select { padding: 14px 6px; border-radius: 10px; border: 2px solid #eee; font-size: 1.2rem; cursor: pointer; background: #fff; width: 110px !important; text-align: center; }
   .lz-time-box.is-disabled { opacity: 0.2; pointer-events: none; }
 
-  /* 曜日チップ：サイズを50pxにアップ */
-.lz-day-selector { 
-  display: flex !important; 
-  flex-wrap: wrap !important; 
-  gap: 6px !important; 
-  justify-content: flex-start !important; 
-  width: 100% !important;
-  margin-top: 8px;
-}
-
-.lz-day-chip { 
-  position: relative !important; 
-  cursor: pointer !important;
-  margin: 0 !important; 
-  padding: 0 !important;
-  flex: 0 0 auto !important;
-}
-  .lz-day-chip input { position: absolute; opacity: 0; }
-  .lz-day-text { display: inline-flex; align-items: center; justify-content: center; width: 50px; height: 50px; background: #fff; border: 2px solid #eee; border-radius: 50%; font-weight: 800; font-size: 1.1rem; color: #888; transition: 0.2s; }
-  .lz-day-chip input:checked + .lz-day-text { background: #cf3a3a; border-color: #cf3a3a; color: #fff; }
-
-  /* 🍎 スケジュール・テーブル：文字サイズアップ */
-  .lz-dynamic-detail { display: none; flex-direction: column; gap: 24px; padding: 0; background: transparent; border: none; }
-  .lz-schedule-container { width: 100%; box-sizing: border-box; }
   .lz-schedule-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; }
   .lz-schedule-table th, .lz-schedule-table td { padding: 14px 18px; border: 1px solid #eee; text-align: center; font-size: 1.1rem; }
-  .lz-schedule-table th { background: #fdfaf8; color: #5b3a1e; font-weight: 800; font-size: 1.05rem; }
-
+  
   @media (max-width: 600px) {
-    .lz-schedule-table, .lz-schedule-table tr, .lz-schedule-table td { display: block; width: 100%; border: none; box-sizing: border-box; }
-    .lz-schedule-table thead { display: none; }
-    .lz-schedule-table tr { border: 2px solid #f0e6e0; border-radius: 16px; padding: 15px; margin-bottom: 15px; background: #fff; }
     .lz-schedule-table td { position: relative; padding: 10px 0 10px 110px; text-align: left; min-height: 52px; display: flex; align-items: center; }
     .lz-schedule-table td::before { content: attr(data-label); position: absolute; left: 10px; font-weight: 900; color: #5b3a1e; font-size: 1rem; width: 95px; }
-    .lz-schedule-table td:first-child { padding: 0; margin-bottom: 12px; font-size: 1.25rem; color: #cf3a3a; border-bottom: 2px solid #fdfaf8; padding-bottom: 10px; font-weight: 800; }
-    .lz-schedule-table td:first-child::before { display: none; }
   }
 
-  .lz-zip-btn { background: #5b3a1e; color: #fff; border: none; padding: 0 18px; border-radius: 12px; font-weight: 800; cursor: pointer; height: 58px; font-size: 1.15rem; }
-  .lz-send-btn { background: #cf3a3a; color: #fff; padding: 24px; border: none; border-radius: 99px; font-weight: 900; font-size: 1.5rem; cursor: pointer; transition: 0.4s; margin-top: 60px; width: 100%; box-shadow: 0 10px 25px rgba(207, 58, 58, 0.2); }
+  /* 住所検索ボタンと高さの同期 */
+  .lz-zip-btn { background: #5b3a1e; color: #fff; border: none; padding: 0 20px; border-radius: 12px; font-weight: 800; cursor: pointer; height: 60px; font-size: 1.15rem; box-sizing: border-box; display: flex; align-items: center; justify-content: center; }
+  .lz-input#zipCode, .lz-input#addressField { height: 60px; }
+
+  .lz-send-btn { background: #cf3a3a; color: #fff; padding: 24px; border: none; border-radius: 99px; font-weight: 900; font-size: 1.5rem; cursor: pointer; margin-top: 60px; width: 100%; box-shadow: 0 10px 25px rgba(207, 58, 58, 0.2); }
   
+  .lz-choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, auto)); gap: 8px; width: 100%; }
   .lz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 600px) { .lz-grid { grid-template-columns: 1fr; } }
 `;
