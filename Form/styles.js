@@ -18,8 +18,8 @@ export const formStyles = `
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
   /* 🍎 カテゴリー選択：文字数に合わせる最適化 */
-  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 2px; width: 100%; }
-  .lz-choice-item { position: relative; cursor: pointer; display: block; width:fit-content; }
+  .lz-choice-flex { display: flex; flex-wrap: wrap; gap: 4px; width: 100%; }
+  .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; }
   /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
 .lz-sub-choice-item {
   width: fit-content; 
