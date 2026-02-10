@@ -25,7 +25,7 @@ export const formStyles = `
   justify-content: flex-start; /* 🍎 隙間を均等にせず、左に詰める命令 */
   width: 100%; 
 }
-  .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; }
+  .lz-choice-item { position: relative; cursor: pointer; display: block; width:auto; margin: 0; }
   /* サブカテゴリーなどの flex 用アイテムだけは fit-content にする */
 .lz-sub-choice-item {
   width: fit-content; 
