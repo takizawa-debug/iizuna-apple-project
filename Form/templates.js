@@ -52,7 +52,7 @@ export const formHTML = `
         </div>
 
         <div id="pane-shop-detail" class="lz-dynamic-detail" style="display:none;">
-          <div class="lz-section-head" style="margin-top:0;">営業時間・定休日</div>
+          <div class="lz-section-head" style="margin-top:0;">営業に関する情報</div>
           <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
             <label class="lz-choice-item"><input type="radio" name="shop_mode" value="simple" checked><span class="lz-choice-inner">標準設定</span></label>
             <label class="lz-choice-item"><input type="radio" name="shop_mode" value="custom"><span class="lz-choice-inner">曜日別設定</span></label>
@@ -134,7 +134,7 @@ export const formHTML = `
           </div>
         </div>
 
-        <div class="lz-section-head">問い合わせ・公開設定</div>
+        <div class="lz-section-head">問い合わせ先（公開）</div>
         <div class="lz-field">
           <div class="lz-choice-flex">
             <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">専用フォーム</span></label>
@@ -148,7 +148,7 @@ export const formHTML = `
         <div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用電話番号</label><input type="tel" name="cm_tel" class="lz-input" placeholder="026-..."></div>
         <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付方法</label><input type="text" name="cm_other_val" class="lz-input"></div>
 
-        <div class="lz-section-head">事務局への連絡</div>
+        <div class="lz-section-head">事務局への連絡（非公開）</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
         <div class="lz-field">
   <label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label>
