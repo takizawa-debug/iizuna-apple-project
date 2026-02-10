@@ -92,6 +92,16 @@ export const formHTML = `
           <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。"></textarea></div>
         </div>
 
+
+         <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
+          <div class="lz-section-head" style="margin-top:0;">開催詳細</div>
+          <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始日</label><input type="date" name="ev_sdate" class="lz-input"></div><div class="lz-field"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div></div>
+          <div class="lz-grid">
+            <div class="lz-field"><label class="lz-label">開始時刻</label><div id="sel-ev-start" class="lz-time-row"><div class="lz-time-box" id="sel-ev-s"></div></div></div>
+            <div class="lz-field"><label class="lz-label">終了時刻</label><div id="sel-ev-end" class="lz-time-row"><div class="lz-time-box" id="sel-ev-e"></div></div></div>
+          </div>
+        </div>
+
         <div id="box-sns-links" class="lz-field">
         <div class="lz-choice-flex">
         <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
@@ -125,14 +135,6 @@ export const formHTML = `
 </div>
         </div>
 
-        <div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
-          <div class="lz-section-head" style="margin-top:0;">開催詳細</div>
-          <div class="lz-grid"><div class="lz-field"><label class="lz-label">開始日</label><input type="date" name="ev_sdate" class="lz-input"></div><div class="lz-field"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div></div>
-          <div class="lz-grid">
-            <div class="lz-field"><label class="lz-label">開始時刻</label><div id="sel-ev-start" class="lz-time-row"><div class="lz-time-box" id="sel-ev-s"></div></div></div>
-            <div class="lz-field"><label class="lz-label">終了時刻</label><div id="sel-ev-end" class="lz-time-row"><div class="lz-time-box" id="sel-ev-e"></div></div></div>
-          </div>
-        </div>
 
         <div class="lz-section-head">問い合わせ先（公開）</div>
         <div class="lz-field">
