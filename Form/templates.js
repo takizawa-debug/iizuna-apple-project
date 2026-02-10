@@ -132,13 +132,26 @@ export const formHTML = `
           </div>
         </div>
         <div id="cm-form-box" class="lz-field" style="display:none;"><label class="lz-label">フォームURL</label><input type="url" name="cm_url" class="lz-input"></div>
-        <div id="cm-email-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用メール</label><input type="email" id="pubEmail" name="cm_mail" class="lz-input"></div>
+        <div id="cm-email-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用メールアドレス</label><input type="email" id="pubEmail" name="cm_mail" class="lz-input"></div>
         <div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用電話番号</label><input type="tel" name="cm_tel" class="lz-input" placeholder="026-..."></div>
-        <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付詳細</label><input type="text" name="cm_other_val" class="lz-input"></div>
+        <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付方法</label><input type="text" name="cm_other_val" class="lz-input"></div>
 
         <div class="lz-section-head">事務局への連絡</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label><input type="email" id="adminEmail" name="admin_email" class="lz-input" required></div>
+        <div class="lz-field">
+  <label class="lz-label"><span class="lz-badge">必須</span> 連絡用メールアドレス</label>
+  
+  <div id="syncField" style="display:none; margin-bottom: 10px;">
+    <label class="lz-choice-item" style="width:fit-content;">
+      <input type="checkbox" id="syncCheck">
+      <span class="lz-choice-inner" style="min-height:36px; padding:4px 16px; font-size:1rem; border-radius:20px;">
+        掲載用メールアドレスと同じにする
+      </span>
+    </label>
+  </div>
+
+  <input type="email" id="adminEmail" name="admin_email" class="lz-input" required placeholder="example@mail.com">
+</div>
         <div id="syncField" style="display:none; margin-top:-10px;">
           <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" id="syncCheck" checked><span class="lz-choice-inner">掲載用メールも同じにする</span></label>
         </div>

@@ -185,10 +185,40 @@ export async function initFormLogic() {
     if(sync) sync.style.display = v.includes('email') ? 'flex' : 'none';
   });
 
-  const admMail = document.getElementById('adminEmail'), pubMail = document.getElementById('pubEmail'), syncCheck = document.getElementById('syncCheck');
-  if (admMail && pubMail && syncCheck) {
-    admMail.oninput = () => { if(syncCheck.checked) pubMail.value = admMail.value; };
-    syncCheck.onchange = () => { pubMail.readOnly = syncCheck.checked; if(syncCheck.checked) pubMail.value = admMail.value; };
+/* logic.js の既存のメール同期処理を以下のコードに置き換え */
+
+  // --- 🍎 メールアドレス同期：掲載用メールがある場合のみ表示・連動 ---
+  const pubMail = document.getElementById('pubEmail');
+  const admMail = document.getElementById('adminEmail');
+  const syncCheck = document.getElementById('syncCheck');
+  const syncField = document.getElementById('syncField');
+
+  if (pubMail && admMail && syncCheck) {
+    const updateSyncVisibility = () => {
+      // 掲載用メールに値がある場合のみボタンを表示
+      const hasValue = pubMail.value.trim().length > 0;
+      syncField.style.display = hasValue ? "block" : "none";
+      
+      // チェックが入っていれば値を即座にコピー
+      if (syncCheck.checked && hasValue) {
+        admMail.value = pubMail.value;
+      }
+    };
+
+    // 掲載用メールの入力イベント
+    pubMail.addEventListener('input', updateSyncVisibility);
+
+    // 同期チェックボックスの切り替えイベント
+    syncCheck.addEventListener('change', () => {
+      if (syncCheck.checked) {
+        admMail.value = pubMail.value;
+        admMail.style.background = "#f0f0f0"; // 同期中であることを視覚的に示す
+        admMail.readOnly = true; 
+      } else {
+        admMail.style.background = "#fafafa";
+        admMail.readOnly = false;
+      }
+    });
   }
 
   // --- 🍎 画像プレビュー＆追加・削除ロジック ---
@@ -225,6 +255,6 @@ export async function initFormLogic() {
       imgInput.value = ""; // 同じファイルの再選択を許可
     };
   }
-  
+
   await loadAndBuildGenres();
 }
