@@ -67,7 +67,7 @@ export const getFormHTML = () => `
       <div class="lz-section-head">${i18n.sections.images}</div>
       <div class="lz-grid">
         <div class="lz-field"><label class="lz-label"><span class="lz-badge opt">${i18n.badges.optional}</span> ${i18n.labels.art_images}</label><div id="imgPreviewArea" class="lz-img-preview-grid"><div id="imgAddBtn" class="lz-img-add-btn">＋</div></div><input type="file" id="art_images_input" style="display:none;" accept="image/*" multiple></div>
-        <div class="lz-field"><label class="lz-label"> ${i18n.labels.art_file}</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div>
+        <div class="lz-field"><label class="lz-label"> ${i18n.labels.art_file}</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt"></div>
       </div>
 
       <div class="lz-section-head">${i18n.sections.location}</div>

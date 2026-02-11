@@ -399,11 +399,14 @@ export async function initFormLogic() {
           })));
         }
 
-        // 4. 🍎 添付ファイル（PDF/Excel等）の検知とBase64変換
+        // 4. 🍎 添付ファイル（汎用ファイル）の検知とBase64変換
         const docFileInput = form.querySelector('input[name="art_file"]');
         if (docFileInput && docFileInput.files.length > 0) {
           const docFile = docFileInput.files[0];
-          payload.art_file_name = docFile.name; // ファイル名を保持
+          
+          // ファイル名を安全な形式（スペース除去等）で取得
+          payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
+          
           payload.art_file_data = await new Promise(resolve => {
             const reader = new FileReader();
             reader.onload = (ev) => resolve(ev.target.result);
