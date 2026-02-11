@@ -183,6 +183,14 @@ export async function initFormLogic() {
     });
   }
 
+  // 🍎 生産者のインボイス番号表示切り替え
+  document.querySelectorAll('.pr-invoice-trigger').forEach(r => {
+    r.addEventListener('change', (e) => {
+      const numBox = document.getElementById('pr-invoice-num-box');
+      if (numBox) numBox.style.display = e.target.value === 'yes' ? 'block' : 'none';
+    });
+  });
+
 function updateTypeView() {
     const selected = Array.from(typeRadios).find(r => r.checked);
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }

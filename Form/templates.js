@@ -175,16 +175,24 @@ export const formHTML = `
     </div>
     <div class="lz-field"><label class="lz-label">従業員数</label><input type="number" name="pr_staff" class="lz-input" placeholder="人数（専従・パート含む）"></div>
   </div>
+  
+  <div class="lz-grid" style="margin-top:12px;">
+    <div class="lz-field">
+      <label class="lz-label">インボイス登録</label>
+      <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
+        <label class="lz-choice-item"><input type="radio" name="pr_invoice" value="yes" class="pr-invoice-trigger"><span class="lz-choice-inner">登録あり</span></label>
+        <label class="lz-choice-item"><input type="radio" name="pr_invoice" value="no" class="pr-invoice-trigger" checked><span class="lz-choice-inner">登録なし</span></label>
+      </div>
+    </div>
+    <div id="pr-invoice-num-box" class="lz-field" style="display:none;">
+      <label class="lz-label">登録番号</label>
+      <input type="text" name="pr_invoice_num" class="lz-input" placeholder="T1234567890123">
+    </div>
+  </div>
 
   <div class="lz-section-head">栽培品種・加工品</div>
   <div class="lz-field"><label class="lz-label">栽培している品種</label><div id="area-apple-varieties" class="lz-choice-flex"></div></div>
   <div class="lz-field"><label class="lz-label">扱っている加工品</label><div id="area-apple-products" class="lz-choice-flex"></div></div>
-
-  <div class="lz-section-head">こだわり・制度</div>
-  <div class="lz-field"><label class="lz-label">栽培方法のこだわり</label><textarea name="pr_concept" class="lz-textarea" rows="2" placeholder="土づくりや減農薬への想いなど"></textarea></div>
-  <div class="lz-field"><label class="lz-label">インボイス登録</label>
-    <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;"><label class="lz-choice-item"><input type="radio" name="pr_invoice" value="yes"><span class="lz-choice-inner">登録あり</span></label><label class="lz-choice-item"><input type="radio" name="pr_invoice" value="no"><span class="lz-choice-inner">登録なし</span></label></div>
-  </div>
 </div>
 
 
