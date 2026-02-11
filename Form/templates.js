@@ -291,7 +291,7 @@ export const formHTML = `
 <div class="lz-private-boundary">
           <span class="lz-private-label">ここからは非公開情報です</span>
         </div>
-        
+
         <div class="lz-section-head">事務局への連絡（非公開）</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
         <div class="lz-field">

@@ -231,12 +231,12 @@ input[type="date"].lz-input {
     flex-shrink: 0;
   }
 
-  /* 🍎 非公開エリアの境界線デザイン */
+  /* 🍎 非公開エリアの境界線デザイン（絵文字なし版） */
   .lz-private-boundary {
-    margin: 80px 0 40px;
+    margin: 100px 0 50px; /* 前後の余白をさらに広げて区切りを強調 */
     position: relative;
     text-align: center;
-    border-top: 2px dashed #ccc; /* 点線で「ここから先は別枠」感を演出 */
+    border-top: 2px dashed #bbb; /* 少し濃いめのグレーの点線 */
   }
 
   .lz-private-label {
@@ -245,19 +245,11 @@ input[type="date"].lz-input {
     left: 50%;
     transform: translate(-50%, -50%);
     background: #fff;
-    padding: 0 20px;
-    color: #999;
+    padding: 0 25px;
+    color: #888;
     font-weight: 800;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
     white-space: nowrap;
-  }
-
-  /* 鍵アイコンを擬似要素で作成 */
-  .lz-private-label::before {
-    content: "🔒";
-    font-size: 1.2rem;
   }
 `;
