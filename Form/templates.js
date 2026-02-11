@@ -256,7 +256,8 @@ export const formHTML = `
   <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
   <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
   <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="TikTokアカウントURL"></div>
-  </div></div>
+  </div>
+  </div>
 
 
 <div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先（公開）</div>

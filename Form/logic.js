@@ -225,7 +225,12 @@ function updateTypeView() {
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
     const type = selected.value;
 
-    // 🍎 タブ切り替えと同時に見出しを即座に更新。通信待ちの「チラつき」を防止
+    // 🍎 アドレスバーのURLを更新（履歴を汚さず書き換え）
+    const url = new URL(window.location);
+    url.searchParams.set('type', type);
+    window.history.replaceState({}, '', url);
+
+    // 🍎 タブ切り替えと同時に見出しを即座に更新...
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
     if (lblDynCat) {
       lblDynCat.textContent = catLabels[type] || catLabels.shop;
@@ -304,6 +309,14 @@ function updateTypeView() {
 
 
   
+  // 🍎 ページ読み込み時にURLパラメータ (?type=...) があれば反映させる
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeFromUrl = urlParams.get('type');
+  if (typeFromUrl) {
+    const targetRadio = Array.from(typeRadios).find(r => r.value === typeFromUrl);
+    if (targetRadio) targetRadio.checked = true;
+  }
+
   typeRadios.forEach(r => r.onchange = updateTypeView);
   updateTypeView();
 
