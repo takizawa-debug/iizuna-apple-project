@@ -2,6 +2,14 @@
  * templates.js - フォーム構造定義
  */
 
+// 🍎 登録タイプごとのカテゴリーラベル定義
+export const catLabels = {
+  shop: "この場所でできること（複数選択可）",
+  event: "イベントジャンル（複数選択可）",
+  producer: "生産・販売スタイル（複数選択可）",
+  other: "記事のジャンル（複数選択可）"
+};
+
 export const formHTML = `
 <div class="lz-form-wrap">
   <div class="lz-form-tabs">
@@ -36,7 +44,10 @@ export const formHTML = `
         <div class="lz-section-head">基本情報</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-title">店名・施設名</span></label><input type="text" name="art_title" id="inp-title" class="lz-input" required></div>
 
-        <div id="lz-dynamic-category-area"></div>
+        <div class="lz-field">
+          <label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-dynamic-cat"></span></label>
+          <div id="lz-dynamic-category-area"></div>
+        </div>
 
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-lead">概要</span>（100文字以内）</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" placeholder="お店やイベントを一言で表すと？" required></textarea></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" placeholder="詳しい内容を教えてください" required></textarea></div>

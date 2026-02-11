@@ -2,6 +2,7 @@
  * logic.js - 動的データ連動・UI最適化版
  */
 import { utils } from './utils.js';
+import { catLabels } from './templates.js';
 
 export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
@@ -21,13 +22,8 @@ export async function initFormLogic() {
       if (!json.ok) throw new Error("取得失敗");
       const genres = json.items;
       
-      // 🍎 変数の初期化（登録タイプに合わせてラベルを動的に変更）
-      let catLabel = "この場所でできること（複数選択可）";
-      if (type === 'event') catLabel = "イベントジャンル（複数選択可）";
-      else if (type === 'producer') catLabel = "生産・販売スタイル（複数選択可）"; // 🍎追加
-      else if (type === 'other') catLabel = "記事のジャンル（複数選択可）";
-
-      let l1Html = `<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> ${catLabel}</label><div class="lz-choice-flex">`;
+      // 🍎 見出しは templates.js と updateTypeView で制御するため、ここではチップの枠のみ作る
+      let l1Html = '<div class="lz-choice-flex">';
       let l2Html = '';
 
       // 大カテゴリとサブカテゴリを同時に組み立てる
@@ -50,8 +46,8 @@ export async function initFormLogic() {
         }
       });
 
-      // 🍎 最後にすべてのHTMLを結合
-      let finalHtml = l1Html + '</div></div>' + l2Html;
+      // 🍎 外側の lz-field を閉じないよう 1つ </div> を減らす
+      let finalHtml = l1Html + '</div>' + l2Html;
       
       // ルートの「その他」自由記述欄を追加
       finalHtml += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
@@ -222,6 +218,12 @@ function updateTypeView() {
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
     const type = selected.value;
+
+    // 🍎 タブ切り替えと同時に見出しを即座に更新。通信待ちの「チラつき」を防止
+    const lblDynCat = document.getElementById('lbl-dynamic-cat');
+    if (lblDynCat) {
+      lblDynCat.textContent = catLabels[type] || catLabels.shop;
+    }
 
     loadAndBuildGenres(type);
 
