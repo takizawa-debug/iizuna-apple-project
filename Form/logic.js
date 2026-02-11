@@ -220,8 +220,8 @@ export async function initFormLogic() {
 
 
 function updateTypeView() {
+    if (!typeSelect) return; // 🍎 要素がない場合は何もしない（ガード）
     const type = typeSelect.value;
-    const url = new URL(window.location); // 🍎 先にURLオブジェクトを作成
 
     // 🍎 「未選択」の場合の処理
     if (!type || type === "") { 
@@ -351,10 +351,6 @@ const urlParams = new URLSearchParams(window.location.search);
     typeSelect.value = typeFromUrl; // 直接値をセット
   }
 
-// 🍎 イベントリスナーの登録
-  typeSelect.onchange = updateTypeView;
-  updateTypeView();
-
   /* 🍎 選択肢に rel を追加し、入力検知ロジックを連結 */
 const snsBox = document.getElementById('box-sns-links');
   if (snsBox) {
@@ -371,6 +367,12 @@ const snsBox = document.getElementById('box-sns-links');
         });
       }
     });
+  }
+  
+  // 🍎 2. 最後に画面の初期化を走らせる
+  if (typeSelect) {
+    typeSelect.onchange = updateTypeView;
+    updateTypeView();
   }
 
 // 🍎 関連リンクの2件目自動表示ロジック
