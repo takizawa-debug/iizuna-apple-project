@@ -461,4 +461,50 @@ const targetInput = document.getElementById(targetId);
       imgInput.value = "";
     };
   }
+
+  // 🍎 送信処理の追加
+  const form = document.getElementById('lz-article-form');
+  if (form) {
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('.lz-send-btn');
+      btn.disabled = true;
+      btn.textContent = "送信中...";
+
+      // FormDataからオブジェクトに変換
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+      
+      // 複数選択項目(checkbox)の修正
+      payload.cat_l1 = Array.from(form.querySelectorAll('[name="cat_l1"]:checked')).map(i => i.value);
+      
+      // 画像データ（uploadedFiles）の付与
+      payload.images = await Promise.all(uploadedFiles.map(file => {
+        return new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target.result);
+          reader.readAsDataURL(file);
+        });
+      }));
+
+      try {
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (result.ok) {
+          alert(result.message);
+          window.location.reload(); // 成功したらリロード
+        } else {
+          throw new Error(result.error);
+        }
+      } catch (err) {
+        alert("送信に失敗しました: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "この内容で登録申請する";
+      }
+    };
+  }
 }
