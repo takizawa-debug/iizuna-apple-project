@@ -176,7 +176,7 @@ export async function initFormLogic() {
     };
   }
 
-  const typeRadios = document.getElementsByName('art_type');
+  const typeSelect = document.getElementById('art_type_select');
   const fieldsContainer = document.getElementById('article-fields-container');
   const lblTitle = document.getElementById('lbl-title');
   const lblLead = document.getElementById('lbl-lead');
@@ -220,10 +220,13 @@ export async function initFormLogic() {
 
 
 function updateTypeView() {
-    const selected = Array.from(typeRadios).find(r => r.checked);
-    if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
+    // 🍎 ラジオボタンの検索をやめ、セレクトボックスの値を直接取得
+    const type = typeSelect.value;
+    if (!type) { 
+      if (fieldsContainer) fieldsContainer.style.display = 'none'; 
+      return; 
+    }
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
-    const type = selected.value;
 
     // 🍎 アドレスバーのURLを更新（履歴を汚さず書き換え）
     const url = new URL(window.location);
@@ -310,14 +313,14 @@ function updateTypeView() {
 
   
   // 🍎 ページ読み込み時にURLパラメータ (?type=...) があれば反映させる
-  const urlParams = new URLSearchParams(window.location.search);
+const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
   if (typeFromUrl) {
-    const targetRadio = Array.from(typeRadios).find(r => r.value === typeFromUrl);
-    if (targetRadio) targetRadio.checked = true;
+    typeSelect.value = typeFromUrl; // 直接値をセット
   }
 
-  typeRadios.forEach(r => r.onchange = updateTypeView);
+// 🍎 イベントリスナーの登録
+  typeSelect.onchange = updateTypeView;
   updateTypeView();
 
   /* 🍎 選択肢に rel を追加し、入力検知ロジックを連結 */

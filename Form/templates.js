@@ -32,13 +32,14 @@ export const formHTML = `
     <div id="pane-article" class="lz-form-body">
       <div class="lz-section-head">登録内容の選択</div>
       <div class="lz-field">
-        <div class="lz-choice-grid">
-          <label class="lz-choice-item"><input type="radio" name="art_type" value="producer"><span class="lz-choice-inner">生産者の登録</span></label>
-          <label class="lz-choice-item"><input type="radio" name="art_type" value="shop"><span class="lz-choice-inner">お店の登録</span></label>
-          <label class="lz-choice-item"><input type="radio" name="art_type" value="event"><span class="lz-choice-inner">イベントの登録</span></label>
-          <label class="lz-choice-item"><input type="radio" name="art_type" value="other"><span class="lz-choice-inner">記事の登録</span></label>
-        </div>
-      </div>
+  <select name="art_type" id="art_type_select" class="lz-select">
+    <option value="" disabled selected>登録する内容を選択してください</option>
+    <option value="producer">生産者の登録</option>
+    <option value="shop">お店の登録</option>
+    <option value="event">イベントの登録</option>
+    <option value="other">記事の登録</option>
+  </select>
+</div>
 
       <div id="article-fields-container" style="display:none; flex-direction:column; gap:32px;">
         <div class="lz-section-head">基本情報</div>
