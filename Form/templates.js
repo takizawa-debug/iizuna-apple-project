@@ -11,7 +11,7 @@ export const catLabels = {
 };
 
 export const formHTML = `
-<div class="lz-form-wrap">
+<form id="lz-article-form" class="lz-form-wrap">
   <div class="lz-form-tabs">
     <div class="lz-form-tab is-active" data-type="report">情報提供</div>
     <div class="lz-form-tab" data-type="inquiry">お問い合わせ</div>
