@@ -220,6 +220,15 @@ export async function initFormLogic() {
     if (lblNotes) {
       lblNotes.textContent = (type === 'event') ? '会場に関する注意事項' : '店舗/施設に関する注意事項';
     }
+
+    // 🍎 問い合わせセクションの統合制御
+    const lblInqHead = document.getElementById('lbl-inquiry-head');
+    const isEvent = type === 'event';
+    
+    toggle('ev-org-field', isEvent); // 主催者名欄の出し分け
+    if (lblInqHead) {
+      lblInqHead.textContent = isEvent ? "主催・お問い合わせ先" : "問い合わせ先（公開）";
+    }
   }
   typeRadios.forEach(r => r.onchange = updateTypeView);
   updateTypeView();

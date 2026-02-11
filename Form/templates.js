@@ -131,11 +131,6 @@ export const formHTML = `
   <div class="lz-field"><label class="lz-label">参加者のもちもの</label><input type="text" name="ev_items" class="lz-input" placeholder="筆記用具、室内履き など"></div>
   <div class="lz-field"><label class="lz-label">対象</label><input type="text" name="ev_target" class="lz-input" placeholder="町内在住の方、小学生以上 など"></div>
 
-  <div class="lz-section-head">主催・申し込み</div>
-  <div class="lz-field"><label class="lz-label">主催者名</label><input type="text" name="ev_org_name" class="lz-input"></div>
-  <div class="lz-field"><label class="lz-label">主催者連絡先</label><input type="text" name="ev_org_contact" class="lz-input" placeholder="電話番号やメールアドレス"></div>
-  <div class="lz-field"><label class="lz-label">申し込み方法</label><textarea name="ev_entry_method" class="lz-textarea" rows="2" placeholder="当日受付、またはGoogleフォームより申し込み、など"></textarea></div>
-</div>
 
         <div id="box-sns-links" class="lz-field">
         <div class="lz-section-head">各種リンク</div>
@@ -171,19 +166,34 @@ export const formHTML = `
 </div>
 
 
-        <div class="lz-section-head">問い合わせ先（公開）</div>
-        <div class="lz-field">
-          <div class="lz-choice-flex">
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">専用フォーム</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="email"><span class="lz-choice-inner">メール</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="tel"><span class="lz-choice-inner">電話番号</span></label>
-            <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="other"><span class="lz-choice-inner">その他</span></label>
-          </div>
-        </div>
-        <div id="cm-form-box" class="lz-field" style="display:none;"><label class="lz-label">フォームURL</label><input type="url" name="cm_url" class="lz-input"></div>
-        <div id="cm-email-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用メールアドレス</label><input type="email" id="pubEmail" name="cm_mail" class="lz-input"></div>
-        <div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用電話番号</label><input type="tel" name="cm_tel" class="lz-input" placeholder="026-..."></div>
-        <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付方法</label><input type="text" name="cm_other_val" class="lz-input"></div>
+        /* 「問い合わせ先（公開）」から「事務局への連絡」の前までを以下に差し替え */
+
+<div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先（公開）</div>
+
+<div id="ev-org-field" class="lz-field" style="display:none;">
+  <label class="lz-label"><span class="lz-badge">必須</span> 主催者名</label>
+  <input type="text" name="ev_org_name" class="lz-input" placeholder="個人名、または団体名">
+</div>
+
+<div class="lz-field">
+  <label class="lz-label">問い合わせ方法（複数選択可）</label>
+  <div class="lz-choice-flex">
+    <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">専用フォーム</span></label>
+    <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="email"><span class="lz-choice-inner">メール</span></label>
+    <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="tel"><span class="lz-choice-inner">電話番号</span></label>
+    <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="other"><span class="lz-choice-inner">その他</span></label>
+  </div>
+</div>
+
+<div id="cm-form-box" class="lz-field" style="display:none;"><label class="lz-label">フォームURL</label><input type="url" name="cm_url" class="lz-input" placeholder="https://..."></div>
+<div id="cm-email-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用メールアドレス</label><input type="email" id="pubEmail" name="cm_mail" class="lz-input" placeholder="info@example.com"></div>
+<div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">掲載用電話番号</label><input type="tel" name="cm_tel" class="lz-input" placeholder="026-..."></div>
+<div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付方法</label><input type="text" name="cm_other_val" class="lz-input" placeholder="窓口へ直接、など"></div>
+
+<div class="lz-field">
+  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 申込・問い合わせに関する注意事項</label>
+  <textarea name="cm_notes" class="lz-textarea" rows="2" placeholder="（例）月曜日は電話が繋がりません。フォームからの申し込みは3日前までにお願いします。"></textarea>
+</div>
 
         <div class="lz-section-head">事務局への連絡（非公開）</div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 投稿者・団体名</label><input type="text" name="cont_name" class="lz-input" required></div>
