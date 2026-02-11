@@ -416,22 +416,27 @@ if (relUrl1 && relTitle1 && rel2Row) {
   // 🍎 文章作成を事務局に任せる連動ロジック
   const chkAssist = document.getElementById('chk-writing-assist');
   const msgAssist = document.getElementById('msg-writing-assist');
-  const inpLead = document.getElementsByName('art_lead')[0];
+  const inpLead = document.getElementById('inp-title').closest('.lz-field').nextElementSibling.nextElementSibling.querySelector('textarea'); // 確実に art_lead を取得
   const inpBody = document.getElementsByName('art_body')[0];
 
-  if (chkAssist && inpLead && inpBody) {
-    chkAssist.onchange = (e) => {
-      const isHandled = e.target.checked;
-      // 入力欄を無効化し、必須属性を解除
-      inpLead.disabled = isHandled;
+  if (chkAssist && inpBody) {
+    const syncAssist = () => {
+      const isHandled = chkAssist.checked;
+      const lead = document.getElementsByName('art_lead')[0]; // 再取得して確実性を高める
+      if (lead) {
+        lead.disabled = isHandled;
+        lead.style.opacity = isHandled ? "0.5" : "1";
+        lead.required = !isHandled;
+      }
       inpBody.disabled = isHandled;
-      inpLead.required = !isHandled;
-      inpBody.required = !isHandled;
-      // 視覚的に無効であることを示す
-      inpLead.style.opacity = isHandled ? "0.5" : "1";
       inpBody.style.opacity = isHandled ? "0.5" : "1";
+      inpBody.required = !isHandled;
       if(msgAssist) msgAssist.style.display = isHandled ? "block" : "none";
     };
+
+    chkAssist.onchange = syncAssist; // クリックした時
+    // 🍎 タブを切り替えた時にも状態を正しく反映させるため、初期状態も実行
+    syncAssist(); 
   }
 
 }
