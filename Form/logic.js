@@ -267,7 +267,7 @@ export async function initFormLogic() {
       lblInqHead.textContent = isEvent ? "主催・お問い合わせ先" : "問い合わせ先（公開）";
       lblInqHead.style.display = 'block';
     }
-    // 🍎 追加：タイプ切り替え時に生産者のオプション入力をリセットして隠す
+    // 🍎 追加：タイプ切り替え時に不要なオプション表示をすべてリセットして隠す
     if (type !== 'producer') {
       const invoiceNum = document.getElementById('pr-invoice-num-box');
       if (invoiceNum) invoiceNum.style.display = 'none';
@@ -275,6 +275,20 @@ export async function initFormLogic() {
         const el = document.getElementById(id);
         if (el) el.style.display = 'none';
       });
+    }
+    
+    // イベント以外なら終了日を隠す
+    if (type !== 'event') {
+      const evEnd = document.getElementById('ev-end-date-box');
+      if (evEnd) evEnd.style.display = 'none';
+    }
+
+    // お店以外ならスケジュール設定を隠す
+    if (type !== 'shop') {
+      const sSimple = document.getElementById('shop-simple');
+      const sCustom = document.getElementById('shop-custom');
+      if (sSimple) sSimple.style.display = 'none';
+      if (sCustom) sCustom.style.display = 'none';
     }
   }
 
@@ -315,11 +329,32 @@ export async function initFormLogic() {
       if (val === 'vegetable') targetId = 'pr-crop-veg-input';
       if (val === 'other') targetId = 'pr-crop-other-input';
       
-      const targetInput = document.getElementById(targetId);
+const targetInput = document.getElementById(targetId);
       if (targetInput) targetInput.style.display = e.target.checked ? 'block' : 'none';
     });
   });
 
+  // --- 🍎 ここから追加：イベント期間と曜日別設定の連動 ---
+  // イベントの「1日のみ/期間あり」切り替え
+  const evPeriodRadios = document.getElementsByName('ev_period_type');
+  const evEndDateBox = document.getElementById('ev-end-date-box');
+  if (evPeriodRadios && evEndDateBox) {
+    evPeriodRadios.forEach(r => {
+      r.addEventListener('change', (e) => {
+        evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none';
+      });
+    });
+  }
+
+  // お店の「基本/曜日別」切り替え
+  document.getElementsByName('shop_mode').forEach(r => {
+    r.onchange = (e) => {
+      const s = document.getElementById('shop-simple');
+      const c = document.getElementById('shop-custom');
+      if (s) s.style.display = e.target.value === 'simple' ? 'block' : 'none';
+      if (c) c.style.display = e.target.value === 'custom' ? 'block' : 'none';
+    };
+  });
 
   document.getElementsByName('cm').forEach(c => {
     c.onchange = () => {
