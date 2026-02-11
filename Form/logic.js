@@ -190,7 +190,16 @@ export async function initFormLogic() {
 
     loadAndBuildGenres(type);
 
-    const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
+    // 🍎 隠すときは必須(required)も自動解除するように強化（送信ボタン無反応を防ぐ）
+    const toggle = (id, cond) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = cond ? 'flex' : 'none';
+        el.querySelectorAll('input, textarea, select').forEach(field => {
+          if (!cond) field.required = false;
+        });
+      }
+    };
     
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');

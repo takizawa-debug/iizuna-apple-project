@@ -18,7 +18,6 @@ export const formHTML = `
     <div class="lz-form-tab" data-type="article">記事投稿</div>
   </div>
 
-  <form id="lzMasterForm">
     <div id="pane-report" class="lz-form-body is-active">
        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> お名前</label><input type="text" name="rep_name" class="lz-input" placeholder="ニックネーム可" required></div>
        <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 内容</label><textarea name="rep_content" class="lz-textarea" rows="6" placeholder="町の発見を教えてください" required></textarea></div>
