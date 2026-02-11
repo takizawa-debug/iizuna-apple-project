@@ -221,20 +221,22 @@ export async function initFormLogic() {
 
 function updateTypeView() {
     const type = typeSelect.value;
-    
-    // 🍎 「未選択」の場合、コンテナを隠して処理を中断する
+    const url = new URL(window.location); // 🍎 先にURLオブジェクトを作成
+
+    // 🍎 「未選択」の場合の処理
     if (!type || type === "") { 
       if (fieldsContainer) fieldsContainer.style.display = 'none'; 
+      
+      url.searchParams.delete('type'); // 🍎 URLから type パラメータを削除
+      window.history.replaceState({}, '', url.pathname + url.search); // 🍎 パラメータなしのURLに更新
       return; 
     }
-    
-    // 🍎 選択されたらコンテナを表示（flex）にする
+
+    // 🍎 選択されている場合の処理
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
 
-    // 🍎 アドレスバーのURLを更新（履歴を汚さず書き換え）
-    const url = new URL(window.location);
-    url.searchParams.set('type', type);
-    window.history.replaceState({}, '', url);
+    url.searchParams.set('type', type); // 🍎 URLに type をセット
+    window.history.replaceState({}, '', url.pathname + url.search); // 🍎 パラメータありのURLに更新
 
     // 🍎 タブ切り替えと同時に見出しを即座に更新...
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
