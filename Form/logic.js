@@ -360,13 +360,12 @@ export async function initFormLogic() {
   // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
 
-  // 🍎 修正後：送信処理（画像 + 添付ファイルのAWS S3同期版）
-  // logic.js の onsubmit 部分を大幅アップデート
+  // 🍎 修正後：送信処理（配列化・画像・添付ファイル・確認・進捗バーの全統合）
 if (form) {
   form.onsubmit = async (e) => {
     e.preventDefault();
 
-    // 1. データ収集
+    // 1. データの収集
     const formData = new FormData(form);
     const payload = {};
     formData.forEach((value, key) => {
@@ -376,21 +375,33 @@ if (form) {
       } else { payload[key] = value; }
     });
 
-    // 2. 🍎 確認画面の生成と表示
+    // 🍎【重要】1つしか選択されていなくても強制的に配列にする処理
+    const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
+    Object.keys(payload).forEach(key => {
+      if (key.startsWith('cat_gen-') || arrayFields.includes(key)) {
+        if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+      }
+    });
+
+    // 2. 確認画面の生成と表示
     const confirmOverlay = document.getElementById('lz-confirm-overlay');
     const confirmBody = document.getElementById('lz-confirm-body');
     
-    // 簡易的な確認リスト作成
+    // 安全対策：要素が存在しない場合は警告
+    if (!confirmOverlay || !confirmBody) {
+      alert("システムエラー：確認画面の部品が見つかりません。");
+      return;
+    }
+    
     const mainTitle = payload.art_title || payload.rep_name || payload.inq_name || "無題";
     confirmBody.innerHTML = `
       <div class="lz-modal-item"><div class="lz-modal-label">名称/タイトル</div><div>${mainTitle}</div></div>
       <div class="lz-modal-item"><div class="lz-modal-label">画像</div><div>${uploadedFiles.length} 枚</div></div>
-      <div class="lz-modal-item"><div class="lz-modal-label">添付ファイル</div><div>${payload.art_file_name || "なし"}</div></div>
+      <div class="lz-modal-item"><div class="lz-modal-label">添付ファイル</div><div>${payload.art_file ? "あり" : "なし"}</div></div>
       <p style="font-size:0.85rem; color:#999; margin-top:15px;">※送信後の修正には時間がかかる場合があります。</p>
     `;
     confirmOverlay.style.display = 'flex';
 
-    // ボタンイベントを Promise で待機
     const isGo = await new Promise(resolve => {
       document.getElementById('lz-btn-go').onclick = () => resolve(true);
       document.getElementById('lz-btn-back').onclick = () => resolve(false);
@@ -399,7 +410,7 @@ if (form) {
     confirmOverlay.style.display = 'none';
     if (!isGo) return;
 
-    // 3. 🍎 送信開始（進捗バー表示）
+    // 3. 送信開始（進捗バー表示）
     const progressOverlay = document.getElementById('lz-progress-overlay');
     const progressFill = document.getElementById('lz-progress-fill');
     const progressText = document.getElementById('lz-progress-text');
@@ -409,7 +420,7 @@ if (form) {
     progressFill.style.width = "20%";
 
     try {
-      // 画像・添付ファイルのBase64変換
+      // 🍎 画像のBase64変換
       if (uploadedFiles.length > 0) {
         payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
           const reader = new FileReader();
@@ -417,11 +428,23 @@ if (form) {
           reader.readAsDataURL(file);
         })));
       }
+
+      // 🍎【重要】添付ファイル（PDF/Excel）のBase64変換
+      const docFileInput = form.querySelector('input[name="art_file"]');
+      if (docFileInput && docFileInput.files.length > 0) {
+        const docFile = docFileInput.files[0];
+        payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
+        payload.art_file_data = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target.result);
+          reader.readAsDataURL(docFile);
+        });
+      }
       
       progressFill.style.width = "50%";
-      progressText.textContent = "AWS S3 サーバーへ送信中...";
+      progressText.textContent = "サーバーへデータを送信中...";
 
-      // GAS経由での送信
+      // 5. GASへ送信
       const res = await fetch(ENDPOINT, {
         method: "POST",
         body: JSON.stringify(payload)
@@ -431,13 +454,10 @@ if (form) {
       const result = await res.json();
 
       if (result.ok) {
-        // 4. 🍎 完了とリダイレクト
         progressFill.style.width = "100%";
         progressText.textContent = "送信が完了しました！";
         
-        // 1.5秒だけ余韻を残してリダイレクト
         setTimeout(() => {
-          // 🍎 問い合わせページ（またはトップ）に戻る
           window.location.href = window.location.pathname; 
         }, 1500);
       } else {
@@ -451,6 +471,7 @@ if (form) {
     }
   };
 }
+
   // 初期化実行
   const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
