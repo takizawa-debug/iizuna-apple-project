@@ -252,7 +252,8 @@ function updateTypeView() {
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
     toggle('pane-producer-detail', type === 'producer');
-    toggle('ev-venue-box', type === 'event'); 
+
+    toggle('ev-venue-box', type === 'event' || type === 'other');
 
     // 🍎 記事登録(other)以外の場合のみ、代行オプションを表示
     toggle('box-writing-assist', type !== 'other');
@@ -292,6 +293,21 @@ function updateTypeView() {
       addrBadge.textContent = isShop ? '必須' : '任意';
       zipBadge.style.background = isShop ? '#cf3a3a' : '#999';
       addrBadge.style.background = isShop ? '#cf3a3a' : '#999';
+    }
+
+// 🍎 会場名のラベル名をタイプによって切り替える
+    const venueBox = document.getElementById('ev-venue-box');
+    if (venueBox) {
+      const venueLabel = venueBox.querySelector('.lz-label');
+      // バッジを残しつつテキストだけ書き換え
+      const labelText = type === 'other' ? '関連する場所の名称' : '会場名';
+      venueLabel.innerHTML = `<span class="lz-badge opt" style="background:#999;">任意</span> ${labelText}`;
+      
+      // プレースホルダも調整（任意）
+      const venueInp = venueBox.querySelector('input');
+      if (venueInp) {
+        venueInp.placeholder = type === 'other' ? '例：いいづなコネクトEAST' : '例：飯綱ふれあいパーク';
+      }
     }
 
     // --- 🍎 注意事項ラベルの最適化 ---
