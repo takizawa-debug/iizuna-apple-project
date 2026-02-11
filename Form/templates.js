@@ -170,7 +170,7 @@ export const formHTML = `
     <div class="lz-field"><label class="lz-label">農地面積</label>
       <div style="display:flex; gap:8px;">
         <input type="number" name="pr_area" class="lz-input" style="flex:1;" placeholder="数値">
-        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="ha">ha</option><option value="a">a</option><option value="反">反</option></select>
+        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="ha">ha</option><option value="a">a</option><option value="反">反</option><option value="町">町</option><option value="㎡">㎡</option><option value="坪">坪</option></select>
       </div>
     </div>
     <div class="lz-field"><label class="lz-label">従業員数</label><input type="number" name="pr_staff" class="lz-input" placeholder="人数（専従・パート含む）"></div>
