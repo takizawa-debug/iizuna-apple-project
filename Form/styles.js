@@ -46,7 +46,7 @@ input[type="date"].lz-input {
   height: auto !important; 
   min-height: 80px; 
 }
-  
+
   .lz-input:focus, .lz-textarea:focus, .lz-select:focus { border-color: #cf3a3a; background: #fff; outline: none; box-shadow: 0 0 0 4px rgba(207, 58, 58, 0.1); }
 
 /* 🍎 カテゴリー・チップ選択の最終確定スタイル */
@@ -182,4 +182,28 @@ input[type="date"].lz-input {
   
   .lz-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 600px) { .lz-grid { grid-template-columns: 1fr; } }
+
+  /* 🍎 事務局代行：標準的なチェックボックス形式のスタイル */
+  .lz-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #5b3a1e;
+    background: #fdfaf8; /* わずかに色をつけて目立たせる */
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px solid #eee;
+    transition: 0.3s;
+  }
+  .lz-checkbox-label:hover { border-color: #cf3a3a; }
+  .lz-checkbox-input {
+    width: 24px;
+    height: 24px;
+    accent-color: #cf3a3a; /* チェックの色をテーマカラーに */
+    cursor: pointer;
+    flex-shrink: 0;
+  }
 `;
