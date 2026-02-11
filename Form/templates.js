@@ -297,3 +297,23 @@ export const getFormHTML = () => `
 `;
 
 export const formCommonHTML = ``;
+
+export const uiComponents = `
+<div id="lz-confirm-overlay" class="lz-modal-overlay">
+  <div class="lz-modal">
+    <div class="lz-modal-h">入力内容の確認</div>
+    <div id="lz-confirm-body" class="lz-modal-body"></div>
+    <div class="lz-modal-btns">
+      <button type="button" id="lz-btn-back" class="lz-zip-btn" style="background:#aaa;">修正する</button>
+      <button type="button" id="lz-btn-go" class="lz-zip-btn">送信する</button>
+    </div>
+  </div>
+</div>
+
+<div id="lz-progress-overlay" class="lz-progress-overlay">
+  <div class="lz-progress-card">
+    <div id="lz-progress-text" class="lz-progress-text">準備中...</div>
+    <div class="lz-progress-bar-bg"><div id="lz-progress-fill"></div></div>
+  </div>
+</div>
+`;

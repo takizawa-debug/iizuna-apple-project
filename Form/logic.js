@@ -361,86 +361,96 @@ export async function initFormLogic() {
   const form = document.getElementById('lz-article-form');
 
   // 🍎 修正後：送信処理（画像 + 添付ファイルのAWS S3同期版）
-  if (form) {
-    form.onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = e.target.querySelector('.lz-send-btn');
-      btn.disabled = true;
-      btn.textContent = i18n.common.sending;
+  // logic.js の onsubmit 部分を大幅アップデート
+if (form) {
+  form.onsubmit = async (e) => {
+    e.preventDefault();
 
-      try {
-        const formData = new FormData(form);
-        const payload = {};
+    // 1. データ収集
+    const formData = new FormData(form);
+    const payload = {};
+    formData.forEach((value, key) => {
+      if (payload[key]) {
+        if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+        payload[key].push(value);
+      } else { payload[key] = value; }
+    });
 
-        // 1. データの収集と複数選択の配列化
-        formData.forEach((value, key) => {
-          if (payload[key]) {
-            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-            payload[key].push(value);
-          } else {
-            payload[key] = value;
-          }
-        });
+    // 2. 🍎 確認画面の生成と表示
+    const confirmOverlay = document.getElementById('lz-confirm-overlay');
+    const confirmBody = document.getElementById('lz-confirm-body');
+    
+    // 簡易的な確認リスト作成
+    const mainTitle = payload.art_title || payload.rep_name || payload.inq_name || "無題";
+    confirmBody.innerHTML = `
+      <div class="lz-modal-item"><div class="lz-modal-label">名称/タイトル</div><div>${mainTitle}</div></div>
+      <div class="lz-modal-item"><div class="lz-modal-label">画像</div><div>${uploadedFiles.length} 枚</div></div>
+      <div class="lz-modal-item"><div class="lz-modal-label">添付ファイル</div><div>${payload.art_file_name || "なし"}</div></div>
+      <p style="font-size:0.85rem; color:#999; margin-top:15px;">※送信後の修正には時間がかかる場合があります。</p>
+    `;
+    confirmOverlay.style.display = 'flex';
 
-        // 2. 必須配列フィールドの固定化
-        const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
-        Object.keys(payload).forEach(key => {
-          if (key.startsWith('cat_gen-') || arrayFields.includes(key)) {
-            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-          }
-        });
+    // ボタンイベントを Promise で待機
+    const isGo = await new Promise(resolve => {
+      document.getElementById('lz-btn-go').onclick = () => resolve(true);
+      document.getElementById('lz-btn-back').onclick = () => resolve(false);
+    });
 
-        // 3. 🍎 画像データの付与（Base64変換）
-        if (uploadedFiles.length > 0) {
-          payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = (ev) => resolve(ev.target.result);
-            reader.readAsDataURL(file);
-          })));
-        }
+    confirmOverlay.style.display = 'none';
+    if (!isGo) return;
 
-        // 4. 🍎 添付ファイル（汎用ファイル）の検知とBase64変換
-        const docFileInput = form.querySelector('input[name="art_file"]');
-        if (docFileInput && docFileInput.files.length > 0) {
-          const docFile = docFileInput.files[0];
-          
-          // ファイル名を安全な形式（スペース除去等）で取得
-          payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
-          
-          payload.art_file_data = await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = (ev) => resolve(ev.target.result);
-            reader.readAsDataURL(docFile);
-          });
-        }
+    // 3. 🍎 送信開始（進捗バー表示）
+    const progressOverlay = document.getElementById('lz-progress-overlay');
+    const progressFill = document.getElementById('lz-progress-fill');
+    const progressText = document.getElementById('lz-progress-text');
+    
+    progressOverlay.style.display = 'flex';
+    progressText.textContent = "ファイルを圧縮・変換中...";
+    progressFill.style.width = "20%";
 
-        // 5. GASへ送信（JSON形式）
-        const res = await fetch(ENDPOINT, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) throw new Error(`Server status: ${res.status}`);
-        
-        const result = await res.json();
-        
-        if (result.ok) {
-          alert(i18n.types[payload.art_type]?.label + " " + i18n.common.sendBtn + "に成功しました！"); 
-          window.location.reload();
-        } else {
-          throw new Error(result.error || "Unknown Error");
-        }
-
-      } catch (err) {
-        console.error("Submission failed:", err);
-        alert(i18n.alerts.send_error + "\n理由: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = i18n.common.sendBtn;
+    try {
+      // 画像・添付ファイルのBase64変換
+      if (uploadedFiles.length > 0) {
+        payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = (ev) => resolve(ev.target.result);
+          reader.readAsDataURL(file);
+        })));
       }
-    };
-  }
+      
+      progressFill.style.width = "50%";
+      progressText.textContent = "AWS S3 サーバーへ送信中...";
 
+      // GAS経由での送信
+      const res = await fetch(ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error(`Status: ${res.status}`);
+      const result = await res.json();
+
+      if (result.ok) {
+        // 4. 🍎 完了とリダイレクト
+        progressFill.style.width = "100%";
+        progressText.textContent = "送信が完了しました！";
+        
+        // 1.5秒だけ余韻を残してリダイレクト
+        setTimeout(() => {
+          // 🍎 問い合わせページ（またはトップ）に戻る
+          window.location.href = window.location.pathname; 
+        }, 1500);
+      } else {
+        throw new Error(result.error);
+      }
+
+    } catch (err) {
+      progressOverlay.style.display = 'none';
+      console.error("Submission failed:", err);
+      alert(i18n.alerts.send_error + "\n理由: " + err.message);
+    }
+  };
+}
   // 初期化実行
   const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
