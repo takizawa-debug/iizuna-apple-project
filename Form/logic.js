@@ -52,37 +52,35 @@ export async function initFormLogic() {
       finalHtml += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
       
       container.innerHTML = finalHtml;
-      bindDynamicEvents(); // イベントを再バインド
+      bindDynamicEvents(); 
     } catch (e) { 
       container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; 
     }
-}
+  } // 🍎 loadAndBuildGenres の閉じカッコを追加
 
   function bindDynamicEvents() {
-  /* 🍎 全ての大カテゴリに対して一律で連動ロジックを設定 */
-  document.getElementsByName('cat_l1').forEach(c => {
-    c.onchange = (e) => {
-      const targetId = e.target.getAttribute('data-subid');
-      const el = document.getElementById(`sub-${targetId}`);
-      if (el) el.style.display = e.target.checked ? 'flex' : 'none';
+    /* 🍎 全ての大カテゴリに対して一律で連動ロジックを設定 */
+    document.getElementsByName('cat_l1').forEach(c => {
+      c.onchange = (e) => {
+        const targetId = e.target.getAttribute('data-subid');
+        const el = document.getElementById(`sub-${targetId}`);
+        if (el) el.style.display = e.target.checked ? 'flex' : 'none';
 
-      // その他（ルート）の自由記述欄の制御
-      const otherRoot = document.getElementById('sub-cat-root-other');
-      const isOtherChecked = Array.from(document.getElementsByName('cat_l1'))
-        .some(i => (i.value === '大カテゴリその他' || i.value === 'その他') && i.checked);
-      if (otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
-    };
-  });
+        const otherRoot = document.getElementById('sub-cat-root-other');
+        const isOtherChecked = Array.from(document.getElementsByName('cat_l1'))
+          .some(i => (i.value === '大カテゴリその他' || i.value === 'その他') && i.checked);
+        if (otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
+      };
+    });
 
-  document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
-    /* (既存のサブカテゴリー内「その他」処理はそのまま維持) */
-    trigger.onchange = (e) => {
-      const parent = e.target.closest('.lz-dynamic-sub-area');
-      const otherInput = parent ? parent.querySelector('.lz-sub-other-field') : null;
-      if(otherInput) otherInput.style.display = e.target.checked ? 'block' : 'none';
-    };
-  });
-}
+    document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
+      trigger.onchange = (e) => {
+        const parent = e.target.closest('.lz-dynamic-sub-area');
+        const otherInput = parent ? parent.querySelector('.lz-sub-other-field') : null;
+        if(otherInput) otherInput.style.display = e.target.checked ? 'block' : 'none';
+      };
+    });
+  }
 
   // --- 🍎 2. 曜日別設定：休業連動（無効化） ＆ スマホカード化 ---
   const customBody = document.getElementById('customSchedBody');
@@ -166,7 +164,7 @@ export async function initFormLogic() {
     });
   }
 
-   function updateTypeView() {
+function updateTypeView() {
     const selected = Array.from(typeRadios).find(r => r.checked);
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
@@ -176,28 +174,26 @@ export async function initFormLogic() {
 
     const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
     
-    // パネルの表示切り替え
+    // 詳細パネルの出し分け
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
-    toggle('ev-venue-box', type === 'event'); // 🍎 イベント時のみ「会場名」を表示
+    toggle('ev-venue-box', type === 'event'); 
 
-    // ラベル・プレースホルダーの切り替え
+    // 見出し・プレースホルダーの切り替え
     if (type === 'shop') {
-      if(lblTitle) lblTitle.textContent = "店名・施設名"; 
-      if(lblLead) lblLead.textContent = "お店の概要";
+      if(lblTitle) lblTitle.textContent = "店名・施設名"; if(lblLead) lblLead.textContent = "お店の概要";
       if(inpTitle) inpTitle.placeholder = "正式な店舗名をご記入ください";
     } else if (type === 'event') {
-      if(lblTitle) lblTitle.textContent = "イベント名"; 
-      if(lblLead) lblLead.textContent = "イベントの概要";
+      if(lblTitle) lblTitle.textContent = "イベント名"; if(lblLead) lblLead.textContent = "イベントの概要";
       if(inpTitle) inpTitle.placeholder = "イベント名称をご記入ください";
     } else {
-      if(lblTitle) lblTitle.textContent = "記事タイトル"; 
-      if(lblLead) lblLead.textContent = "記事の概要";
+      if(lblTitle) lblTitle.textContent = "記事タイトル"; if(lblLead) lblLead.textContent = "記事の概要";
       if(inpTitle) inpTitle.placeholder = "読みたくなるタイトルをご記入ください";
     }
 
-    // 🍎 場所情報のバリデーション動的制御
+    // 🍎 場所情報の制御（お店のみ必須、他は任意）
     const isShop = type === 'shop';
+    const isEvent = type === 'event';
     const zipInp = document.getElementById('zipCode');
     const addrInp = document.getElementById('addressField');
     const zipBadge = document.getElementById('zipBadge');
@@ -205,31 +201,31 @@ export async function initFormLogic() {
     const lblNotes = document.getElementById('lbl-notes');
 
     if (zipInp && addrInp && zipBadge && addrBadge) {
-      // お店登録の時だけ「必須」にする
       zipInp.required = isShop;
       addrInp.required = isShop;
-      
-      // バッジのテキストと色を連動
       zipBadge.textContent = isShop ? '必須' : '任意';
       addrBadge.textContent = isShop ? '必須' : '任意';
       zipBadge.style.background = isShop ? '#cf3a3a' : '#999';
       addrBadge.style.background = isShop ? '#cf3a3a' : '#999';
     }
-
-    // 🍎 注意事項のラベルを切り替え
     if (lblNotes) {
-      lblNotes.textContent = (type === 'event') ? '会場に関する注意事項' : '店舗/施設に関する注意事項';
+      lblNotes.textContent = isEvent ? '会場に関する注意事項' : '店舗/施設に関する注意事項';
     }
 
-    // 🍎 問い合わせセクションの統合制御
+    // 🍎 主催・問い合わせセクションの統合制御
     const lblInqHead = document.getElementById('lbl-inquiry-head');
-    const isEvent = type === 'event';
     
-    toggle('ev-org-field', isEvent); // 主催者名欄の出し分け
+    // 「主催者名」欄だけはイベント時のみ表示するが、セクション全体は常に表示
+    toggle('ev-org-field', isEvent); 
+    
     if (lblInqHead) {
+      // イベントなら「主催・お問い合わせ先」、それ以外なら「問い合わせ先（公開）」
       lblInqHead.textContent = isEvent ? "主催・お問い合わせ先" : "問い合わせ先（公開）";
     }
   }
+
+
+
   typeRadios.forEach(r => r.onchange = updateTypeView);
   updateTypeView();
 
