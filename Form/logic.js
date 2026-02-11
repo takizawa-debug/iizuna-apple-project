@@ -410,5 +410,4 @@ if (relUrl1 && relTitle1 && rel2Row) {
     };
   }
 
-  await loadAndBuildGenres();
 }
