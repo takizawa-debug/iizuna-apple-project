@@ -21,8 +21,12 @@ export async function initFormLogic() {
       if (!json.ok) throw new Error("取得失敗");
       const genres = json.items;
       
-      // 🍎 変数の初期化
-      let l1Html = '<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> この場所でできること（複数選択可）</label><div class="lz-choice-flex">';
+      // 🍎 変数の初期化（登録タイプに合わせてラベルを動的に変更）
+      let catLabel = "この場所でできること（複数選択可）";
+      if (type === 'event') catLabel = "イベントジャンル（複数選択可）";
+      else if (type === 'other') catLabel = "記事のジャンル（複数選択可）";
+
+      let l1Html = `<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> ${catLabel}</label><div class="lz-choice-flex">`;
       let l2Html = '';
 
       // 大カテゴリとサブカテゴリを同時に組み立てる
