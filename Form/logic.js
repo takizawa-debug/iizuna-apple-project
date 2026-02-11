@@ -290,6 +290,10 @@ export async function initFormLogic() {
       if (sSimple) sSimple.style.display = 'none';
       if (sCustom) sCustom.style.display = 'none';
     }
+
+    // updateTypeView関数のどこかに1行書くだけでOK
+    const inpMemo = document.getElementById('art_memo');
+    if (inpMemo) inpMemo.placeholder = "その他、補足情報があれば自由にご記入ください";
   }
 
   // --- 🍎 ここから下がイベント登録・初期化の重要セクション ---

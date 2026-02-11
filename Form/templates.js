@@ -288,6 +288,12 @@ export const formHTML = `
   <textarea name="cm_notes" class="lz-textarea" rows="2" placeholder="（例）対応時間は平日10:00〜17:00です。土日は電話が繋がりません。"></textarea>
 </div>
 
+<div class="lz-section-head">備考</div>
+        <div class="lz-field">
+          <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 補足情報</label>
+          <textarea name="art_memo" id="art_memo" class="lz-textarea" rows="3" placeholder="その他、補足情報があれば自由にご記入ください"></textarea>
+        </div>
+
 <div class="lz-private-boundary">
           <span class="lz-private-label">ここからは非公開情報です</span>
         </div>
