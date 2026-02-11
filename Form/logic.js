@@ -174,24 +174,27 @@ function updateTypeView() {
 
     const toggle = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
     
-    // --- 🍎 詳細パネルと会場名の出し分け ---
+    // --- パネルの出し分け ---
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
     toggle('ev-venue-box', type === 'event'); 
 
-    // --- 🍎 基本情報のラベル・プレースホルダー切替 ---
+    // --- 基本情報のラベル・切替 ---
     if (type === 'shop') {
-      if(lblTitle) lblTitle.textContent = "店名・施設名"; if(lblLead) lblLead.textContent = "お店の概要";
+      if(lblTitle) lblTitle.textContent = "店名・施設名"; 
+      if(lblLead) lblLead.textContent = "お店の概要";
       if(inpTitle) inpTitle.placeholder = "正式な店舗名をご記入ください";
     } else if (type === 'event') {
-      if(lblTitle) lblTitle.textContent = "イベント名"; if(lblLead) lblLead.textContent = "イベントの概要";
+      if(lblTitle) lblTitle.textContent = "イベント名"; 
+      if(lblLead) lblLead.textContent = "イベントの概要";
       if(inpTitle) inpTitle.placeholder = "イベント名称をご記入ください";
     } else {
-      if(lblTitle) lblTitle.textContent = "記事タイトル"; if(lblLead) lblLead.textContent = "記事の概要";
+      if(lblTitle) lblTitle.textContent = "記事タイトル"; 
+      if(lblLead) lblLead.textContent = "記事の概要";
       if(inpTitle) inpTitle.placeholder = "読みたくなるタイトルをご記入ください";
     }
 
-    // --- 🍎 場所情報の制御とバリデーション ---
+    // --- 場所情報の制御 ---
     const isShop = type === 'shop';
     const isEvent = type === 'event';
     const zipInp = document.getElementById('zipCode');
@@ -209,22 +212,23 @@ function updateTypeView() {
       addrBadge.style.background = isShop ? '#cf3a3a' : '#999';
     }
 
+    // --- 🍎 注意事項ラベルの最適化 ---
     if (lblNotes) {
-      // 記事登録（other）の場合は「場所に関する〜」に最適化
       if (type === 'event') lblNotes.textContent = '会場に関する注意事項';
       else if (type === 'shop') lblNotes.textContent = '店舗/施設に関する注意事項';
       else lblNotes.textContent = '場所に関する注意事項';
     }
 
-    // --- 🍎 主催・問い合わせセクションの統合制御 ---
+    // --- 🍎 主催者・問い合わせセクションの見出し切替 ---
     const lblInqHead = document.getElementById('lbl-inquiry-head');
     
-    // 主催者名（ev-org-field）はイベント時のみ。セクション全体（SNSやCM）は常に表示状態を維持
+    // 主催者名（ev-org-field）はイベント時のみ。セクション（SNS・問い合わせ方法）は常に表示
     toggle('ev-org-field', isEvent); 
     
     if (lblInqHead) {
-      // 全タイプで表示されるが、イベント時のみ見出しを「主催・」付きに変更
+      // イベントなら主催者を含めた見出し、それ以外なら問い合わせ先のみの見出しにする
       lblInqHead.textContent = isEvent ? "主催・お問い合わせ先" : "問い合わせ先（公開）";
+      lblInqHead.style.display = 'block'; // 確実に表示させる
     }
   }
 

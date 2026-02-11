@@ -130,9 +130,7 @@ export const formHTML = `
   <div class="lz-field"><label class="lz-label">参加費</label><input type="text" name="ev_fee" class="lz-input" placeholder="無料、500円 など"></div>
   <div class="lz-field"><label class="lz-label">参加者のもちもの</label><input type="text" name="ev_items" class="lz-input" placeholder="筆記用具、室内履き など"></div>
   <div class="lz-field"><label class="lz-label">対象</label><input type="text" name="ev_target" class="lz-input" placeholder="町内在住の方、小学生以上 など"></div>
-
-
-        <div id="box-sns-links" class="lz-field">
+</div> <div id="box-sns-links" class="lz-field">
         <div class="lz-section-head">各種リンク</div>
         <div class="lz-choice-flex">
         <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
