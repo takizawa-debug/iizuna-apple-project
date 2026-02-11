@@ -9,7 +9,31 @@ export const formStyles = `
   .lz-form-body.is-active { display: flex; animation: lz-fade 0.4s ease; }
   @keyframes lz-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 
-  .lz-section-head { font-size: 1.45rem; font-weight: 900; color: #5b3a1e; border-left: 6px solid #cf3a3a; padding-left: 14px; margin: 30px 0 12px; line-height: 1.4; }
+  /* 🍎 大項目のデザイン変更：縦線から水平ライン区切りへ */
+  .lz-section-head { 
+    font-size: 1.35rem; 
+    font-weight: 900; 
+    color: #5b3a1e; 
+    padding: 10px 0; 
+    margin: 50px 0 25px; 
+    line-height: 1.4;
+    border-bottom: 2px solid #eee; /* ベースとなる薄いグレーの横線 */
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* 赤いアクセントラインを下に重ねる */
+  .lz-section-head::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: #cf3a3a;
+    border-radius: 2px;
+  }
   .lz-field { display: flex; flex-direction: column; gap: 12px; }
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
