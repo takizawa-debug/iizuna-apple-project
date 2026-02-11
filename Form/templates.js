@@ -137,10 +137,10 @@ export const formHTML = `
   <div class="lz-section-head" style="margin-top:0;">栽培・経営について</div>
   
   <div class="lz-grid">
-    <div class="lz-field"><label class="lz-label">農地面積</label>
+    <div class="lz-field"><label class="lz-label">作付け面積（りんご）</label>
       <div style="display:flex; gap:8px;">
         <input type="number" name="pr_area" class="lz-input" style="flex:1;" placeholder="数値">
-        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="ha">ha</option><option value="a">a</option><option value="反">反</option><option value="町">町</option><option value="㎡">㎡</option><option value="坪">坪</option></select>
+        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="a（アール）">a（アール）</option><option value="ha（ヘクタール）">ha（ヘクタール）</option><option value="反">反</option><option value="町">町</option><option value="㎡">㎡</option><option value="坪">坪</option></select>
       </div>
     </div>
     <div class="lz-field"><label class="lz-label">従業員数</label><input type="number" name="pr_staff" class="lz-input" placeholder="人数（専従・パート含む）"></div>
@@ -231,7 +231,7 @@ export const formHTML = `
 <div class="lz-field">
   <label class="lz-label">問い合わせ方法（複数選択可）</label>
   <div class="lz-choice-flex">
-    <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">専用フォーム</span></label>
+    <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">WEBフォーム</span></label>
     <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="email"><span class="lz-choice-inner">メール</span></label>
     <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="tel"><span class="lz-choice-inner">電話番号</span></label>
     <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="other"><span class="lz-choice-inner">その他</span></label>

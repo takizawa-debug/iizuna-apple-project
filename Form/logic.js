@@ -202,6 +202,21 @@ export async function initFormLogic() {
     });
   });
 
+// 🍎 りんご以外の作物の詳細入力切り替え
+  document.querySelectorAll('.pr-crop-trigger').forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      const val = e.target.value;
+      let targetId = '';
+      if (val === 'fruit') targetId = 'pr-crop-fruit-input';
+      if (val === 'vegetable') targetId = 'pr-crop-veg-input';
+      if (val === 'other') targetId = 'pr-crop-other-input';
+      
+      const targetInput = document.getElementById(targetId);
+      if (targetInput) targetInput.style.display = e.target.checked ? 'block' : 'none';
+    });
+  });
+
+
 function updateTypeView() {
     const selected = Array.from(typeRadios).find(r => r.checked);
     if (!selected) { if (fieldsContainer) fieldsContainer.style.display = 'none'; return; }
