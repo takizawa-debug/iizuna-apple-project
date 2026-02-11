@@ -65,7 +65,7 @@ export async function initFormLogic() {
 
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
-    toggle('pane-producer-detail', type === 'producer');
+    toggle('pane-farmer-detail', type === 'farmer');
     toggle('ev-venue-box', type === 'event' || type === 'other');
     toggle('ev-org-field', type === 'event');
     toggle('box-writing-assist', type !== 'other');
@@ -88,7 +88,7 @@ export async function initFormLogic() {
     }
 
     // タイプ別エリアの強制リセット
-    if (type !== 'producer') {
+   if (type !== 'farmer') {
       const invBox = document.getElementById('pr-invoice-num-box');
       if (invBox) invBox.style.display = 'none';
       ['pr-crop-fruit-input', 'pr-crop-veg-input', 'pr-crop-other-input'].forEach(id => {

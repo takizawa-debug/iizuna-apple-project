@@ -67,7 +67,7 @@ const resources = {
     types: {
       shop: { label: "お店の登録", title: "店名・施設名", lead: "お店の概要", notes: "店舗/施設に関する注意事項", catLabel: "この場所でできること（複数選択可）" },
       event: { label: "イベントの登録", title: "イベント名", lead: "イベントの概要", notes: "会場に関する注意事項", catLabel: "イベントジャンル（複数選択可）" },
-      producer: { label: "生産者の登録", title: "農園・団体名", lead: "生産者の概要", notes: "農場訪問時の注意事項（防疫等）", catLabel: "生産・販売スタイル（複数選択可）" },
+      farmer: { label: "生産者の登録", title: "農園・団体名", lead: "生産者の概要", notes: "農場訪問時の注意事項（防疫等）", catLabel: "生産・販売スタイル（複数選択可）" },
       other: { label: "記事の登録", title: "記事タイトル", lead: "記事の概要", notes: "場所に関する注意事項", catLabel: "記事のジャンル（複数選択可）" }
     },
     options: {
@@ -143,7 +143,7 @@ const resources = {
     types: {
       shop: { label: "Shop", title: "Shop/Facility Name", lead: "Shop Summary", notes: "Notes for Shop/Facility", catLabel: "What you can do here (Multiple)" },
       event: { label: "Event", title: "Event Name", lead: "Event Summary", notes: "Notes for Venue", catLabel: "Event Genre (Multiple)" },
-      producer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", notes: "Notes for Farm Visit", catLabel: "Farming Style (Multiple)" },
+      farmer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", notes: "Notes for Farm Visit", catLabel: "Farming Style (Multiple)" },
       other: { label: "Article", title: "Article Title", lead: "Article Summary", notes: "Notes for Location", catLabel: "Article Genre (Multiple)" }
     },
     options: {
@@ -217,7 +217,7 @@ const resources = {
     types: {
       shop: { label: "店铺", title: "店名/设施名", lead: "店铺概要", notes: "店铺/设施相关注意事项", catLabel: "在此可进行的操作（多选）" },
       event: { label: "活动", title: "活动名称", lead: "活动概要", notes: "会场相关注意事项", catLabel: "活动类型（多选）" },
-      producer: { label: "生产者注册", title: "农园/团体名", lead: "生产者概要", notes: "农场访问注意事项", catLabel: "生产/销售风格（多选）" },
+      farmer: { label: "生产者注册", title: "农园/团体名", lead: "生产者概要", notes: "农场访问注意事项", catLabel: "生产/销售风格（多选）" },
       other: { label: "文章", title: "文章标题", lead: "文章概要", notes: "地点相关注意事项", catLabel: "文章类型（多选）" }
     },
     options: {

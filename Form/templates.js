@@ -7,7 +7,7 @@ import { i18n } from './i18n.js';
 export const catLabels = {
   shop: i18n.types.shop.catLabel,
   event: i18n.types.event.catLabel,
-  producer: i18n.types.producer.catLabel,
+  farmer: i18n.types.farmer.catLabel,
   other: i18n.types.other.catLabel
 };
 
@@ -35,7 +35,7 @@ export const getFormHTML = () => `
     <div class="lz-field">
       <select name="art_type" id="art_type_select" class="lz-select">
         <option value="" selected>${i18n.placeholders.art_type_unselected}</option>
-        <option value="producer">${i18n.types.producer.label}</option>
+        <option value="farmer">${i18n.types.farmer.label}</option>
         <option value="shop">${i18n.types.shop.label}</option>
         <option value="event">${i18n.types.event.label}</option>
         <option value="other">${i18n.types.other.label}</option>
@@ -156,7 +156,7 @@ export const getFormHTML = () => `
         <div class="lz-field"><label class="lz-label">${i18n.labels.ev_target}</label><input type="text" name="ev_target" class="lz-input" placeholder="${i18n.placeholders.ev_target}"></div>
       </div>
 
-      <div id="pane-producer-detail" class="lz-dynamic-detail" style="display:none;">
+      <div id="pane-farmer-detail" class="lz-dynamic-detail" style="display:none;">
         <div class="lz-section-head">${i18n.sections.producer_head}</div>
         <div class="lz-field">
           <label class="lz-label">${i18n.labels.pr_varieties}</label>
