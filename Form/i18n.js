@@ -16,7 +16,7 @@ const resources = {
     },
     labels: {
       name: "お名前", email: "メールアドレス", content: "内容", limit_100: "（100文字以内）",
-      art_body: "詳細本文", art_images: "画像（最大6枚）", art_file: "資料（PDF等）",
+      art_body: "詳細本文", art_images: "画像（最大6枚）", art_file: "資料（PDF,Word,Excel,PowerPoint等）",
       ev_venue_name: "会場名", zip: "郵便番号", address: "住所", biz_days: "営業曜日",
       std_biz_hours: "標準営業時間", open_time: "営業開始", close_time: "営業終了",
       day: "曜日", closed: "休業", holiday_biz: "祝日の営業", shop_biz_notes: "営業に関する注意事項",
@@ -103,7 +103,7 @@ const resources = {
     },
     labels: {
       name: "Name", email: "Email", content: "Content", limit_100: " (Within 100 chars)",
-      art_body: "Detailed Description", art_images: "Images (Max 6)", art_file: "Files (PDF etc.)",
+      art_body: "Detailed Description", art_images: "Images (Max 6)", art_file: "Files (PDF,Word,Excel,PowerPoint etc.)",
       ev_venue_name: "Venue Name", zip: "Zip Code", address: "Address", biz_days: "Business Days",
       std_biz_hours: "Standard Hours", open_time: "Open", close_time: "Close",
       day: "Day", closed: "Closed", holiday_biz: "Holiday Hours", shop_biz_notes: "Business Notes",
@@ -177,7 +177,7 @@ const resources = {
     },
     labels: {
       name: "姓名", email: "电子邮箱", content: "内容", limit_100: "（100字以内）",
-      art_body: "详细内容", art_images: "图片（最多6张）", art_file: "资料（PDF等）",
+      art_body: "详细内容", art_images: "图片（最多6张）", art_file: "资料（PDF,Word,Excel,PowerPoint等）",
       ev_venue_name: "会场名称", zip: "邮政编码", address: "详细地址", biz_days: "营业日",
       std_biz_hours: "营业时间", open_time: "开始营业", close_time: "结束营业",
       day: "星期", closed: "休息", holiday_biz: "节假日营业", shop_biz_notes: "营业注意事项",
