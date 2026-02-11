@@ -200,6 +200,20 @@ export const formHTML = `
   </div>
 
 
+  <div class="lz-section-head">栽培品種・加工品</div>
+  <div class="lz-field">
+    <label class="lz-label">栽培している品種</label>
+    <div id="area-apple-varieties" class="lz-choice-flex"></div>
+    <input type="text" id="pr-variety-other-input" name="pr_variety_other" class="lz-input" style="display:none; margin-top:8px;" placeholder="その他の品種を具体的に記入">
+  </div>
+  <div class="lz-field">
+    <label class="lz-label">扱っている加工品</label>
+    <div id="area-apple-products" class="lz-choice-flex"></div>
+    <input type="text" id="pr-product-other-input" name="pr_product_other" class="lz-input" style="display:none; margin-top:8px;" placeholder="その他の加工品を具体的に記入">
+  </div>
+</div>
+
+
         <div class="lz-section-head">各種リンク</div>
         <div class="lz-choice-flex">
         <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>
@@ -232,18 +246,6 @@ export const formHTML = `
   </div>
 </div>
 
-  <div class="lz-section-head">栽培品種・加工品</div>
-  <div class="lz-field">
-    <label class="lz-label">栽培している品種</label>
-    <div id="area-apple-varieties" class="lz-choice-flex"></div>
-    <input type="text" id="pr-variety-other-input" name="pr_variety_other" class="lz-input" style="display:none; margin-top:8px;" placeholder="その他の品種を具体的に記入">
-  </div>
-  <div class="lz-field">
-    <label class="lz-label">扱っている加工品</label>
-    <div id="area-apple-products" class="lz-choice-flex"></div>
-    <input type="text" id="pr-product-other-input" name="pr_product_other" class="lz-input" style="display:none; margin-top:8px;" placeholder="その他の加工品を具体的に記入">
-  </div>
-</div>
 
 
 <div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先（公開）</div>
