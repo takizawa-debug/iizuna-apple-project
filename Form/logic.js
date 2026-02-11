@@ -1,5 +1,5 @@
 /**
- * logic.js - 制御エンジン
+ * logic.js - 制御エンジン（旧版ロジック完全統合版）
  */
 import { utils } from './utils.js';
 import { i18n } from './i18n.js';
@@ -8,8 +8,9 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
   let currentFetchType = null;
+  let uploadedFiles = []; // 🍎 画像管理用配列の維持
 
-  // 🍎 要素のキャッシュ
+  // 要素のキャッシュ
   const typeSelect = document.getElementById('art_type_select');
   const fieldsContainer = document.getElementById('article-fields-container');
   const lblTitle = document.getElementById('lbl-title');
@@ -18,7 +19,7 @@ export async function initFormLogic() {
   const inpLead = document.getElementsByName('art_lead')[0];
   const inpBody = document.getElementsByName('art_body')[0];
 
-  /** 🍎 UI更新：i18nデータに基づく宣言型制御 */
+  /** 🍎 1. UI更新：i18nデータに基づく宣言型制御 */
   function updateTypeView() {
     if (!typeSelect) return;
     const type = typeSelect.value;
@@ -32,7 +33,6 @@ export async function initFormLogic() {
       return;
     }
 
-    // 表示切り替えとURL同期
     fieldsContainer.style.display = 'flex';
     url.searchParams.set('type', type);
     window.history.replaceState({}, '', url.pathname + url.search);
@@ -40,15 +40,15 @@ export async function initFormLogic() {
     // テキスト・ラベルの一括反映
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
     if (lblDynCat) lblDynCat.textContent = set.catLabel;
-    lblTitle.textContent = set.titleLabel;
-    lblLead.textContent = set.leadLabel;
-    inpTitle.placeholder = set.titlePlace;
-    inpLead.placeholder = set.leadPlace;
-    inpBody.placeholder = set.bodyPlace;
-    if (document.getElementById('art_memo')) document.getElementById('art_memo').placeholder = set.memoPlace;
-    if (document.getElementById('lbl-notes')) document.getElementById('lbl-notes').textContent = set.notesLabel;
+    lblTitle.textContent = set.title;
+    lblLead.textContent = set.lead;
+    inpTitle.placeholder = i18n.placeholders.art_title || set.titlePlace; // 旧版準拠
+    inpLead.placeholder = i18n.placeholders.art_lead;
+    inpBody.placeholder = i18n.placeholders.art_body;
+    if (document.getElementById('art_memo')) document.getElementById('art_memo').placeholder = i18n.placeholders.art_memo;
+    if (document.getElementById('lbl-notes')) document.getElementById('lbl-notes').textContent = set.notes;
 
-    // パネル出し分け
+    // パネル出し分けと必須属性制御（旧版のtoggle強化版を継承）
     const toggle = (id, cond) => {
       const el = document.getElementById(id);
       if (el) {
@@ -67,13 +67,14 @@ export async function initFormLogic() {
     toggle('ev-org-field', type === 'event');
     toggle('box-writing-assist', type !== 'other');
 
-    // 住所必須制御
+    // 住所必須バッジ制御
     const isShop = type === 'shop';
     const zipBadge = document.getElementById('zipBadge'), addrBadge = document.getElementById('addrBadge');
     const zipInp = document.getElementById('zipCode'), addrInp = document.getElementById('addressField');
-    if (zipBadge && addrBadge) {
+    if (zipBadge && addrBadge && zipInp && addrInp) {
       zipBadge.style.display = addrBadge.style.display = isShop ? 'inline-block' : 'none';
       zipInp.required = addrInp.required = isShop;
+      zipBadge.textContent = addrBadge.textContent = i18n.badges.required;
     }
 
     // 会場名ラベル調整
@@ -83,16 +84,31 @@ export async function initFormLogic() {
       if (vLabel) vLabel.textContent = (type === 'other') ? '関連する場所の名称' : '会場名';
     }
 
+    // 生産者/イベント/店舗の独自エリアのリセット
+    if (type !== 'producer') {
+      const invBox = document.getElementById('pr-invoice-num-box');
+      if (invBox) invBox.style.display = 'none';
+      ['pr-crop-fruit-input', 'pr-crop-veg-input', 'pr-crop-other-input'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.style.display = 'none';
+      });
+    }
+    if (type !== 'event') {
+      const evEnd = document.getElementById('ev-end-date-box'); if (evEnd) evEnd.style.display = 'none';
+    }
+    if (type !== 'shop') {
+      const sSimple = document.getElementById('shop-simple'), sCustom = document.getElementById('shop-custom');
+      if (sSimple) sSimple.style.display = 'none'; if (sCustom) sCustom.style.display = 'none';
+    }
+
     loadAndBuildGenres(type);
   }
 
-  /* --- 以下、既存の機能ロジック（変更なし） --- */
-
+  /** 🍎 2. カテゴリー生成（旧版ロジック完全継承） */
   async function loadAndBuildGenres(type) {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
     currentFetchType = type;
-    container.innerHTML = '<div style="font-size:0.9rem; color:#888;">カテゴリーを取得中...</div>';
+    container.innerHTML = `<div style="font-size:0.9rem; color:#888;">カテゴリーを取得中...</div>`;
     try {
       const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}&_t=${Date.now()}`);
       const json = await res.json();
@@ -103,37 +119,99 @@ export async function initFormLogic() {
       let l2Html = '';
       Object.keys(json.items).forEach((l1, idx) => {
         const baseId = `gen-${idx}`;
-        const isOther = l1.includes('その他');
-        l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" data-subid="${baseId}"><span class="lz-choice-inner">${l1}</span></label>`;
-        if (!isOther) {
-          l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem;">${l1}のジャンル</label><div class="lz-choice-flex">`;
+        const isRootOther = l1 === '大カテゴリその他' || l1 === 'その他';
+        const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
+        l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}"><span class="lz-choice-inner">${l1}</span></label>`;
+        if (!isRootOther) {
+          l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-choice-flex">`;
           json.items[l1].forEach(l2 => {
-            l2Html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${l2.includes('その他') ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
+            const isOther = l2.includes('その他');
+            l2Html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
           });
-          l2Html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="詳細入力"></div>`;
+          l2Html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="具体的な内容をご記入ください"></div>`;
         }
       });
-      container.innerHTML = l1Html + '</div>' + l2Html + `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label">詳細記述</label><input type="text" name="cat_root_other_val" class="lz-input"></div>`;
+      container.innerHTML = l1Html + '</div>' + l2Html + `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
+      
+      // 旧版の品種・加工品チップ生成
+      const buildChips = (targetId, list, namePrefix) => {
+        const area = document.getElementById(targetId);
+        if (!area || !list) return;
+        area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') + 
+        `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="その他" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">その他</span></label>`;
+        area.querySelectorAll('.pr-other-trigger').forEach(chk => {
+          chk.onchange = (e) => {
+            const inputEl = document.getElementById(e.target.dataset.target);
+            if (inputEl) inputEl.style.display = e.target.checked ? 'block' : 'none';
+          };
+        });
+      };
+      buildChips('area-apple-varieties', json.appleVarieties, 'pr_variety');
+      buildChips('area-apple-products', json.appleProducts, 'pr_product');
+      
       bindDynamicEvents();
-    } catch (e) { container.innerHTML = '取得失敗'; }
+    } catch (e) { container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; }
   }
 
   function bindDynamicEvents() {
     document.getElementsByName('cat_l1').forEach(c => {
       c.onchange = (e) => {
-        const el = document.getElementById(`sub-${e.target.dataset.subid}`);
+        const targetId = e.target.getAttribute('data-subid');
+        const el = document.getElementById(`sub-${targetId}`);
         if (el) el.style.display = e.target.checked ? 'flex' : 'none';
+        const otherRoot = document.getElementById('sub-cat-root-other');
+        const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => (i.value === '大カテゴリその他' || i.value === 'その他') && i.checked);
+        if (otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
       };
     });
-    document.querySelectorAll('.lz-sub-trigger').forEach(t => {
-      t.onchange = (e) => {
+    document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
+      trigger.onchange = (e) => {
         const inp = e.target.closest('.lz-dynamic-sub-area').querySelector('.lz-sub-other-field');
-        if (inp) inp.style.display = e.target.checked ? 'block' : 'none';
+        if(inp) inp.style.display = e.target.checked ? 'block' : 'none';
       };
     });
   }
 
-  // タブ切り替えロジック
+  /** 🍎 3. 各種イベントバインド（旧版の全リスナーを網羅） */
+  
+  // 曜日別設定テーブル生成
+  const customBody = document.getElementById('customSchedBody');
+  if (customBody) {
+    days.forEach(d => {
+      const tr = document.createElement('tr'); tr.id = `row-${d}`;
+      tr.innerHTML = `<td><strong>${d}曜日</strong></td><td data-label="休業"><input type="checkbox" name="c_closed_${d}" class="lz-closed-trigger"></td><td data-label="開店時間"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_'+d)}</div></td><td data-label="閉店時間"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_'+d)}</div></td>`;
+      customBody.appendChild(tr);
+      const trigger = tr.querySelector('.lz-closed-trigger');
+      const timeBoxes = tr.querySelectorAll('.lz-time-box');
+      trigger.onchange = (e) => {
+        const isClosed = e.target.checked;
+        tr.style.opacity = isClosed ? "0.4" : "1";
+        timeBoxes.forEach(box => {
+          box.classList.toggle('is-disabled', isClosed);
+          box.querySelectorAll('select').forEach(sel => sel.disabled = isClosed);
+        });
+      };
+    });
+  }
+
+  // 簡易曜日チップ
+  const simpleBox = document.getElementById('box-simple-days');
+  if (simpleBox) {
+    days.forEach(d => {
+      const l = document.createElement('label'); l.className = 'lz-day-chip';
+      l.innerHTML = `<input type="checkbox" name="simple_days" value="${d}"><span class="lz-day-text">${d}</span>`;
+      simpleBox.appendChild(l);
+    });
+  }
+
+  // 時間セレクター注入
+  const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+  setHtml('sel-simple-start', utils.createTimeSelectorHTML('simple_s'));
+  setHtml('sel-simple-end', utils.createTimeSelectorHTML('simple_e'));
+  setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
+  setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
+
+  // タブ切り替えと必須属性管理
   document.querySelectorAll('.lz-form-tab').forEach(t => t.onclick = () => {
     document.querySelectorAll('.lz-form-tab').forEach(x => x.classList.toggle('is-active', x === t));
     document.querySelectorAll('.lz-form-body').forEach(b => {
@@ -148,21 +226,133 @@ export async function initFormLogic() {
     if (t.dataset.type === 'article') updateTypeView();
   });
 
-  // 時間セレクター注入
-  const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
-  setHtml('sel-simple-start', utils.createTimeSelectorHTML('simple_s'));
-  setHtml('sel-simple-end', utils.createTimeSelectorHTML('simple_e'));
-  setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
-  setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
-
   // 郵便番号検索
   const zipBtn = document.getElementById('zipBtnAction');
   if (zipBtn) zipBtn.onclick = async () => {
     const zip = document.getElementById('zipCode').value;
+    if (!zip) return alert('郵便番号を入力してください');
     try { document.getElementById('addressField').value = await utils.fetchAddress(zip); } catch(e) { alert(e.message); }
   };
 
-  // 送信処理
+  // SNSトリガー連動
+  const snsBox = document.getElementById('box-sns-links');
+  if (snsBox) {
+    snsBox.addEventListener('change', (e) => {
+      if (e.target.name === 'sns_trigger') {
+        const checkedVals = Array.from(document.getElementsByName('sns_trigger')).filter(i => i.checked).map(i => i.value);
+        ['home', 'ec', 'rel', 'ig', 'fb', 'x', 'line', 'tt'].forEach(t => {
+          const targetInp = document.getElementById(`f-${t}`);
+          if (targetInp) targetInp.style.display = checkedVals.includes(t) ? (t === 'rel' ? 'flex' : 'block') : 'none';
+        });
+      }
+    });
+  }
+
+  // 生産者インボイス・作物連動
+  document.querySelectorAll('.pr-invoice-trigger').forEach(r => {
+    r.addEventListener('change', (e) => {
+      const numBox = document.getElementById('pr-invoice-num-box');
+      if (numBox) numBox.style.display = e.target.value === 'yes' ? 'block' : 'none';
+    });
+  });
+  document.querySelectorAll('.pr-crop-trigger').forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      const targetMap = { fruit: 'pr-crop-fruit-input', vegetable: 'pr-crop-veg-input', other: 'pr-crop-other-input' };
+      const targetInput = document.getElementById(targetMap[e.target.value]);
+      if (targetInput) targetInput.style.display = e.target.checked ? 'block' : 'none';
+    });
+  });
+
+  // イベント期間連動
+  const evEndDateBox = document.getElementById('ev-end-date-box');
+  document.getElementsByName('ev_period_type').forEach(r => {
+    r.addEventListener('change', (e) => { if(evEndDateBox) evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none'; });
+  });
+
+  // 店舗モード連動
+  document.getElementsByName('shop_mode').forEach(r => {
+    r.onchange = (e) => {
+      const s = document.getElementById('shop-simple'), c = document.getElementById('shop-custom');
+      if (s) s.style.display = e.target.value === 'simple' ? 'block' : 'none';
+      if (c) c.style.display = e.target.value === 'custom' ? 'block' : 'none';
+    };
+  });
+
+  // 問い合わせ方法連動
+  document.getElementsByName('cm').forEach(c => {
+    c.onchange = () => {
+      const v = Array.from(document.getElementsByName('cm')).filter(i => i.checked).map(i => i.value);
+      ['form', 'email', 'tel', 'other'].forEach(m => {
+        const el = document.getElementById(`cm-${m}-box`);
+        if (el) el.style.display = v.includes(m) ? 'flex' : 'none';
+      });
+      const sync = document.getElementById('syncField');
+      if (sync) sync.style.display = v.includes('email') ? 'flex' : 'none';
+    };
+  });
+
+  // 事務局代行連動
+  const chkAssist = document.getElementById('chk-writing-assist');
+  if (chkAssist && inpLead && inpBody) {
+    const fieldLead = inpLead.closest('.lz-field'), fieldBody = inpBody.closest('.lz-field');
+    const syncAssist = () => {
+      const isHandled = chkAssist.checked;
+      if (fieldLead) fieldLead.style.display = isHandled ? 'none' : 'flex';
+      if (fieldBody) fieldBody.style.display = isHandled ? 'none' : 'flex';
+      inpLead.required = inpBody.required = !isHandled;
+      const msg = document.getElementById('msg-writing-assist');
+      if (msg) msg.style.display = isHandled ? "block" : "none";
+    };
+    chkAssist.onchange = syncAssist; syncAssist();
+  }
+
+  // 関連リンク自動追加
+  const relUrl1 = document.getElementById('rel_url1'), relTitle1 = document.getElementById('rel_title1'), rel2Row = document.getElementById('rel-link2-row');
+  if (relUrl1 && relTitle1 && rel2Row) {
+    const toggleRel2 = () => { rel2Row.style.display = (relUrl1.value.trim() !== "" || relTitle1.value.trim() !== "") ? 'grid' : 'none'; };
+    relUrl1.oninput = relTitle1.oninput = toggleRel2;
+  }
+
+  // メール同期
+  const pubMail = document.getElementById('pubEmail'), admMail = document.getElementById('adminEmail'), syncCheck = document.getElementById('syncCheck');
+  if (pubMail && admMail && syncCheck) {
+    pubMail.addEventListener('input', () => {
+      const syncField = document.getElementById('syncField');
+      if (syncField) syncField.style.display = pubMail.value.trim().length > 0 ? "block" : "none";
+      if (syncCheck.checked) admMail.value = pubMail.value;
+    });
+    syncCheck.addEventListener('change', () => {
+      if (syncCheck.checked) { admMail.value = pubMail.value; admMail.style.background = "#f0f0f0"; admMail.readOnly = true; } 
+      else { admMail.style.background = "#fafafa"; admMail.readOnly = false; }
+    });
+  }
+
+  // 画像プレビュー管理
+  const imgInput = document.getElementById('art_images_input'), imgAddBtn = document.getElementById('imgAddBtn'), previewArea = document.getElementById('imgPreviewArea');
+  if (imgAddBtn && imgInput) {
+    imgAddBtn.onclick = () => imgInput.click();
+    imgInput.onchange = (e) => {
+      Array.from(e.target.files).forEach(file => {
+        if (uploadedFiles.length >= 6) return;
+        uploadedFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const div = document.createElement('div'); div.className = 'lz-img-container';
+          div.innerHTML = `<img src="${event.target.result}"><div class="lz-img-remove">×</div>`;
+          div.querySelector('.lz-img-remove').onclick = () => {
+            div.remove(); uploadedFiles = uploadedFiles.filter(f => f !== file);
+            imgAddBtn.style.display = 'flex';
+          };
+          previewArea.insertBefore(div, imgAddBtn);
+          if (uploadedFiles.length >= 6) imgAddBtn.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      });
+      imgInput.value = "";
+    };
+  }
+
+  // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
   if (form) {
     form.onsubmit = async (e) => {
@@ -172,15 +362,24 @@ export async function initFormLogic() {
       const formData = new FormData(form);
       const payload = Object.fromEntries(formData.entries());
       payload.cat_l1 = Array.from(form.querySelectorAll('[name="cat_l1"]:checked')).map(i => i.value);
+      // 画像添付
+      payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
+        const reader = new FileReader(); reader.onload = (ev) => resolve(ev.target.result); reader.readAsDataURL(file);
+      })));
       try {
         const res = await fetch(ENDPOINT, { method: "POST", body: JSON.stringify(payload) });
         const result = await res.json();
         if (result.ok) { alert(result.message); window.location.reload(); }
-      } catch (err) { alert("送信失敗"); } finally { btn.disabled = false; btn.textContent = i18n.common.sendBtn; }
+      } catch (err) { alert("送信に失敗しました"); } finally { btn.disabled = false; btn.textContent = i18n.common.sendBtn; }
     };
   }
 
-  // 初期化
-  typeSelect.onchange = updateTypeView;
-  updateTypeView();
+  // 初期化実行
+  const urlParams = new URLSearchParams(window.location.search);
+  const typeFromUrl = urlParams.get('type');
+  if (typeSelect) {
+    if (typeFromUrl) typeSelect.value = typeFromUrl;
+    typeSelect.onchange = updateTypeView;
+    updateTypeView();
+  }
 }
