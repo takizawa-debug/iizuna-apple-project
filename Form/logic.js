@@ -357,7 +357,10 @@ export async function initFormLogic() {
     };
   }
 
-  // logic.js の送信処理部分を以下に差し替え
+  // 送信処理（画像Base64変換含む）
+  const form = document.getElementById('lz-article-form');
+  if (form) {
+    // logic.js の送信処理部分を以下に差し替え
 form.onsubmit = async (e) => {
   e.preventDefault();
   const btn = e.target.querySelector('.lz-send-btn');
@@ -416,6 +419,7 @@ form.onsubmit = async (e) => {
     btn.textContent = i18n.common.sendBtn;
   }
 };
+  }
 
   // 初期化実行
   const urlParams = new URLSearchParams(window.location.search);
