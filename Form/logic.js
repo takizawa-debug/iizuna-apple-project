@@ -258,23 +258,34 @@ function updateTypeView() {
     // 🍎 記事登録(other)以外の場合のみ、代行オプションを表示
     toggle('box-writing-assist', type !== 'other');
 
-    // --- 基本情報のラベル・切替 ---
+    // --- 🍎 基本情報のラベル・プレースホルダを動的に切替 ---
     if (type === 'shop') {
       if(lblTitle) lblTitle.textContent = "店名・施設名"; 
       if(lblLead) lblLead.textContent = "お店の概要";
       if(inpTitle) inpTitle.placeholder = "正式な店舗名をご記入ください";
+      if(inpLead) inpLead.placeholder = "お店の特徴や魅力を100文字以内で";
+      if(inpBody) inpBody.placeholder = "メニュー、こだわり、サービス内容などを詳しく教えてください";
+
     } else if (type === 'event') {
       if(lblTitle) lblTitle.textContent = "イベント名"; 
       if(lblLead) lblLead.textContent = "イベントの概要";
       if(inpTitle) inpTitle.placeholder = "イベント名称をご記入ください";
-      } else if (type === 'producer') { // 🍎追加
+      if(inpLead) inpLead.placeholder = "どんなイベントか一言で！";
+      if(inpBody) inpBody.placeholder = "当日の内容、タイムスケジュール、参加方法などの詳細を教えてください";
+
+    } else if (type === 'producer') {
       if(lblTitle) lblTitle.textContent = "農園・団体名"; 
       if(lblLead) lblLead.textContent = "生産者の概要";
       if(inpTitle) inpTitle.placeholder = "正式な屋号や農園名をご記入ください";
-    } else {
+      if(inpLead) inpLead.placeholder = "栽培へのこだわりや農園の特徴を一言で";
+      if(inpBody) inpBody.placeholder = "農園の歴史、栽培している品種の想い、購入方法などを教えてください";
+
+    } else { // other (記事)
       if(lblTitle) lblTitle.textContent = "記事タイトル"; 
       if(lblLead) lblLead.textContent = "記事の概要";
       if(inpTitle) inpTitle.placeholder = "読みたくなるタイトルをご記入ください";
+      if(inpLead) inpLead.placeholder = "この記事で伝えたいことを100文字以内で";
+      if(inpBody) inpBody.placeholder = "町の発見、インタビュー、体験談など自由に詳しく書いてください";
     }
 
     // --- 場所情報の制御 ---

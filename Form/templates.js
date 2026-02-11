@@ -261,7 +261,7 @@ export const formHTML = `
   </div>
 
 
-<div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先（公開）</div>
+<div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先</div>
 
 <div id="ev-org-field" class="lz-field" style="display:none;">
   <label class="lz-label"><span class="lz-badge">必須</span> 主催者名</label>
@@ -305,7 +305,7 @@ export const formHTML = `
   <input type="email" id="adminEmail" name="admin_email" class="lz-input" required placeholder="example@mail.com">
 </div>
         
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">非公開</span> 事務局へのメッセージ</label><textarea name="admin_msg" class="lz-textarea" rows="4"></textarea></div>
+        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">非公開</span> 事務局への連絡事項</label><textarea name="admin_msg" class="lz-textarea" rows="4"></textarea></div>
 
         <button type="submit" class="lz-send-btn" id="lzBtn">この内容で送信する</button>
       </div>
