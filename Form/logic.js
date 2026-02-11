@@ -235,10 +235,11 @@ export async function initFormLogic() {
     if (zipInp && addrInp && zipBadge && addrBadge) {
       zipInp.required = isShop;
       addrInp.required = isShop;
-      zipBadge.textContent = isShop ? '必須' : '任意';
-      addrBadge.textContent = isShop ? '必須' : '任意';
-      zipBadge.style.background = isShop ? '#cf3a3a' : '#999';
-      addrBadge.style.background = isShop ? '#cf3a3a' : '#999';
+      // 🍎 ショップ（必須）の時だけバッジを表示し、それ以外（任意）は隠す
+      zipBadge.style.display = isShop ? 'inline-block' : 'none';
+      addrBadge.style.display = isShop ? 'inline-block' : 'none';
+      zipBadge.textContent = '必須';
+      addrBadge.textContent = '必須';
     }
 
     const venueBox = document.getElementById('ev-venue-box');
@@ -246,7 +247,7 @@ export async function initFormLogic() {
       const venueLabel = venueBox.querySelector('.lz-label');
       if (venueLabel) {
         const labelText = type === 'other' ? '関連する場所の名称' : '会場名';
-        venueLabel.innerHTML = `<span class="lz-badge opt" style="background:#999;">任意</span> ${labelText}`;
+        venueLabel.innerHTML = labelText; // 🍎 バッジを消してテキストのみにする
       }
       const venueInp = venueBox.querySelector('input');
       if (venueInp) {

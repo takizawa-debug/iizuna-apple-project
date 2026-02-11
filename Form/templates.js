@@ -64,12 +64,12 @@ export const formHTML = `
 </div>
 
         <div class="lz-section-head">画像・配布資料</div><div class="lz-grid"><div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label><div id="imgPreviewArea" class="lz-img-preview-grid"><div id="imgAddBtn" class="lz-img-add-btn">＋</div></div><input type="file" id="art_images_input" style="display:none;" accept="image/*" multiple></div>
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div></div>
+        <div class="lz-field"><label class="lz-label"> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div></div>
 
 <div class="lz-section-head">場所の情報</div>
 
 <div id="ev-venue-box" class="lz-field" style="display:none;">
-  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 会場名</label>
+  <label class="lz-label"> 会場名</label>
   <input type="text" name="ev_venue_name" class="lz-input" placeholder="例：飯綱ふれあいパーク">
 </div>
 
@@ -86,7 +86,7 @@ export const formHTML = `
 
 <div class="lz-field">
   <label class="lz-label">
-    <span class="lz-badge opt" style="background:#999;">任意</span> 
+     
     <span id="lbl-notes">店舗/施設に関する注意事項</span> </label>
   <textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="注意事項があればご記入ください"></textarea>
 </div>
@@ -284,13 +284,13 @@ export const formHTML = `
 <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付方法</label><input type="text" name="cm_other_val" class="lz-input" placeholder="窓口へ直接、など"></div>
 
 <div class="lz-field">
-  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 問い合わせに関する注意事項</label>
+  <label class="lz-label"> 問い合わせに関する注意事項</label>
   <textarea name="cm_notes" class="lz-textarea" rows="2" placeholder="（例）対応時間は平日10:00〜17:00です。土日は電話が繋がりません。"></textarea>
 </div>
 
 <div class="lz-section-head">備考</div>
         <div class="lz-field">
-          <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 補足情報</label>
+          <label class="lz-label"> 補足情報</label>
           <textarea name="art_memo" id="art_memo" class="lz-textarea" rows="3" placeholder="その他、補足情報があれば自由にご記入ください"></textarea>
         </div>
 

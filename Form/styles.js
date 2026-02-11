@@ -37,6 +37,7 @@ export const formStyles = `
   .lz-field { display: flex; flex-direction: column; gap: 12px; }
   .lz-label { font-size: 1.25rem; font-weight: 800; color: #5b3a1e; display: flex; align-items: center; gap: 10px; }
   .lz-badge { font-size: 0.85rem; background: #cf3a3a; color: #fff; padding: 4px 10px; border-radius: 4px; font-weight: 900; }
+  .lz-badge.opt { display: none !important; }
   
 /* 🍎 入力項目全般：高さを58pxで統一し、中央寄せにする */
 .lz-input, .lz-select { 
