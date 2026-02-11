@@ -1,5 +1,5 @@
 /**
- * logic.js - 動的データ連動・UI最適化版（完全修正版）
+ * logic.js - 動的データ連動・UI最適化版
  */
 import { utils } from './utils.js';
 import { catLabels } from './templates.js';
@@ -8,34 +8,40 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
 
-  let currentFetchType = null;
+  let currentFetchType = null; // 🍎 要求管理用のフラグを追加
 
   async function loadAndBuildGenres(type = 'shop') {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
     
-    currentFetchType = type;
+    currentFetchType = type; // 🍎 現在処理すべきタイプを記録
     container.innerHTML = '<div style="font-size:0.9rem; color:#888;">カテゴリーを取得中...</div>';
 
     try {
+      // 🍎 ?_t= で独自URL化（キャッシュ回避）し、要求を確実化
       const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}&_t=${Date.now()}`);
       const json = await res.json();
       
+      // 🍎 重要：通信中に別のタブが押された（typeが変わった）場合、古いデータは破棄する
       if (type !== currentFetchType) return; 
 
       if (!json.ok) throw new Error("取得失敗");
       const genres = json.items;
       
+      // 🍎 見出しは templates.js と updateTypeView で制御するため、ここではチップの枠のみ作る
       let l1Html = '<div class="lz-choice-flex">';
       let l2Html = '';
 
+      // 大カテゴリとサブカテゴリを同時に組み立てる
       Object.keys(genres).forEach((l1, idx) => {
         const baseId = `gen-${idx}`;
         const isRootOther = l1 === '大カテゴリその他' || l1 === 'その他';
         const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
         
+        // 大カテゴリ（チップ）に data-subid を直接付与
         l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}"><span class="lz-choice-inner">${l1}</span></label>`;
 
+        // サブカテゴリ（ジャンル）のエリアを作成
         if (!isRootOther) {
           l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}のジャンル</label><div class="lz-choice-flex">`;
           genres[l1].forEach(l2 => {
@@ -46,18 +52,24 @@ export async function initFormLogic() {
         }
       });
 
+      // 🍎 外側の lz-field を閉じないよう 1つ </div> を減らす
       let finalHtml = l1Html + '</div>' + l2Html;
+      
+      // ルートの「その他」自由記述欄を追加
       finalHtml += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
       
       container.innerHTML = finalHtml;
 
+     // 🍎 品種・加工品チップ生成と「その他」連動
       const buildChips = (targetId, list, namePrefix) => {
         const area = document.getElementById(targetId);
         if (!area || !list) return;
 
+        // チップのHTML生成
         area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') + 
         `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="その他" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">その他</span></label>`;
 
+        // 「その他」のクリックイベントを個別にバインド
         area.querySelectorAll('.pr-other-trigger').forEach(chk => {
           chk.onchange = (e) => {
             const inputEl = document.getElementById(e.target.dataset.target);
@@ -66,16 +78,20 @@ export async function initFormLogic() {
         });
       };
 
+      
       buildChips('area-apple-varieties', json.appleVarieties, 'pr_variety');
       buildChips('area-apple-products', json.appleProducts, 'pr_product');
 
-      bindDynamicEvents();
+      bindDynamicEvents(); // イベントを再バインド
     } catch (e) { 
       container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; 
     }
-  }
+  }// 🍎 loadAndBuildGenres の閉じカッコを追加
+
+
 
   function bindDynamicEvents() {
+    /* 🍎 全ての大カテゴリに対して一律で連動ロジックを設定 */
     document.getElementsByName('cat_l1').forEach(c => {
       c.onchange = (e) => {
         const targetId = e.target.getAttribute('data-subid');
@@ -98,6 +114,7 @@ export async function initFormLogic() {
     });
   }
 
+  // --- 🍎 2. 曜日別設定：休業連動（無効化） ＆ スマホカード化 ---
   const customBody = document.getElementById('customSchedBody');
   if (customBody) {
     days.forEach(d => {
@@ -164,23 +181,61 @@ export async function initFormLogic() {
   const lblTitle = document.getElementById('lbl-title');
   const lblLead = document.getElementById('lbl-lead');
   const inpTitle = document.getElementById('inp-title');
-  const inpLead = document.getElementsByName('art_lead')[0];
-  const inpBody = document.getElementsByName('art_body')[0];
 
-  function updateTypeView() {
-    if (!typeSelect) return;
+  /* logic.js の initFormLogic 内に追記 */
+
+  // 🍎 イベントの「1日のみ/期間あり」切り替えロジック
+  const evPeriodRadios = document.getElementsByName('ev_period_type');
+  const evEndDateBox = document.getElementById('ev-end-date-box');
+  
+  if (evPeriodRadios && evEndDateBox) {
+    evPeriodRadios.forEach(r => {
+      r.addEventListener('change', (e) => {
+        evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none';
+      });
+    });
+  }
+
+  // 🍎 生産者のインボイス番号表示切り替え
+  document.querySelectorAll('.pr-invoice-trigger').forEach(r => {
+    r.addEventListener('change', (e) => {
+      const numBox = document.getElementById('pr-invoice-num-box');
+      if (numBox) numBox.style.display = e.target.value === 'yes' ? 'block' : 'none';
+    });
+  });
+
+// 🍎 りんご以外の作物の詳細入力切り替え
+  document.querySelectorAll('.pr-crop-trigger').forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      const val = e.target.value;
+      let targetId = '';
+      if (val === 'fruit') targetId = 'pr-crop-fruit-input';
+      if (val === 'vegetable') targetId = 'pr-crop-veg-input';
+      if (val === 'other') targetId = 'pr-crop-other-input';
+      
+      const targetInput = document.getElementById(targetId);
+      if (targetInput) targetInput.style.display = e.target.checked ? 'block' : 'none';
+    });
+  });
+
+
+function updateTypeView() {
+    if (!typeSelect) return; 
     const type = typeSelect.value;
-    const url = new URL(window.location);
+    const url = new URL(window.location); // 🍎 最初に定義（これが重要！）
 
+    // 🍎 「未選択」の場合の処理
     if (!type || type === "") { 
       if (fieldsContainer) fieldsContainer.style.display = 'none'; 
-      url.searchParams.delete('type');
+      url.searchParams.delete('type'); 
       window.history.replaceState({}, '', url.pathname + url.search);
       return; 
     }
 
+    // 🍎 選択されている場合の処理
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
-    url.searchParams.set('type', type);
+
+    url.searchParams.set('type', type); 
     window.history.replaceState({}, '', url.pathname + url.search);
 
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
@@ -224,17 +279,13 @@ export async function initFormLogic() {
       if(inpBody) inpBody.placeholder = "町の発見、インタビュー、体験談など自由に詳しく書いてください";
     }
 
-    const isShop = type === 'shop';
-    const isEvent = type === 'event';
-    const zipInp = document.getElementById('zipCode');
-    const addrInp = document.getElementById('addressField');
-    const zipBadge = document.getElementById('zipBadge');
-    const addrBadge = document.getElementById('addrBadge');
+    const isShop = type === 'shop', isEvent = type === 'event';
+    const zipInp = document.getElementById('zipCode'), addrInp = document.getElementById('addressField');
+    const zipBadge = document.getElementById('zipBadge'), addrBadge = document.getElementById('addrBadge');
     const lblNotes = document.getElementById('lbl-notes');
 
     if (zipInp && addrInp && zipBadge && addrBadge) {
-      zipInp.required = isShop;
-      addrInp.required = isShop;
+      zipInp.required = isShop; addrInp.required = isShop;
       zipBadge.textContent = isShop ? '必須' : '任意';
       addrBadge.textContent = isShop ? '必須' : '任意';
       zipBadge.style.background = isShop ? '#cf3a3a' : '#999';
@@ -267,12 +318,12 @@ export async function initFormLogic() {
       lblInqHead.textContent = isEvent ? "主催・お問い合わせ先" : "問い合わせ先（公開）";
       lblInqHead.style.display = 'block';
     }
-  }
+}
 
-  // --- 🍎 ここから下がイベント登録・初期化の重要セクション ---
 
-  // 1. SNS・問い合わせ項目のイベント登録（先に登録する）
-  const snsBox = document.getElementById('box-sns-links');
+
+  /* 🍎 選択肢に rel を追加し、入力検知ロジックを連結 */
+const snsBox = document.getElementById('box-sns-links');
   if (snsBox) {
     snsBox.addEventListener('change', (e) => {
       if (e.target.name === 'sns_trigger') {
@@ -288,45 +339,19 @@ export async function initFormLogic() {
     });
   }
 
-  document.getElementsByName('cm').forEach(c => {
-    c.onchange = () => {
-      const v = Array.from(document.getElementsByName('cm')).filter(i => i.checked).map(i => i.value);
-      const cmT = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
-      cmT('cm-form-box', v.includes('form')); cmT('cm-email-box', v.includes('email'));
-      cmT('cm-tel-box', v.includes('tel')); cmT('cm-other-box', v.includes('other'));
-      const sync = document.getElementById('syncField');
-      if(sync) sync.style.display = v.includes('email') ? 'flex' : 'none';
-    };
-  });
-
-  // 2. 登録内容（タイプ）の初期化
+  // 🍎 2. URLパラメータからタイプを復元
   const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
+  if (typeSelect && typeFromUrl) {
+    typeSelect.value = typeFromUrl;
+  }
+  // 🍎 3. 画面の初期化実行
   if (typeSelect) {
-    if (typeFromUrl) typeSelect.value = typeFromUrl;
     typeSelect.onchange = updateTypeView;
     updateTypeView();
   }
 
-  // 3. 事務局代行の初期化
-  const chkAssist = document.getElementById('chk-writing-assist');
-  const msgAssist = document.getElementById('msg-writing-assist');
-  if (chkAssist && inpLead && inpBody) {
-    const fieldLead = inpLead.closest('.lz-field');
-    const fieldBody = inpBody.closest('.lz-field');
-    const syncAssist = () => {
-      const isHandled = chkAssist.checked;
-      if (fieldLead) fieldLead.style.display = isHandled ? 'none' : 'flex';
-      if (fieldBody) fieldBody.style.display = isHandled ? 'none' : 'flex';
-      inpLead.required = !isHandled;
-      inpBody.required = !isHandled;
-      if(msgAssist) msgAssist.style.display = isHandled ? "block" : "none";
-    };
-    chkAssist.onchange = syncAssist; 
-    syncAssist();
-  }
-
-  // 4. その他のUIイベント（リンク追加、メール同期、画像等）
+  // 🍎 4. 関連リンクの自動表示ロジック
   const relUrl1 = document.getElementById('rel_url1');
   const relTitle1 = document.getElementById('rel_title1');
   const rel2Row = document.getElementById('rel-link2-row');
@@ -339,15 +364,31 @@ export async function initFormLogic() {
     relTitle1.oninput = toggleRel2;
   }
 
-  const pubMail = document.getElementById('pubEmail');
-  const admMail = document.getElementById('adminEmail');
-  const syncCheck = document.getElementById('syncCheck');
-  const syncField = document.getElementById('syncField');
+  document.getElementsByName('shop_mode').forEach(r => r.onchange = (e) => {
+    const s = document.getElementById('shop-simple'), c = document.getElementById('shop-custom');
+    if(s) s.style.display = (e.target.value === 'simple' ? 'block' : 'none');
+    if(c) c.style.display = (e.target.value === 'custom' ? 'block' : 'none');
+  });
+
+  document.getElementsByName('cm').forEach(c => c.onchange = () => {
+    const v = Array.from(document.getElementsByName('cm')).filter(i => i.checked).map(i => i.value);
+    const cmT = (id, cond) => { const el = document.getElementById(id); if(el) el.style.display = cond ? 'flex' : 'none'; };
+    cmT('cm-form-box', v.includes('form')); cmT('cm-email-box', v.includes('email'));
+    cmT('cm-tel-box', v.includes('tel')); cmT('cm-other-box', v.includes('other'));
+    const sync = document.getElementById('syncField');
+    if(sync) sync.style.display = v.includes('email') ? 'flex' : 'none';
+  });
+
+  // 🍎 5. メール同期
+  const pubMail = document.getElementById('pubEmail'), admMail = document.getElementById('adminEmail');
+  const syncCheck = document.getElementById('syncCheck'), syncField = document.getElementById('syncField');
   if (pubMail && admMail && syncCheck) {
-    pubMail.addEventListener('input', () => {
-      syncField.style.display = pubMail.value.trim().length > 0 ? "block" : "none";
-      if (syncCheck.checked) admMail.value = pubMail.value;
-    });
+    const updateSyncVisibility = () => {
+      const hasValue = pubMail.value.trim().length > 0;
+      if (syncField) syncField.style.display = hasValue ? "block" : "none";
+      if (syncCheck.checked && hasValue) admMail.value = pubMail.value;
+    };
+    pubMail.addEventListener('input', updateSyncVisibility);
     syncCheck.addEventListener('change', () => {
       if (syncCheck.checked) {
         admMail.value = pubMail.value;
@@ -360,10 +401,9 @@ export async function initFormLogic() {
     });
   }
 
+  // 🍎 6. 画像プレビュー
   let uploadedFiles = [];
-  const imgInput = document.getElementById('art_images_input');
-  const imgAddBtn = document.getElementById('imgAddBtn');
-  const previewArea = document.getElementById('imgPreviewArea');
+  const imgInput = document.getElementById('art_images_input'), imgAddBtn = document.getElementById('imgAddBtn'), previewArea = document.getElementById('imgPreviewArea');
   if (imgAddBtn && imgInput) {
     imgAddBtn.onclick = () => imgInput.click();
     imgInput.onchange = (e) => {
@@ -371,10 +411,10 @@ export async function initFormLogic() {
         if (uploadedFiles.length >= 6) return;
         uploadedFiles.push(file);
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = (ev) => {
           const div = document.createElement('div');
           div.className = 'lz-img-container';
-          div.innerHTML = `<img src="${event.target.result}"><div class="lz-img-remove">×</div>`;
+          div.innerHTML = `<img src="${ev.target.result}"><div class="lz-img-remove">×</div>`;
           div.querySelector('.lz-img-remove').onclick = () => {
             div.remove();
             uploadedFiles = uploadedFiles.filter(f => f !== file);
@@ -387,5 +427,22 @@ export async function initFormLogic() {
       });
       imgInput.value = "";
     };
+  }
+
+  // 🍎 7. 事務局代行
+  const chkAssist = document.getElementById('chk-writing-assist');
+  if (chkAssist && inpLead && inpBody) {
+    const fieldLead = inpLead.closest('.lz-field'), fieldBody = inpBody.closest('.lz-field');
+    const syncAssist = () => {
+      const isHandled = chkAssist.checked;
+      if (fieldLead) fieldLead.style.display = isHandled ? 'none' : 'flex';
+      if (fieldBody) fieldBody.style.display = isHandled ? 'none' : 'flex';
+      inpLead.required = !isHandled;
+      inpBody.required = !isHandled;
+      const msg = document.getElementById('msg-writing-assist');
+      if (msg) msg.style.display = isHandled ? "block" : "none";
+    };
+    chkAssist.onchange = syncAssist; 
+    syncAssist();
   }
 }
