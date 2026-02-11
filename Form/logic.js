@@ -307,13 +307,13 @@ function updateTypeView() {
     }
 
 // 🍎 会場名のラベル名をタイプによって切り替える
-    const venueBox = document.getElementById('ev-venue-box');
+const venueBox = document.getElementById('ev-venue-box');
     if (venueBox) {
       const venueLabel = venueBox.querySelector('.lz-label');
-      // バッジを残しつつテキストだけ書き換え
-      const labelText = type === 'other' ? '関連する場所の名称' : '会場名';
-      venueLabel.innerHTML = `<span class="lz-badge opt" style="background:#999;">任意</span> ${labelText}`;
-      
+      if (venueLabel) { // 👈 念のため null チェックを追加
+        const labelText = type === 'other' ? '関連する場所の名称' : '会場名';
+        venueLabel.innerHTML = `<span class="lz-badge opt" style="background:#999;">任意</span> ${labelText}`;
+      }
       // プレースホルダも調整（任意）
       const venueInp = venueBox.querySelector('input');
       if (venueInp) {
@@ -356,17 +356,22 @@ const urlParams = new URLSearchParams(window.location.search);
   updateTypeView();
 
   /* 🍎 選択肢に rel を追加し、入力検知ロジックを連結 */
-const snsTriggers = document.getElementsByName('sns_trigger');
-snsTriggers.forEach(trigger => {
-  trigger.onchange = () => {
-    const vals = Array.from(snsTriggers).filter(i => i.checked).map(i => i.value);
-    // 関連リンク（rel）はflex配置にするため条件分け
-    ['home', 'ec', 'rel', 'ig', 'fb', 'x', 'line','tt'].forEach(t => {
-      const box = document.getElementById(`f-${t}`);
-      if(box) box.style.display = vals.includes(t) ? (t === 'rel' ? 'flex' : 'block') : 'none';
+const snsBox = document.getElementById('box-sns-links');
+  if (snsBox) {
+    snsBox.addEventListener('change', (e) => {
+      if (e.target.name === 'sns_trigger') {
+        const triggers = document.getElementsByName('sns_trigger');
+        const checkedVals = Array.from(triggers).filter(i => i.checked).map(i => i.value);
+        
+        ['home', 'ec', 'rel', 'ig', 'fb', 'x', 'line', 'tt'].forEach(t => {
+          const targetInp = document.getElementById(`f-${t}`);
+          if (targetInp) {
+            targetInp.style.display = checkedVals.includes(t) ? (t === 'rel' ? 'flex' : 'block') : 'none';
+          }
+        });
+      }
     });
-  };
-});
+  }
 
 // 🍎 関連リンクの2件目自動表示ロジック
 const relUrl1 = document.getElementById('rel_url1');
