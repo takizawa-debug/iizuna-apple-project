@@ -56,11 +56,11 @@ export const formHTML = `
           <label class="lz-choice-item" style="width: fit-content;">
             <input type="checkbox" id="chk-writing-assist" name="writing_assist">
             <span class="lz-choice-inner" style="min-height: 40px; padding: 5px 15px; font-size: 1rem; border-radius: 20px;">
-              紹介文（概要・本文）の作成を事務局に任せる
+              【文章作成が苦手な方へ】概要・本文の作成を事務局に任せる
             </span>
           </label>
           <div id="msg-writing-assist" style="display: none; color: #cf3a3a; font-size: 0.95rem; font-weight: 800; padding: 12px; background: #fff5f5; border-radius: 8px; border: 1px solid #ffcccc; line-height: 1.5;">
-            ⚠️ 注意事項：文章を書かない代わりに、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
+            ⚠️ 注意事項：文章作成を委任する場合は、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
           </div>
         </div>
 
@@ -155,8 +155,7 @@ export const formHTML = `
   <div class="lz-field"><label class="lz-label">参加費</label><input type="text" name="ev_fee" class="lz-input" placeholder="無料、500円 など"></div>
   <div class="lz-field"><label class="lz-label">参加者のもちもの</label><input type="text" name="ev_items" class="lz-input" placeholder="筆記用具、室内履き など"></div>
   <div class="lz-field"><label class="lz-label">対象</label><input type="text" name="ev_target" class="lz-input" placeholder="町内在住の方、小学生以上 など"></div>
-</div> <div id="box-sns-links" class="lz-field">
-
+</div> 
 
 <div id="pane-producer-detail" class="lz-dynamic-detail" style="display:none;">
 
@@ -228,7 +227,7 @@ export const formHTML = `
 
 </div>
 
-
+</div> <div id="box-sns-links" class="lz-field"> 
         <div class="lz-section-head">各種リンク</div>
         <div class="lz-choice-flex">
         <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">HP</span></label>

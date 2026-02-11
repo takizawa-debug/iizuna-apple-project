@@ -413,30 +413,32 @@ if (relUrl1 && relTitle1 && rel2Row) {
     };
   }
 
-  // 🍎 文章作成を事務局に任せる連動ロジック
+  // 🍎 文章作成を事務局に任せる連動ロジック：入力エリアを完全に非表示化
   const chkAssist = document.getElementById('chk-writing-assist');
   const msgAssist = document.getElementById('msg-writing-assist');
-  const inpLead = document.getElementById('inp-title').closest('.lz-field').nextElementSibling.nextElementSibling.querySelector('textarea'); // 確実に art_lead を取得
+  const inpLead = document.getElementsByName('art_lead')[0];
   const inpBody = document.getElementsByName('art_body')[0];
 
-  if (chkAssist && inpBody) {
+  if (chkAssist && inpLead && inpBody) {
+    const fieldLead = inpLead.closest('.lz-field'); // 概要の親要素
+    const fieldBody = inpBody.closest('.lz-field'); // 本文の親要素
+
     const syncAssist = () => {
       const isHandled = chkAssist.checked;
-      const lead = document.getElementsByName('art_lead')[0]; // 再取得して確実性を高める
-      if (lead) {
-        lead.disabled = isHandled;
-        lead.style.opacity = isHandled ? "0.5" : "1";
-        lead.required = !isHandled;
-      }
-      inpBody.disabled = isHandled;
-      inpBody.style.opacity = isHandled ? "0.5" : "1";
+      
+      // 入力欄とその親要素（ラベル・タイトル含む）をまるごと消去/表示
+      if (fieldLead) fieldLead.style.display = isHandled ? 'none' : 'flex';
+      if (fieldBody) fieldBody.style.display = isHandled ? 'none' : 'flex';
+      
+      // 必須設定の解除（非表示のまま送信可能にするため重要）
+      inpLead.required = !isHandled;
       inpBody.required = !isHandled;
+      
+      // 注意事項メッセージの表示
       if(msgAssist) msgAssist.style.display = isHandled ? "block" : "none";
     };
 
-    chkAssist.onchange = syncAssist; // クリックした時
-    // 🍎 タブを切り替えた時にも状態を正しく反映させるため、初期状態も実行
-    syncAssist(); 
+    chkAssist.onchange = syncAssist; 
+    syncAssist(); // 初期化時にも実行
   }
-
 }
