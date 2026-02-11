@@ -11,11 +11,11 @@ export const formStyles = `
 
   /* 🍎 大項目のデザイン変更：縦線から水平ライン区切りへ */
   .lz-section-head { 
-    font-size: 1.35rem; 
+    font-size: 1.7rem; 
     font-weight: 900; 
     color: #5b3a1e; 
     padding: 10px 0; 
-    margin: 50px 0 25px; 
+    margin: 60px 0 25px; 
     line-height: 1.4;
     border-bottom: 2px solid #eee; /* ベースとなる薄いグレーの横線 */
     position: relative;
@@ -29,8 +29,8 @@ export const formStyles = `
     position: absolute;
     bottom: -2px;
     left: 0;
-    width: 80px;
-    height: 4px;
+    width: 120px;
+    height: 5px;
     background: #cf3a3a;
     border-radius: 2px;
   }
