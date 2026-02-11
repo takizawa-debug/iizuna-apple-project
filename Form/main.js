@@ -1,5 +1,5 @@
 import { formStyles } from './styles.js';
-import { formHTML, formCommonHTML } from './templates.js';
+import { getFormHTML } from './templates.js'; // 🍎 変更
 import { initFormLogic } from './logic.js';
 
 (function() {
@@ -8,14 +8,7 @@ import { initFormLogic } from './logic.js';
   document.head.appendChild(styleTag);
 
   const target = document.getElementById('lz-form-container') || document.body;
-  target.insertAdjacentHTML('beforeend', formHTML);
+  target.insertAdjacentHTML('beforeend', getFormHTML()); // 🍎 関数を実行して注入
   
-  // 共通パーツ用の受け皿があれば注入（templates.jsで統合済みなら何もしない）
-  const commonPart = document.getElementById('form-common-part');
-  if(commonPart && formCommonHTML) {
-    commonPart.innerHTML = formCommonHTML;
-  }
-
   initFormLogic();
-  console.log("Iizuna Portal Form: Strategic logic initialized.");
 })();
