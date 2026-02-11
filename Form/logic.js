@@ -359,8 +359,8 @@ export async function initFormLogic() {
 
   // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
-  
-  // 🍎 修正後：送信処理（AWS S3 対応 & エラー検知強化版）
+
+  // 🍎 修正後：送信処理（画像 + 添付ファイルのAWS S3同期版）
   if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -390,7 +390,7 @@ export async function initFormLogic() {
           }
         });
 
-        // 3. 画像データの付与（Base64）
+        // 3. 🍎 画像データの付与（Base64変換）
         if (uploadedFiles.length > 0) {
           payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
             const reader = new FileReader();
@@ -399,30 +399,37 @@ export async function initFormLogic() {
           })));
         }
 
-        // 4. GASへ送信（mode: 'no-cors' を削除して結果を取得可能に！）
+        // 4. 🍎 添付ファイル（PDF/Excel等）の検知とBase64変換
+        const docFileInput = form.querySelector('input[name="art_file"]');
+        if (docFileInput && docFileInput.files.length > 0) {
+          const docFile = docFileInput.files[0];
+          payload.art_file_name = docFile.name; // ファイル名を保持
+          payload.art_file_data = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve(ev.target.result);
+            reader.readAsDataURL(docFile);
+          });
+        }
+
+        // 5. GASへ送信（JSON形式）
         const res = await fetch(ENDPOINT, {
           method: "POST",
-          // mode: "no-cors" は削除します。GAS側が JSON を返せるようにするためです。
           body: JSON.stringify(payload)
         });
 
-        // 5. レスポンスの解析
         if (!res.ok) throw new Error(`Server status: ${res.status}`);
         
         const result = await res.json();
         
         if (result.ok) {
-          // 成功時：i18nに基づいたメッセージを表示
           alert(i18n.types[payload.art_type]?.label + " " + i18n.common.sendBtn + "に成功しました！"); 
           window.location.reload();
         } else {
-          // 🍎 ここでAWSやGASの内部エラーをキャッチできる
           throw new Error(result.error || "Unknown Error");
         }
 
       } catch (err) {
         console.error("Submission failed:", err);
-        // エラー内容をアラートで表示（デバッグに役立ちます）
         alert(i18n.alerts.send_error + "\n理由: " + err.message);
       } finally {
         btn.disabled = false;
