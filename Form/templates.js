@@ -319,8 +319,7 @@ export const formHTML = `
         <button type="submit" class="lz-send-btn" id="lzBtn">この内容で送信する</button>
       </div>
     </div>
-  </form>
-</div>
+    </form>
 `;
 
 export const formCommonHTML = ``;
