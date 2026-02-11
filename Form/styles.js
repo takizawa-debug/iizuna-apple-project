@@ -52,6 +52,20 @@ export const formStyles = `
   line-height: 54px; 
 }
 
+/* 🍎 登録内容の選択プルダウンを特大＆強調にする */
+  #art_type_select {
+    font-size: 1.4rem !important; /* 一回り大きく */
+    font-weight: 900 !important;   /* 極太にして視認性アップ */
+    color: #5b3a1e;               /* 文字色をメインカラーに */
+    border: 3px solid #eee;       /* 枠線を少し太く */
+  }
+
+  /* 選択肢（中身）の文字サイズ（※ブラウザにより反映状況が異なります） */
+  #art_type_select option {
+    font-size: 1.2rem;
+    font-weight: normal;
+  }
+
 /* 🍎 日付入力（開始日・終了日）：アイコンと文字のズレを強制補正 */
 input[type="date"].lz-input {
   display: inline-flex !important;
