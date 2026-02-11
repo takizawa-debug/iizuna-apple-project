@@ -267,6 +267,15 @@ export async function initFormLogic() {
       lblInqHead.textContent = isEvent ? "主催・お問い合わせ先" : "問い合わせ先（公開）";
       lblInqHead.style.display = 'block';
     }
+    // 🍎 追加：タイプ切り替え時に生産者のオプション入力をリセットして隠す
+    if (type !== 'producer') {
+      const invoiceNum = document.getElementById('pr-invoice-num-box');
+      if (invoiceNum) invoiceNum.style.display = 'none';
+      ['pr-crop-fruit-input', 'pr-crop-veg-input', 'pr-crop-other-input'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+    }
   }
 
   // --- 🍎 ここから下がイベント登録・初期化の重要セクション ---
@@ -287,6 +296,30 @@ export async function initFormLogic() {
       }
     });
   }
+
+  // --- 🍎 ここから追加：栽培品目とインボイスの連動 ---
+  // 生産者のインボイス番号表示切り替え
+  document.querySelectorAll('.pr-invoice-trigger').forEach(r => {
+    r.addEventListener('change', (e) => {
+      const numBox = document.getElementById('pr-invoice-num-box');
+      if (numBox) numBox.style.display = e.target.value === 'yes' ? 'block' : 'none';
+    });
+  });
+
+  // りんご以外の作物の詳細入力切り替え
+  document.querySelectorAll('.pr-crop-trigger').forEach(chk => {
+    chk.addEventListener('change', (e) => {
+      const val = e.target.value;
+      let targetId = '';
+      if (val === 'fruit') targetId = 'pr-crop-fruit-input';
+      if (val === 'vegetable') targetId = 'pr-crop-veg-input';
+      if (val === 'other') targetId = 'pr-crop-other-input';
+      
+      const targetInput = document.getElementById(targetId);
+      if (targetInput) targetInput.style.display = e.target.checked ? 'block' : 'none';
+    });
+  });
+
 
   document.getElementsByName('cm').forEach(c => {
     c.onchange = () => {
