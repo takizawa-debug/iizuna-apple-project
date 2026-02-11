@@ -220,12 +220,15 @@ export async function initFormLogic() {
 
 
 function updateTypeView() {
-    // 🍎 ラジオボタンの検索をやめ、セレクトボックスの値を直接取得
     const type = typeSelect.value;
-    if (!type) { 
+    
+    // 🍎 「未選択」の場合、コンテナを隠して処理を中断する
+    if (!type || type === "") { 
       if (fieldsContainer) fieldsContainer.style.display = 'none'; 
       return; 
     }
+    
+    // 🍎 選択されたらコンテナを表示（flex）にする
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
 
     // 🍎 アドレスバーのURLを更新（履歴を汚さず書き換え）
