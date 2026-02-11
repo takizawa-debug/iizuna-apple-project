@@ -50,113 +50,21 @@ export const formHTML = `
         </div>
 
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-lead">概要</span>（100文字以内）</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" placeholder="お店やイベントを一言で表すと？" required></textarea></div>
+        /* 基本情報〜紹介文作成代行 */
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" placeholder="詳しい内容を教えてください" required></textarea></div>
         
         <div id="box-writing-assist" class="lz-field" style="margin-top: -10px;">
-  <label class="lz-checkbox-label">
-    <input type="checkbox" id="chk-writing-assist" name="writing_assist" class="lz-checkbox-input">
-    【文章作成が苦手な方へ】紹介文（概要・本文）の作成を事務局に任せる
-  </label>
-  <div id="msg-writing-assist" style="display: none; color: #cf3a3a; font-size: 0.95rem; font-weight: 800; padding: 12px; background: #fff5f5; border-radius: 8px; border: 1px solid #ffcccc; line-height: 1.5;">
-    ⚠️ 注意事項：文章作成を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
-  </div>
-</div>
-
-        <div class="lz-section-head">画像・配布資料</div><div class="lz-grid"><div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label><div id="imgPreviewArea" class="lz-img-preview-grid"><div id="imgAddBtn" class="lz-img-add-btn">＋</div></div><input type="file" id="art_images_input" style="display:none;" accept="image/*" multiple></div>
-        <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div></div>
-
-<div class="lz-section-head">場所の情報</div>
-
-<div id="ev-venue-box" class="lz-field" style="display:none;">
-  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 会場名</label>
-  <input type="text" name="ev_venue_name" class="lz-input" placeholder="例：飯綱ふれあいパーク">
-</div>
-
-<div class="lz-grid">
-  <div class="lz-field">
-    <label class="lz-label"><span id="zipBadge" class="lz-badge">必須</span> 郵便番号</label>
-    <div style="display:flex; gap:10px;"><input type="text" id="zipCode" name="shop_zip" class="lz-input" placeholder="389-1211" style="flex:1;"><button type="button" class="lz-zip-btn" id="zipBtnAction">住所検索</button></div>
-  </div>
-  <div class="lz-field">
-    <label class="lz-label"><span id="addrBadge" class="lz-badge">必須</span> 住所</label>
-    <input type="text" id="addressField" name="shop_addr" class="lz-input" required>
-  </div>
-</div>
-
-<div class="lz-field">
-  <label class="lz-label">
-    <span class="lz-badge opt" style="background:#999;">任意</span> 
-    <span id="lbl-notes">店舗/施設に関する注意事項</span> </label>
-  <textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="注意事項があればご記入ください"></textarea>
-</div>
-
-        <div id="pane-shop-detail" class="lz-dynamic-detail" style="display:none;">
-          <div class="lz-section-head" style="margin-top:0;">営業に関する情報</div>
-          <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
-            <label class="lz-choice-item"><input type="radio" name="shop_mode" value="simple" checked><span class="lz-choice-inner">標準設定</span></label>
-            <label class="lz-choice-item"><input type="radio" name="shop_mode" value="custom"><span class="lz-choice-inner">曜日別設定</span></label>
+          <label class="lz-checkbox-label">
+            <input type="checkbox" id="chk-writing-assist" name="writing_assist" class="lz-checkbox-input">
+            【文章作成が苦手な方へ】紹介文（概要・本文）の作成を事務局に任せる
+          </label>
+          <div id="msg-writing-assist" style="display: none; color: #cf3a3a; font-size: 0.95rem; font-weight: 800; padding: 12px; background: #fff5f5; border-radius: 8px; border: 1px solid #ffcccc; line-height: 1.5;">
+            ⚠️ 注意事項：文章作成を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
           </div>
-          
-          <div id="shop-simple">
-            <div class="lz-field"><label class="lz-label">営業曜日</label><div id="box-simple-days" class="lz-day-selector"></div></div>
-            <div class="lz-field">
-              <label class="lz-label">標準営業時間</label>
-              <div class="lz-time-row">
-                <div class="lz-time-field"><span class="lz-time-label-sm">営業開始</span><div id="sel-simple-start" class="lz-time-box"></div></div>
-                <div class="lz-time-field"><span class="lz-time-label-sm">営業終了</span><div id="sel-simple-end" class="lz-time-box"></div></div>
-              </div>
-            </div>
-          </div>
-
-          <div id="shop-custom" style="display:none;">
-            <div class="lz-schedule-container">
-              <table class="lz-schedule-table">
-                <thead><tr><th>曜日</th><th>休業</th><th>営業開始</th><th>営業終了</th></tr></thead>
-                <tbody id="customSchedBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-
-<div class="lz-field">
-  <label class="lz-label">祝日の営業</label>
-  <select name="shop_holiday_type" class="lz-select">
-    <option value="">設定しない（未回答）</option>
-    <option value="follow_regular">曜日どおり営業 / 定休（カレンダーに従う）</option>
-    <option value="always_open">祝日は営業（定休日であっても営業する）</option>
-    <option value="always_closed">祝日は休業（営業日であっても休業する）</option>
-    <option value="irregular">不定休・特別ダイヤ（詳細は注意事項に記載）</option>
-  </select>
-</div>
-          <div class="lz-field"><label class="lz-label">営業に関する注意事項</label><textarea name="shop_notes" class="lz-textarea" rows="3" placeholder="（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。"></textarea></div>
         </div>
 
-
-<div id="pane-event-detail" class="lz-dynamic-detail" style="display:none;">
-  <div class="lz-section-head" style="margin-top:0;">開催日時</div>
-  <div class="lz-field">
-    <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
-      <label class="lz-choice-item"><input type="radio" name="ev_period_type" value="single" checked><span class="lz-choice-inner">1日のみ</span></label>
-      <label class="lz-choice-item"><input type="radio" name="ev_period_type" value="period"><span class="lz-choice-inner">期間あり</span></label>
-    </div>
-  </div>
-  <div class="lz-grid">
-    <div class="lz-field"><label class="lz-label">開催日（開始日）</label><input type="date" name="ev_sdate" class="lz-input"></div>
-    <div class="lz-field" id="ev-end-date-box" style="display:none;"><label class="lz-label">終了日</label><input type="date" name="ev_edate" class="lz-input"></div>
-  </div>
-  <div class="lz-grid">
-    <div class="lz-field"><label class="lz-label">開始時刻</label><div class="lz-time-row"><div class="lz-time-box" id="sel-ev-s"></div></div></div>
-    <div class="lz-field"><label class="lz-label">終了時刻</label><div class="lz-time-row"><div class="lz-time-box" id="sel-ev-e"></div></div></div>
-  </div>
-
-  <div class="lz-section-head">開催詳細</div>
-  <div class="lz-field"><label class="lz-label">参加費</label><input type="text" name="ev_fee" class="lz-input" placeholder="無料、500円 など"></div>
-  <div class="lz-field"><label class="lz-label">参加者のもちもの</label><input type="text" name="ev_items" class="lz-input" placeholder="筆記用具、室内履き など"></div>
-  <div class="lz-field"><label class="lz-label">対象</label><input type="text" name="ev_target" class="lz-input" placeholder="町内在住の方、小学生以上 など"></div>
-</div> 
-
+/* 生産者専用パネル：構造を最適化 */
 <div id="pane-producer-detail" class="lz-dynamic-detail" style="display:none;">
-
   <div class="lz-section-head">栽培品種・加工品</div>
   <div class="lz-field">
     <label class="lz-label">栽培している品種</label>
@@ -170,18 +78,17 @@ export const formHTML = `
   </div>
 
   <div class="lz-section-head" style="margin-top:0;">栽培・経営について</div>
-  
   <div class="lz-grid">
     <div class="lz-field"><label class="lz-label">作付面積（りんご）</label>
       <div style="display:flex; gap:8px;">
         <input type="number" name="pr_area" class="lz-input" style="flex:1;" placeholder="数値">
-        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="a（アール）">a（アール）</option><option value="ha（ヘクタール）">ha（ヘクタール）</option><option value="反">反</option><option value="町">町</option><option value="㎡">㎡</option><option value="坪">坪</option></select>
+        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="a">a</option><option value="ha">ha</option><option value="反">反</option><option value="町">町</option></select>
       </div>
     </div>
     <div class="lz-field"><label class="lz-label">従業員数</label><input type="number" name="pr_staff" class="lz-input" placeholder="人数（専従・パート含む）"></div>
   </div>
 
-<div class="lz-field" style="margin-top:12px;">
+  <div class="lz-field" style="margin-top:12px;">
     <label class="lz-label">りんご以外の栽培品目（複数選択可）</label>
     <div class="lz-choice-flex">
       <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="pr_other_crops" value="fruit" class="pr-crop-trigger"><span class="lz-choice-inner">りんご以外の果物</span></label>
@@ -190,9 +97,9 @@ export const formHTML = `
       <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="pr_other_crops" value="vegetable" class="pr-crop-trigger"><span class="lz-choice-inner">野菜類</span></label>
       <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="pr_other_crops" value="other" class="pr-crop-trigger"><span class="lz-choice-inner">その他</span></label>
     </div>
-    <input type="text" id="pr-crop-fruit-input" name="pr_crop_fruit_val" class="lz-input" style="display:none; margin-top:8px;" placeholder="具体的な果物名をご記入ください">
-    <input type="text" id="pr-crop-veg-input" name="pr_crop_veg_val" class="lz-input" style="display:none; margin-top:8px;" placeholder="具体的な野菜名をご記入ください">
-    <input type="text" id="pr-crop-other-input" name="pr_crop_other_val" class="lz-input" style="display:none; margin-top:8px;" placeholder="具体的な内容をご記入ください">
+    <input type="text" id="pr-crop-fruit-input" name="pr_crop_fruit_val" class="lz-input" style="display:none; margin-top:8px;" placeholder="具体的な果物名">
+    <input type="text" id="pr-crop-veg-input" name="pr_crop_veg_val" class="lz-input" style="display:none; margin-top:8px;" placeholder="具体的な野菜名">
+    <input type="text" id="pr-crop-other-input" name="pr_crop_other_val" class="lz-input" style="display:none; margin-top:8px;" placeholder="具体的な内容">
   </div>
 
   <div class="lz-grid" style="margin-top:12px;">
@@ -206,22 +113,20 @@ export const formHTML = `
     <div class="lz-field">
       <label class="lz-label">代表者名</label>
       <input type="text" name="pr_rep_name" class="lz-input" placeholder="氏名をご記入ください">
-  
-      <label class="lz-label">インボイス登録</label>
-      <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
-        <label class="lz-choice-item"><input type="radio" name="pr_invoice" value="yes" class="pr-invoice-trigger"><span class="lz-choice-inner">登録あり</span></label>
-        <label class="lz-choice-item"><input type="radio" name="pr_invoice" value="no" class="pr-invoice-trigger" checked><span class="lz-choice-inner">登録なし</span></label>
-      </div>
-    </div>
-    <div id="pr-invoice-num-box" class="lz-field" style="display:none;">
-      <label class="lz-label">登録番号</label>
-      <input type="text" name="pr_invoice_num" class="lz-input" placeholder="T1234567890123">
     </div>
   </div>
-
-</div>
-
-/* 🍎 SNSリンク共通ブロック */
+  
+  <div class="lz-field" style="margin-top:12px;">
+    <label class="lz-label">インボイス登録</label>
+    <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
+      <label class="lz-choice-item"><input type="radio" name="pr_invoice" value="yes" class="pr-invoice-trigger"><span class="lz-choice-inner">登録あり</span></label>
+      <label class="lz-choice-item"><input type="radio" name="pr_invoice" value="no" class="pr-invoice-trigger" checked><span class="lz-choice-inner">登録なし</span></label>
+    </div>
+    <div id="pr-invoice-num-box" style="display:none; margin-top:10px;">
+      <input type="text" name="pr_invoice_num" class="lz-input" placeholder="登録番号 T1234567890123">
+    </div>
+  </div>
+</div> /* 各種リンク：共通エリアとして配置 */
 <div id="box-sns-links" class="lz-field">
   <div class="lz-section-head">各種リンク</div>
   <div class="lz-choice-flex">
@@ -236,26 +141,25 @@ export const formHTML = `
   </div>
 
   <div id="sns-inputs" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-    <div id="f-home" style="display:none;"><input type="url" name="url_home" class="lz-input" placeholder="HPのURL (https://...)"></div>
-    <div id="f-ec" style="display:none;"><input type="url" name="url_ec" class="lz-input" placeholder="通販サイトのURL (https://...)"></div>
-    
+    <div id="f-home" style="display:none;"><input type="url" name="url_home" class="lz-input" placeholder="HPのURL"></div>
+    <div id="f-ec" style="display:none;"><input type="url" name="url_ec" class="lz-input" placeholder="通販サイトのURL"></div>
     <div id="f-rel" style="display:none; flex-direction:column; gap:12px;">
       <div class="lz-grid">
-        <input type="url" id="rel_url1" name="rel_url1" class="lz-input" placeholder="関連URL 1 (https://...)">
-        <input type="text" id="rel_title1" name="rel_title1" class="lz-input" placeholder="リンクのタイトル 1">
+        <input type="url" id="rel_url1" name="rel_url1" class="lz-input" placeholder="関連URL 1">
+        <input type="text" id="rel_title1" name="rel_title1" class="lz-input" placeholder="タイトルの入力 1">
       </div>
       <div id="rel-link2-row" class="lz-grid" style="display:none;">
-        <input type="url" id="rel_url2" name="rel_url2" class="lz-input" placeholder="関連URL 2 (https://...)">
-        <input type="text" id="rel_title2" name="rel_title2" class="lz-input" placeholder="リンクのタイトル 2">
+        <input type="url" id="rel_url2" name="rel_url2" class="lz-input" placeholder="関連URL 2">
+        <input type="text" id="rel_title2" name="rel_title2" class="lz-input" placeholder="タイトルの入力 2">
       </div>
-    </div> <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="Instagram アカウント名"></div>
-    <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="Facebook ページURL"></div>
-    <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
-    <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
-    <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="TikTokアカウントURL"></div>
+    </div>
+    <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="Instagram ID"></div>
+    <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="Facebook URL"></div>
+    <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) ID"></div>
+    <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE URL"></div>
+    <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="TikTok URL"></div>
   </div>
 </div>
-
 
 
 <div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先（公開）</div>
