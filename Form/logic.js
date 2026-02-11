@@ -8,17 +8,23 @@ export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
   const days = ["月", "火", "水", "木", "金", "土", "日"];
 
-  /* logic.js の loadAndBuildGenres 関数を以下に置き換え */
+  let currentFetchType = null; // 🍎 要求管理用のフラグを追加
+
   async function loadAndBuildGenres(type = 'shop') {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
     
-    // 読み込み中の表示
+    currentFetchType = type; // 🍎 現在処理すべきタイプを記録
     container.innerHTML = '<div style="font-size:0.9rem; color:#888;">カテゴリーを取得中...</div>';
 
     try {
-      const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}`);
+      // 🍎 ?_t= で独自URL化（キャッシュ回避）し、要求を確実化
+      const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}&_t=${Date.now()}`);
       const json = await res.json();
+      
+      // 🍎 重要：通信中に別のタブが押された（typeが変わった）場合、古いデータは破棄する
+      if (type !== currentFetchType) return; 
+
       if (!json.ok) throw new Error("取得失敗");
       const genres = json.items;
       

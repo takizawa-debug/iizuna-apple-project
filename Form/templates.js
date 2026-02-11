@@ -58,7 +58,7 @@ export const formHTML = `
     【文章作成が苦手な方へ】紹介文（概要・本文）の作成を事務局に任せる
   </label>
   <div id="msg-writing-assist" style="display: none; color: #cf3a3a; font-size: 0.95rem; font-weight: 800; padding: 12px; background: #fff5f5; border-radius: 8px; border: 1px solid #ffcccc; line-height: 1.5;">
-    ⚠️ 注意事項：文章を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
+    ⚠️ 注意事項：文章作成を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
   </div>
 </div>
 
