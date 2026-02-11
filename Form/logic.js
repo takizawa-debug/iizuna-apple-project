@@ -24,6 +24,7 @@ export async function initFormLogic() {
       // 🍎 変数の初期化（登録タイプに合わせてラベルを動的に変更）
       let catLabel = "この場所でできること（複数選択可）";
       if (type === 'event') catLabel = "イベントジャンル（複数選択可）";
+      else if (type === 'producer') catLabel = "生産・販売スタイル（複数選択可）"; // 🍎追加
       else if (type === 'other') catLabel = "記事のジャンル（複数選択可）";
 
       let l1Html = `<div id="box-shop-cat" class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> ${catLabel}</label><div class="lz-choice-flex">`;
@@ -56,11 +57,25 @@ export async function initFormLogic() {
       finalHtml += `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">カテゴリーの詳細（自由記述）</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="具体的にご記入ください"></div>`;
       
       container.innerHTML = finalHtml;
+
+      // 🍎 りんご品種・加工品のチップを生成
+      const buildChips = (targetId, list, namePrefix) => {
+        const area = document.getElementById(targetId);
+        if (area && list) {
+          area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') + 
+          `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="その他"><span class="lz-choice-inner">その他</span></label>`;
+        }
+      };
+      buildChips('area-apple-varieties', json.appleVarieties, 'pr_variety');
+      buildChips('area-apple-products', json.appleProducts, 'pr_product');
+
       bindDynamicEvents(); // イベントを再バインド
     } catch (e) { 
       container.innerHTML = '<div style="color:#cf3a3a;">カテゴリーの取得に失敗しました。</div>'; 
     }
   }// 🍎 loadAndBuildGenres の閉じカッコを追加
+
+
 
   function bindDynamicEvents() {
     /* 🍎 全ての大カテゴリに対して一律で連動ロジックを設定 */
@@ -181,6 +196,7 @@ function updateTypeView() {
     // --- パネルの出し分け ---
     toggle('pane-shop-detail', type === 'shop');
     toggle('pane-event-detail', type === 'event');
+    toggle('pane-producer-detail', type === 'producer');
     toggle('ev-venue-box', type === 'event'); 
 
     // --- 基本情報のラベル・切替 ---
@@ -192,6 +208,10 @@ function updateTypeView() {
       if(lblTitle) lblTitle.textContent = "イベント名"; 
       if(lblLead) lblLead.textContent = "イベントの概要";
       if(inpTitle) inpTitle.placeholder = "イベント名称をご記入ください";
+      } else if (type === 'producer') { // 🍎追加
+      if(lblTitle) lblTitle.textContent = "農園・団体名"; 
+      if(lblLead) lblLead.textContent = "生産者の概要";
+      if(inpTitle) inpTitle.placeholder = "正式な屋号や農園名をご記入ください";
     } else {
       if(lblTitle) lblTitle.textContent = "記事タイトル"; 
       if(lblLead) lblLead.textContent = "記事の概要";
@@ -220,6 +240,7 @@ function updateTypeView() {
     if (lblNotes) {
       if (type === 'event') lblNotes.textContent = '会場に関する注意事項';
       else if (type === 'shop') lblNotes.textContent = '店舗/施設に関する注意事項';
+      else if (type === 'producer') lblNotes.textContent = '農場訪問時の注意事項（防疫等）';
       else lblNotes.textContent = '場所に関する注意事項';
     }
 

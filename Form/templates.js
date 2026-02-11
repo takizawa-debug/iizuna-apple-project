@@ -25,6 +25,7 @@ export const formHTML = `
       <div class="lz-section-head">登録内容の選択</div>
       <div class="lz-field">
         <div class="lz-choice-grid">
+          <l<label class="lz-choice-item"><input type="radio" name="art_type" value="producer"><span class="lz-choice-inner">生産者の登録</span></label>
           <label class="lz-choice-item"><input type="radio" name="art_type" value="shop"><span class="lz-choice-inner">お店の登録</span></label>
           <label class="lz-choice-item"><input type="radio" name="art_type" value="event"><span class="lz-choice-inner">イベントの登録</span></label>
           <label class="lz-choice-item"><input type="radio" name="art_type" value="other"><span class="lz-choice-inner">記事の登録</span></label>
@@ -160,6 +161,29 @@ export const formHTML = `
   <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="X (Twitter) アカウント名"></div>
   <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="LINE 公式アカウントURL"></div>
   <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="TikTokアカウントURL"></div>
+  </div>
+</div>
+
+<div id="pane-producer-detail" class="lz-dynamic-detail" style="display:none;">
+  <div class="lz-section-head" style="margin-top:0;">経営・栽培の規模</div>
+  <div class="lz-grid">
+    <div class="lz-field"><label class="lz-label">農地面積</label>
+      <div style="display:flex; gap:8px;">
+        <input type="number" name="pr_area" class="lz-input" style="flex:1;" placeholder="数値">
+        <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="ha">ha</option><option value="a">a</option><option value="反">反</option></select>
+      </div>
+    </div>
+    <div class="lz-field"><label class="lz-label">従業員数</label><input type="number" name="pr_staff" class="lz-input" placeholder="人数（専従・パート含む）"></div>
+  </div>
+
+  <div class="lz-section-head">栽培品種・加工品</div>
+  <div class="lz-field"><label class="lz-label">栽培している品種</label><div id="area-apple-varieties" class="lz-choice-flex"></div></div>
+  <div class="lz-field"><label class="lz-label">扱っている加工品</label><div id="area-apple-products" class="lz-choice-flex"></div></div>
+
+  <div class="lz-section-head">こだわり・制度</div>
+  <div class="lz-field"><label class="lz-label">栽培方法のこだわり</label><textarea name="pr_concept" class="lz-textarea" rows="2" placeholder="土づくりや減農薬への想いなど"></textarea></div>
+  <div class="lz-field"><label class="lz-label">インボイス登録</label>
+    <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;"><label class="lz-choice-item"><input type="radio" name="pr_invoice" value="yes"><span class="lz-choice-inner">登録あり</span></label><label class="lz-choice-item"><input type="radio" name="pr_invoice" value="no"><span class="lz-choice-inner">登録なし</span></label></div>
   </div>
 </div>
 
