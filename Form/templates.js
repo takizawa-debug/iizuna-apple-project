@@ -166,8 +166,6 @@ export const formHTML = `
 </div>
 
 
-        /* 「問い合わせ先（公開）」から「事務局への連絡」の前までを以下に差し替え */
-
 <div class="lz-section-head" id="lbl-inquiry-head">問い合わせ先（公開）</div>
 
 <div id="ev-org-field" class="lz-field" style="display:none;">
@@ -191,8 +189,8 @@ export const formHTML = `
 <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">その他の受付方法</label><input type="text" name="cm_other_val" class="lz-input" placeholder="窓口へ直接、など"></div>
 
 <div class="lz-field">
-  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 申込・問い合わせに関する注意事項</label>
-  <textarea name="cm_notes" class="lz-textarea" rows="2" placeholder="（例）月曜日は電話が繋がりません。フォームからの申し込みは3日前までにお願いします。"></textarea>
+  <label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 問い合わせに関する注意事項</label>
+  <textarea name="cm_notes" class="lz-textarea" rows="2" placeholder="（例）対応時間は平日10:00〜17:00です。土日は電話が繋がりません。"></textarea>
 </div>
 
         <div class="lz-section-head">事務局への連絡（非公開）</div>
@@ -211,9 +209,7 @@ export const formHTML = `
 
   <input type="email" id="adminEmail" name="admin_email" class="lz-input" required placeholder="example@mail.com">
 </div>
-        <div id="syncField" style="display:none; margin-top:-10px;">
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" id="syncCheck" checked><span class="lz-choice-inner">掲載用メールも同じにする</span></label>
-        </div>
+        
         <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">非公開</span> 事務局へのメッセージ</label><textarea name="admin_msg" class="lz-textarea" rows="4"></textarea></div>
 
         <button type="submit" class="lz-send-btn" id="lzBtn">この内容で送信する</button>
