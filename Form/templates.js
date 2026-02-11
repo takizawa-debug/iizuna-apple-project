@@ -162,7 +162,7 @@ export const formHTML = `
   <div class="lz-section-head" style="margin-top:0;">栽培・経営について</div>
   
   <div class="lz-grid">
-    <div class="lz-field"><label class="lz-label">作付け面積（りんご）</label>
+    <div class="lz-field"><label class="lz-label">作付面積（りんご）</label>
       <div style="display:flex; gap:8px;">
         <input type="number" name="pr_area" class="lz-input" style="flex:1;" placeholder="数値">
         <select name="pr_area_unit" class="lz-select" style="width:100px;"><option value="a（アール）">a（アール）</option><option value="ha（ヘクタール）">ha（ヘクタール）</option><option value="反">反</option><option value="町">町</option><option value="㎡">㎡</option><option value="坪">坪</option></select>
@@ -172,7 +172,7 @@ export const formHTML = `
   </div>
 
 <div class="lz-field" style="margin-top:12px;">
-    <label class="lz-label">りんご以外の作物（複数選択可）</label>
+    <label class="lz-label">りんご以外の栽培品目（複数選択可）</label>
     <div class="lz-choice-flex">
       <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="pr_other_crops" value="fruit" class="pr-crop-trigger"><span class="lz-choice-inner">りんご以外の果物</span></label>
       <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="pr_other_crops" value="rice"><span class="lz-choice-inner">米</span></label>
