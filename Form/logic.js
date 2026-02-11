@@ -359,66 +359,76 @@ export async function initFormLogic() {
 
   // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
+  
+  // 🍎 修正後：送信処理（AWS S3 対応 & エラー検知強化版）
   if (form) {
-    // logic.js の送信処理部分を以下に差し替え
-form.onsubmit = async (e) => {
-  e.preventDefault();
-  const btn = e.target.querySelector('.lz-send-btn');
-  btn.disabled = true;
-  btn.textContent = i18n.common.sending;
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('.lz-send-btn');
+      btn.disabled = true;
+      btn.textContent = i18n.common.sending;
 
-  try {
-    const formData = new FormData(form);
-    const payload = {};
+      try {
+        const formData = new FormData(form);
+        const payload = {};
 
-    // 🍎 全ての入力をループして取得（複数選択を配列として処理する一流のやり方）
-    formData.forEach((value, key) => {
-      if (payload[key]) {
-        if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-        payload[key].push(value);
-      } else {
-        payload[key] = value;
+        // 1. データの収集と複数選択の配列化
+        formData.forEach((value, key) => {
+          if (payload[key]) {
+            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+            payload[key].push(value);
+          } else {
+            payload[key] = value;
+          }
+        });
+
+        // 2. 必須配列フィールドの固定化
+        const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
+        Object.keys(payload).forEach(key => {
+          if (key.startsWith('cat_gen-') || arrayFields.includes(key)) {
+            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+          }
+        });
+
+        // 3. 画像データの付与（Base64）
+        if (uploadedFiles.length > 0) {
+          payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve(ev.target.result);
+            reader.readAsDataURL(file);
+          })));
+        }
+
+        // 4. GASへ送信（mode: 'no-cors' を削除して結果を取得可能に！）
+        const res = await fetch(ENDPOINT, {
+          method: "POST",
+          // mode: "no-cors" は削除します。GAS側が JSON を返せるようにするためです。
+          body: JSON.stringify(payload)
+        });
+
+        // 5. レスポンスの解析
+        if (!res.ok) throw new Error(`Server status: ${res.status}`);
+        
+        const result = await res.json();
+        
+        if (result.ok) {
+          // 成功時：i18nに基づいたメッセージを表示
+          alert(i18n.types[payload.art_type]?.label + " " + i18n.common.sendBtn + "に成功しました！"); 
+          window.location.reload();
+        } else {
+          // 🍎 ここでAWSやGASの内部エラーをキャッチできる
+          throw new Error(result.error || "Unknown Error");
+        }
+
+      } catch (err) {
+        console.error("Submission failed:", err);
+        // エラー内容をアラートで表示（デバッグに役立ちます）
+        alert(i18n.alerts.send_error + "\n理由: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = i18n.common.sendBtn;
       }
-    });
-
-    // 🍎 明示的に配列化すべき項目（1つしか選ばれていなくても配列にする）
-    const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
-    // 動的なサブカテゴリ（cat_gen-0等）も配列化対象に含める
-    Object.keys(payload).forEach(key => {
-      if (key.startsWith('cat_gen-') || arrayFields.includes(key)) {
-        if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-      }
-    });
-
-    // 🍎 画像データの付与（Base64）
-    if (uploadedFiles.length > 0) {
-      payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
-        const reader = new FileReader();
-        reader.onload = (ev) => resolve(ev.target.result);
-        reader.readAsDataURL(file);
-      })));
-    }
-
-    // GASへ送信
-    const res = await fetch(ENDPOINT, {
-      method: "POST",
-      mode: "no-cors", // タイムアウトやCORSによる中断を防ぐための設定
-      body: JSON.stringify(payload)
-    });
-
-    // no-cors の場合はレスポンスが不透明なため、一律成功として処理するか、
-    // 確実に結果を受け取りたい場合は標準設定で try-catch を強化する
-    alert(i18n.types[payload.art_type]?.label || "送信完了"); 
-    window.location.reload();
-
-  } catch (err) {
-    console.error(err);
-    alert(i18n.alerts.send_error);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = i18n.common.sendBtn;
-  }
-};
+    };
   }
 
   // 初期化実行
