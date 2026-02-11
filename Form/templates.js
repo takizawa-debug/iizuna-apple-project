@@ -165,7 +165,8 @@ export const formHTML = `
 </div>
 
 <div id="pane-producer-detail" class="lz-dynamic-detail" style="display:none;">
-  <div class="lz-section-head" style="margin-top:0;">経営・栽培の規模</div>
+  <div class="lz-section-head" style="margin-top:0;">栽培・経営について</div>
+  
   <div class="lz-grid">
     <div class="lz-field"><label class="lz-label">農地面積</label>
       <div style="display:flex; gap:8px;">
@@ -174,6 +175,20 @@ export const formHTML = `
       </div>
     </div>
     <div class="lz-field"><label class="lz-label">従業員数</label><input type="number" name="pr_staff" class="lz-input" placeholder="人数（専従・パート含む）"></div>
+  </div>
+
+  <div class="lz-grid" style="margin-top:12px;">
+    <div class="lz-field">
+      <label class="lz-label">経営区分</label>
+      <div class="lz-choice-grid" style="grid-template-columns: 1fr 1fr;">
+        <label class="lz-choice-item"><input type="radio" name="pr_ent_type" value="individual" checked><span class="lz-choice-inner">個人事業</span></label>
+        <label class="lz-choice-item"><input type="radio" name="pr_ent_type" value="corp"><span class="lz-choice-inner">法人</span></label>
+      </div>
+    </div>
+    <div class="lz-field">
+      <label class="lz-label">代表者名</label>
+      <input type="text" name="pr_rep_name" class="lz-input" placeholder="氏名をご記入ください">
+    </div>
   </div>
   
   <div class="lz-grid" style="margin-top:12px;">
@@ -191,8 +206,16 @@ export const formHTML = `
   </div>
 
   <div class="lz-section-head">栽培品種・加工品</div>
-  <div class="lz-field"><label class="lz-label">栽培している品種</label><div id="area-apple-varieties" class="lz-choice-flex"></div></div>
-  <div class="lz-field"><label class="lz-label">扱っている加工品</label><div id="area-apple-products" class="lz-choice-flex"></div></div>
+  <div class="lz-field">
+    <label class="lz-label">栽培している品種</label>
+    <div id="area-apple-varieties" class="lz-choice-flex"></div>
+    <input type="text" id="pr-variety-other-input" name="pr_variety_other" class="lz-input" style="display:none; margin-top:8px;" placeholder="その他の品種を具体的に記入">
+  </div>
+  <div class="lz-field">
+    <label class="lz-label">扱っている加工品</label>
+    <div id="area-apple-products" class="lz-choice-flex"></div>
+    <input type="text" id="pr-product-other-input" name="pr_product_other" class="lz-input" style="display:none; margin-top:8px;" placeholder="その他の加工品を具体的に記入">
+  </div>
 </div>
 
 

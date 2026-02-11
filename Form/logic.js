@@ -58,14 +58,25 @@ export async function initFormLogic() {
       
       container.innerHTML = finalHtml;
 
-      // 🍎 りんご品種・加工品のチップを生成
+     // 🍎 品種・加工品チップ生成と「その他」連動
       const buildChips = (targetId, list, namePrefix) => {
         const area = document.getElementById(targetId);
-        if (area && list) {
-          area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') + 
-          `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="その他"><span class="lz-choice-inner">その他</span></label>`;
-        }
+        if (!area || !list) return;
+
+        // チップのHTML生成
+        area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') + 
+        `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="その他" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">その他</span></label>`;
+
+        // 「その他」のクリックイベントを個別にバインド
+        area.querySelectorAll('.pr-other-trigger').forEach(chk => {
+          chk.onchange = (e) => {
+            const inputEl = document.getElementById(e.target.dataset.target);
+            if (inputEl) inputEl.style.display = e.target.checked ? 'block' : 'none';
+          };
+        });
       };
+
+      
       buildChips('area-apple-varieties', json.appleVarieties, 'pr_variety');
       buildChips('area-apple-products', json.appleProducts, 'pr_product');
 
