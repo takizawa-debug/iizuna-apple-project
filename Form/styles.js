@@ -230,4 +230,34 @@ input[type="date"].lz-input {
     cursor: pointer;
     flex-shrink: 0;
   }
+
+  /* 🍎 非公開エリアの境界線デザイン */
+  .lz-private-boundary {
+    margin: 80px 0 40px;
+    position: relative;
+    text-align: center;
+    border-top: 2px dashed #ccc; /* 点線で「ここから先は別枠」感を演出 */
+  }
+
+  .lz-private-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 0 20px;
+    color: #999;
+    font-weight: 800;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+
+  /* 鍵アイコンを擬似要素で作成 */
+  .lz-private-label::before {
+    content: "🔒";
+    font-size: 1.2rem;
+  }
 `;
