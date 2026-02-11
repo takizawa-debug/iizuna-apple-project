@@ -235,6 +235,9 @@ function updateTypeView() {
     toggle('pane-producer-detail', type === 'producer');
     toggle('ev-venue-box', type === 'event'); 
 
+    // 🍎 記事登録(other)以外の場合のみ、代行オプションを表示
+    toggle('box-writing-assist', type !== 'other');
+
     // --- 基本情報のラベル・切替 ---
     if (type === 'shop') {
       if(lblTitle) lblTitle.textContent = "店名・施設名"; 
@@ -407,6 +410,27 @@ if (relUrl1 && relTitle1 && rel2Row) {
         reader.readAsDataURL(file);
       });
       imgInput.value = ""; // 同じファイルの再選択を許可
+    };
+  }
+
+  // 🍎 文章作成を事務局に任せる連動ロジック
+  const chkAssist = document.getElementById('chk-writing-assist');
+  const msgAssist = document.getElementById('msg-writing-assist');
+  const inpLead = document.getElementsByName('art_lead')[0];
+  const inpBody = document.getElementsByName('art_body')[0];
+
+  if (chkAssist && inpLead && inpBody) {
+    chkAssist.onchange = (e) => {
+      const isHandled = e.target.checked;
+      // 入力欄を無効化し、必須属性を解除
+      inpLead.disabled = isHandled;
+      inpBody.disabled = isHandled;
+      inpLead.required = !isHandled;
+      inpBody.required = !isHandled;
+      // 視覚的に無効であることを示す
+      inpLead.style.opacity = isHandled ? "0.5" : "1";
+      inpBody.style.opacity = isHandled ? "0.5" : "1";
+      if(msgAssist) msgAssist.style.display = isHandled ? "block" : "none";
     };
   }
 

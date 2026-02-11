@@ -51,6 +51,19 @@ export const formHTML = `
 
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> <span id="lbl-lead">概要</span>（100文字以内）</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" placeholder="お店やイベントを一言で表すと？" required></textarea></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge">必須</span> 詳細本文</label><textarea name="art_body" class="lz-textarea" rows="8" placeholder="詳しい内容を教えてください" required></textarea></div>
+        
+        <div id="box-writing-assist" class="lz-field" style="margin-top: -10px;">
+          <label class="lz-choice-item" style="width: fit-content;">
+            <input type="checkbox" id="chk-writing-assist" name="writing_assist">
+            <span class="lz-choice-inner" style="min-height: 40px; padding: 5px 15px; font-size: 1rem; border-radius: 20px;">
+              紹介文（概要・本文）の作成を事務局に任せる
+            </span>
+          </label>
+          <div id="msg-writing-assist" style="display: none; color: #cf3a3a; font-size: 0.95rem; font-weight: 800; padding: 12px; background: #fff5f5; border-radius: 8px; border: 1px solid #ffcccc; line-height: 1.5;">
+            ⚠️ 注意事項：文章を書かない代わりに、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。
+          </div>
+        </div>
+
         <div class="lz-section-head">画像・配布資料</div><div class="lz-grid"><div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 画像（最大6枚）</label><div id="imgPreviewArea" class="lz-img-preview-grid"><div id="imgAddBtn" class="lz-img-add-btn">＋</div></div><input type="file" id="art_images_input" style="display:none;" accept="image/*" multiple></div>
         <div class="lz-field"><label class="lz-label"><span class="lz-badge opt" style="background:#999;">任意</span> 資料（PDF等）</label><input type="file" name="art_file" class="lz-input" accept=".pdf,.doc,.docx,.zip"></div></div>
 
