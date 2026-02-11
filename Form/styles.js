@@ -268,23 +268,3 @@ input[type="date"].lz-input {
     white-space: nowrap;
   }
 `;
-
-// styles.js の末尾などに追加
-export const uiStyles = `
-  /* 確認モーダル */
-  .lz-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 20px; box-sizing: border-box; }
-  .lz-modal { background: #fff; border-radius: 20px; max-width: 500px; width: 100%; padding: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); animation: lz-pop 0.3s ease; }
-  @keyframes lz-pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .lz-modal-h { font-size: 1.4rem; font-weight: 900; color: #5b3a1e; margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
-  .lz-modal-body { max-height: 400px; overflow-y: auto; margin-bottom: 25px; line-height: 1.6; color: #666; font-size: 1rem; }
-  .lz-modal-item { margin-bottom: 8px; border-bottom: 1px solid #f9f9f9; padding-bottom: 8px; }
-  .lz-modal-label { font-weight: 800; color: #cf3a3a; font-size: 0.9rem; }
-  .lz-modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-
-  /* 進捗バー（オーバーレイ） */
-  .lz-progress-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; }
-  .lz-progress-card { width: 80%; max-width: 400px; text-align: center; }
-  .lz-progress-text { font-size: 1.2rem; font-weight: 800; color: #5b3a1e; margin-bottom: 20px; }
-  .lz-progress-bar-bg { width: 100%; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
-  #lz-progress-fill { width: 0%; height: 100%; background: #cf3a3a; transition: width 0.4s ease; }
-`;
