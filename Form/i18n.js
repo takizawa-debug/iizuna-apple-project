@@ -97,7 +97,7 @@ const resources = {
     sections: {
       category: "Select Type", basic: "Basic Info", images: "Images & Docs",
       location: "Location", shop_detail: "Business Info", event_detail: "Event Dates",
-      event_more: "Event Details", producer_head: "Varieties & Products", producer_biz: "Management",
+      event_more: "Event Details", producer_head: "Crops & Products", producer_biz: "Farm Management",
       links: "Links", inquiry_head: "Contact", notes_head: "Notes",
       private_boundary: "Below is Private Information", private_admin: "Admin Message (Private)"
     },
@@ -109,9 +109,9 @@ const resources = {
       day: "Day", closed: "Closed", holiday_biz: "Holiday Hours", shop_biz_notes: "Business Notes",
       ev_sdate: "Start Date", ev_edate: "End Date", ev_stime: "Start Time", ev_etime: "End Time",
       ev_fee: "Fee", ev_items: "Items to Bring", ev_target: "Target Audience",
-      pr_varieties: "Cultivated Varieties", pr_products: "Processed Products",
+      pr_varieties: "Apple Varieties", pr_products: "Processed Products",
       pr_area: "Planting Area (Apple)", pr_staff: "Employees", pr_other_crops: "Other Crops (Multiple)",
-      pr_biz_type: "Business Category", pr_rep_name: "Representative", pr_invoice: "Invoice Registration",
+      pr_biz_type: "Business Category", pr_rep_name: "Farmer Name", pr_invoice: "Invoice Registration",
       pr_invoice_num: "Reg. Number", cm_method: "Contact Method (Multiple)",
       cm_url: "Form URL", cm_mail: "Public Email", cm_tel: "Public Phone",
       cm_other: "Other Contact", cm_notes: "Contact Notes",
@@ -143,7 +143,7 @@ const resources = {
     types: {
       shop: { label: "Shop", title: "Shop/Facility Name", lead: "Shop Summary", notes: "Notes for Shop/Facility", catLabel: "What you can do here (Multiple)" },
       event: { label: "Event", title: "Event Name", lead: "Event Summary", notes: "Notes for Venue", catLabel: "Event Genre (Multiple)" },
-      producer: { label: "Producer", title: "Farm/Group Name", lead: "Producer Summary", notes: "Notes for Farm Visit", catLabel: "Production Style (Multiple)" },
+      producer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", notes: "Notes for Farm Visit", catLabel: "Farming Style (Multiple)" },
       other: { label: "Article", title: "Article Title", lead: "Article Summary", notes: "Notes for Location", catLabel: "Article Genre (Multiple)" }
     },
     options: {
