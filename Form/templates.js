@@ -25,7 +25,7 @@ export const formHTML = `
       <div class="lz-section-head">登録内容の選択</div>
       <div class="lz-field">
         <div class="lz-choice-grid">
-          <l<label class="lz-choice-item"><input type="radio" name="art_type" value="producer"><span class="lz-choice-inner">生産者の登録</span></label>
+          <label class="lz-choice-item"><input type="radio" name="art_type" value="producer"><span class="lz-choice-inner">生産者の登録</span></label>
           <label class="lz-choice-item"><input type="radio" name="art_type" value="shop"><span class="lz-choice-inner">お店の登録</span></label>
           <label class="lz-choice-item"><input type="radio" name="art_type" value="event"><span class="lz-choice-inner">イベントの登録</span></label>
           <label class="lz-choice-item"><input type="radio" name="art_type" value="other"><span class="lz-choice-inner">記事の登録</span></label>
