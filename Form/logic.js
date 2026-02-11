@@ -141,9 +141,29 @@ export async function initFormLogic() {
   const tabs = document.querySelectorAll('.lz-form-tab');
   tabs.forEach(t => t.onclick = () => {
     tabs.forEach(x => x.classList.toggle('is-active', x === t));
-    document.querySelectorAll('.lz-form-body').forEach(b => b.classList.remove('is-active'));
+    
+    // 🍎 すべてのパネルから必須属性を一旦削除
+    document.querySelectorAll('.lz-form-body').forEach(b => {
+      b.classList.remove('is-active');
+      b.querySelectorAll('[required]').forEach(el => {
+        el.dataset.required = "true"; // 元々必須だったことを記録
+        el.required = false;
+      });
+    });
+
     const target = document.getElementById(`pane-${t.dataset.type}`);
-    if (target) target.classList.add('is-active');
+    if (target) {
+      target.classList.add('is-active');
+      // 🍎 アクティブになったパネルだけ必須属性を復活させる
+      target.querySelectorAll('[data-required="true"]').forEach(el => {
+        el.required = true;
+      });
+    }
+    
+    // 記事投稿タブの場合、さらにサブ項目の表示状態に合わせて調整
+    if (t.dataset.type === 'article') {
+      updateTypeView();
+    }
   });
 
   const zipBtn = document.getElementById('zipBtnAction');
@@ -195,8 +215,16 @@ export async function initFormLogic() {
       const el = document.getElementById(id);
       if (el) {
         el.style.display = cond ? 'flex' : 'none';
+        // 🍎 内部の必須項目を動的に切り替え
         el.querySelectorAll('input, textarea, select').forEach(field => {
-          if (!cond) field.required = false;
+          if (cond) {
+            // 表示された時、元々必須属性が必要な項目なら復活
+            if (field.dataset.needed === "true") field.required = true;
+          } else {
+            // 非表示の時は強制解除
+            if (field.required) field.dataset.needed = "true";
+            field.required = false;
+          }
         });
       }
     };
