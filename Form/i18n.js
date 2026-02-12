@@ -91,7 +91,7 @@ const resources = {
       rel_url: "関連URL", rel_title: "リンクのタイトル", ev_org: "個人名、または団体名",
       cm_mail: "info@example.com", cm_tel: "026-...", cm_other: "窓口へ直接、など",
       cm_notes: "（例）対応時間は平日10:00〜17:00です。土日は電話が繋がりません。",
-      art_memo: "その他, 補足情報があれば自由にご記入ください", admin_email: "example@mail.com",
+      art_memo: "その他、補足情報があれば自由にご記入ください", admin_email: "example@mail.com",
       genre_detail: "具体的な内容をご記入ください", genre_free: "具体的にご記入ください"
     },
     types: {
@@ -101,14 +101,18 @@ const resources = {
       other: { label: "記事の登録", title: "記事タイトル", lead: "記事の概要", leadPlaceholder: "内容を一言で表すと？", notes: "場所に関する注意事項", catLabel: "記事のジャンル（複数選択可）" }
     },
     options: {
-      // 入力画面の表示用ラベル
+      // 🍎 復活：入力画面表示用（templates.js 参照用）
       mode_simple: "標準設定", mode_custom: "曜日別設定",
-      holiday_none: "設定しない", holiday_follow: "曜日どおり営業 / 定休",
+      holiday_none: "設定しない（未回答）", holiday_follow: "曜日どおり営業 / 定休",
       holiday_open: "祝日は営業", holiday_closed: "祝日は休業", holiday_irregular: "不定休・特別ダイヤ",
       period_single: "1日のみ", period_range: "期間あり",
       unit_a: "a（アール）", unit_ha: "ha（ヘクタール）", unit_tan: "反", unit_cho: "町", unit_m2: "㎡", unit_tsubo: "坪",
       crop_fruit: "りんご以外の果物", crop_rice: "米", crop_soba: "そば", crop_veg: "野菜類", crop_other: "その他",
-      // 確認画面の変換用マッピング
+      pr_biz_indiv: "個人事業", pr_biz_corp: "法人", invoice_yes: "登録あり", invoice_no: "登録なし",
+      sns_home: "HP", sns_ec: "ECサイト", sns_rel: "関連リンク", sns_ig: "Instagram", sns_fb: "Facebook", sns_x: "X", sns_line: "LINE", sns_tt: "TikTok",
+      cm_form: "WEBフォーム", cm_email: "メール", cm_tel: "電話番号", cm_other: "その他",
+
+      // 🍎 維持：確認画面変換用（logic.js 参照用）
       simple: "標準設定", custom: "曜日別設定",
       follow_regular: "曜日どおり営業 / 定休", always_open: "祝日は営業", always_closed: "祝日は休業", irregular: "不定休・特別ダイヤ",
       single: "1日のみ", period: "期間あり",
@@ -143,7 +147,7 @@ const resources = {
       std_biz_hours: "Standard Hours", open_time: "Open", close_time: "Close",
       day: "Day", closed: "Closed", holiday_biz: "Holiday Hours", shop_biz_notes: "Business Notes",
       ev_sdate: "Start Date", ev_edate: "End Date", ev_stime: "Start Time", ev_etime: "End Time",
-      ev_org_name: "Organizer Name",ev_fee: "Fee", ev_items: "Items to Bring", ev_target: "Target Audience",
+      ev_fee: "Fee", ev_items: "Items to Bring", ev_target: "Target Audience",
       pr_varieties: "Apple Varieties", pr_products: "Processed Products",
       pr_area: "Planting Area (Apple)", pr_staff: "Employees", pr_other_crops: "Other Crops (Multiple)",
       pr_biz_type: "Business Category", pr_rep_name: "Farmer Name", pr_invoice: "Invoice Registration",
@@ -204,6 +208,10 @@ const resources = {
       period_single: "1 Day Only", period_range: "Period",
       unit_a: "a", unit_ha: "ha", unit_tan: "Tan", unit_cho: "Cho", unit_m2: "㎡", unit_tsubo: "Tsubo",
       crop_fruit: "Other Fruit", crop_rice: "Rice", crop_soba: "Soba", crop_veg: "Vegetables", crop_other: "Other",
+      pr_biz_indiv: "Individual", pr_biz_corp: "Corporation", invoice_yes: "Registered", invoice_no: "Not registered",
+      sns_home: "HP", sns_ec: "EC Site", sns_rel: "Links", sns_ig: "Instagram", sns_fb: "Facebook", sns_x: "X", sns_line: "LINE", sns_tt: "TikTok",
+      cm_form: "Web Form", cm_email: "Email", cm_tel: "Phone", cm_other: "Other",
+
       simple: "Standard", custom: "By Day",
       follow_regular: "Follow Calendar", always_open: "Open on Holidays", always_closed: "Closed on Holidays", irregular: "Irregular/Special",
       single: "1 Day Only", period: "Period",
@@ -262,7 +270,7 @@ const resources = {
       sns_ig: "Instagram", sns_fb: "Facebook", sns_x: "X (Twitter)", sns_line: "LINE", sns_tt: "TikTok",
       sns_trigger: "链接/社交媒体显示设置",
       cm_other_val: "其他联系方式详情",
-      pr_variety_other: "栽培品種 (その他)", pr_product_other: "加工产品 (その他)",
+      pr_variety_other: "栽培品種 (其他)", pr_product_other: "加工产品 (其他)",
       pr_crop_fruit_val: "栽培水果详情", pr_crop_veg_val: "栽培蔬菜详情", pr_crop_other_val: "其他作物详情",
       shop_notes: "地点注意事项", shop_zip: "邮政编码", shop_addr: "地址"
     },
@@ -299,6 +307,10 @@ const resources = {
       period_single: "仅限1日", period_range: "期间内",
       unit_a: "a", unit_ha: "ha", unit_tan: "反", unit_cho: "町", unit_m2: "㎡", unit_tsubo: "坪",
       crop_fruit: "其他水果", crop_rice: "大米", crop_soba: "荞麦", crop_veg: "蔬菜", crop_other: "其他",
+      pr_biz_indiv: "个人事业", pr_biz_corp: "法人", invoice_yes: "已注册", invoice_no: "未注册",
+      sns_home: "主页", sns_ec: "网店", sns_rel: "相关链接", sns_ig: "Instagram", sns_fb: "Facebook", sns_x: "X", sns_line: "LINE", sns_tt: "TikTok",
+      cm_form: "表单", cm_email: "邮箱", cm_tel: "电话", cm_other: "其他",
+
       simple: "标准设置", custom: "按星期设置",
       follow_regular: "按日历营业/休息", always_open: "节假日营业", always_closed: "节假日休息", irregular: "不定休/特别时段",
       single: "仅限1日", period: "期间内",
