@@ -517,8 +517,18 @@ if (evS && evE) {
   });
 
   // 初期化実行
+  // --- 🍎 修正：初期化実行ブロック ---
   const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
+  
+  // 1. まず、現在アクティブなタブ（初期は情報提供）のクリックイベントを強制発火させる
+  // これにより、他のタブの不要な required 属性が即座に解除されます。
+  const initialTab = document.querySelector('.lz-form-tab.is-active');
+  if (initialTab) {
+    initialTab.click(); 
+  }
+
+  // 2. URLにタイプ指定がある場合の処理
   if (typeSelect) {
     if (typeFromUrl) typeSelect.value = typeFromUrl;
     typeSelect.onchange = updateTypeView;
