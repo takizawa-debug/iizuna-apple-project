@@ -47,7 +47,7 @@ export const getFormHTML = () => `
       <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> <span id="lbl-title"></span></label><input type="text" name="art_title" id="inp-title" class="lz-input" required></div>
 
       <div class="lz-field">
-        <label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> <span id="lbl-dynamic-cat"></span></label>
+        <label class="lz-label"><span id="lbl-dynamic-cat"></span></label>
         <div id="lz-dynamic-category-area"></div>
       </div>
 
