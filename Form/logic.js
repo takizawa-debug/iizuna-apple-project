@@ -234,39 +234,39 @@ export async function initFormLogic() {
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
-  // --- 🍎 追加：時間の自動補完ロジック（時を選択したら分を "00" にする） ---
-  // ページ内のすべての「時（_h）」セレクターに対してイベントを設定
-  const bindTimeAutoFill = () => {
+ // 🍎 時間の自動補完ロジック（時を選択したら分を "00" にする）
+  const rebindTimeEvents = () => {
     document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
       hSelect.onchange = (e) => {
         if (e.target.value !== "") {
-          // 対応する「分（_m）」のセレクターを特定
           const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
-          // 分がまだ未選択（空）の場合のみ "00" をセット
-          if (mSelect && mSelect.value === "") {
-            mSelect.value = "00";
-          }
+          if (mSelect && mSelect.value === "") mSelect.value = "00";
         }
       };
     });
   };
 
-  // セレクター注入後に実行
-  bindTimeAutoFill();
+  // 初期化実行
+  rebindTimeEvents();
 
   // タブ切り替えと必須属性管理
-  document.querySelectorAll('.lz-form-tab').forEach(t => t.onclick = () => {
-    document.querySelectorAll('.lz-form-tab').forEach(x => x.classList.toggle('is-active', x === t));
-    document.querySelectorAll('.lz-form-body').forEach(b => {
-      b.classList.remove('is-active');
-      b.querySelectorAll('[required]').forEach(el => { el.dataset.required = "true"; el.required = false; });
+  document.querySelectorAll('.lz-form-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.lz-form-tab').forEach(x => x.classList.toggle('is-active', x === t));
+      document.querySelectorAll('.lz-form-body').forEach(b => {
+        b.classList.remove('is-active');
+        b.querySelectorAll('[required]').forEach(el => { el.dataset.required = "true"; el.required = false; });
+      });
+      const target = document.getElementById(`pane-${t.dataset.type}`);
+      if (target) {
+        target.classList.add('is-active');
+        target.querySelectorAll('[data-required="true"]').forEach(el => el.required = true);
+      }
+      if (t.dataset.type === 'article') updateTypeView();
+      
+      // タブ切り替え時に時間のイベントを再バインド
+      rebindTimeEvents();
     });
-    const target = document.getElementById(`pane-${t.dataset.type}`);
-    if (target) {
-      target.classList.add('is-active');
-      target.querySelectorAll('[data-required="true"]').forEach(el => el.required = true);
-    }
-    if (t.dataset.type === 'article') updateTypeView();
   });
 
   // 郵便番号検索
@@ -312,21 +312,19 @@ export async function initFormLogic() {
     r.addEventListener('change', (e) => { if(evEndDateBox) evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none'; });
   });
 
-// 🍎 修正：日付逆転チェック（入力時）
-const evS = document.getElementsByName('ev_sdate')[0];
-const evE = document.getElementsByName('ev_edate')[0];
-
-const validateEventDates = () => {
-  if (evS.value && evE.value && evE.value < evS.value) {
-    alert("終了日は開始日以降の日付を選択してください。");
-    evE.value = ""; // 不正な方を消去
+  // 日付逆転チェック（入力時）
+  const evS = document.getElementsByName('ev_sdate')[0];
+  const evE = document.getElementsByName('ev_edate')[0];
+  const validateEventDates = () => {
+    if (evS.value && evE.value && evE.value < evS.value) {
+      alert("終了日は開始日以降の日付を選択してください。");
+      evE.value = ""; 
+    }
+  };
+  if (evS && evE) {
+    evS.addEventListener('change', validateEventDates);
+    evE.addEventListener('change', validateEventDates);
   }
-};
-
-if (evS && evE) {
-  evS.addEventListener('change', validateEventDates);
-  evE.addEventListener('change', validateEventDates);
-}
 
   // 店舗モード連動
   document.getElementsByName('shop_mode').forEach(r => {
@@ -411,19 +409,16 @@ if (evS && evE) {
     };
   }
 
-  // 送信処理（画像Base64変換含む）
+  // 送信処理
   const form = document.getElementById('lz-article-form');
-
-  // 🍎 送信処理：タブ分離・完全網羅型バリデーション
   if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
       
-      const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type; // 🍎 現在のタブを特定
+      const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type;
       const formData = new FormData(form);
       const rawPayload = {};
       
-      // 1. 全データを一旦収集
       formData.forEach((value, key) => {
         if (rawPayload[key]) {
           if (!Array.isArray(rawPayload[key])) rawPayload[key] = [rawPayload[key]];
@@ -431,100 +426,88 @@ if (evS && evE) {
         } else { rawPayload[key] = value; }
       });
 
-      // 2. 🍎 タブに応じた厳格なフィルタリング（他タブの残骸を除去）
+      // タブ・タイプ別のデータクレンジング
       const payload = {};
       const tabAllowedPrefixes = {
         report: ['rep_'],
         inquiry: ['inq_'],
         article: ['art_', 'cat_', 'shop_', 'ev_', 'pr_', 'writing_assist', 'simple_days', 'sns_', 'url_', 'rel_', 'cm_', 'cont_', 'admin_']
       };
-
       Object.keys(rawPayload).forEach(key => {
-        const allowed = tabAllowedPrefixes[activeTab].some(p => key.startsWith(p));
-        if (allowed) payload[key] = rawPayload[key];
+        if (tabAllowedPrefixes[activeTab].some(p => key.startsWith(p))) payload[key] = rawPayload[key];
       });
 
-      // 🍎 記事投稿タブの場合のみ、さらにタイプ別のクレンジングを実行
       if (activeTab === 'article') {
         const type = payload.art_type;
         const fieldsToClean = {
-          shop: ['ev_', 'pr_'],
-          event: ['shop_', 'pr_', 'simple_days'],
-          farmer: ['shop_', 'ev_', 'simple_days'],
-          other: ['shop_', 'ev_', 'pr_', 'writing_assist']
+          shop: ['ev_', 'pr_'], event: ['shop_', 'pr_', 'simple_days'],
+          farmer: ['shop_', 'ev_', 'simple_days'], other: ['shop_', 'ev_', 'pr_', 'writing_assist']
         };
         if (fieldsToClean[type]) {
           Object.keys(payload).forEach(key => {
             if (fieldsToClean[type].some(p => key.startsWith(p))) delete payload[key];
           });
         }
+        // 送信前バリデーション（イベント日付）
+        if (type === 'event' && payload.ev_sdate && payload.ev_edate && payload.ev_edate < payload.ev_sdate) {
+          alert("エラー：終了日は開始日以降の日付を選択してください。"); return;
+        }
       }
 
-      // --- 3. 確認モーダルの生成（完全網羅版） ---
+      // 確認モーダルの生成
       const confirmOverlay = document.getElementById('lz-confirm-overlay');
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
-      
-      const labelMap = { 
-        ...i18n.labels, 
-        art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title 
-      };
+      const labelMap = { ...i18n.labels, art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title };
+      const processedKeys = new Set();
 
       Object.keys(payload).forEach(key => {
+        if (processedKeys.has(key)) return;
         let val = payload[key];
-        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode'];
-        if (skipKeys.includes(key) || !val || val.toString().trim() === "") return;
+        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file'];
+        if (skipKeys.includes(key) || !val || val.toString().trim() === "" || (typeof val === 'object' && !(val instanceof Array))) return;
 
-        // 🍎 ラベルの決定（動的カテゴリ cat_gen-X への対応）
         let label = labelMap[key] || key;
-        if (key.startsWith('cat_gen-')) label = i18n.labels.cat_l1 + "（詳細）";
-
-        // 値の整形（配列やオプション値の変換）
         let displayVal = val;
-        if (Array.isArray(val)) {
-          displayVal = val.map(v => i18n.options[v] || v).join(", ");
-        } else if (i18n.options[val]) {
-          displayVal = i18n.options[val];
-        } else if (key === 'writing_assist') {
-          displayVal = val === "on" ? "希望する" : "しない";
+
+        if (key.endsWith('_h')) {
+          const baseKey = key.replace('_h', '');
+          displayVal = `${val}:${payload[baseKey + '_m'] || "00"}`;
+          label = labelMap[baseKey] || labelMap[baseKey + '_time'] || label;
+          processedKeys.add(baseKey + '_m');
         }
 
-        previewHtml += `
-          <div class="lz-modal-item">
-            <div class="lz-modal-label">${label}</div>
-            <div class="lz-modal-value">${displayVal}</div>
-          </div>`;
+        if (key.startsWith('cat_gen-')) label = i18n.labels.cat_l1 + "（詳細）";
+        if (Array.isArray(val)) displayVal = val.map(v => i18n.options[v] || v).join(", ");
+        else if (i18n.options[val]) displayVal = i18n.options[val];
+        else if (key === 'writing_assist') displayVal = val === "on" ? "希望する" : "しない";
+
+        previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
+        processedKeys.add(key);
       });
       
-      if (uploadedFiles.length > 0) {
-        previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
-      }
+      if (uploadedFiles.length > 0) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
+      if (payload.art_file_name) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_file}</div><div class="lz-modal-value">${payload.art_file_name}</div></div>`;
 
       confirmBody.innerHTML = previewHtml || `<div style="text-align:center; padding:20px;">入力内容がありません</div>`;
       confirmOverlay.style.display = 'flex';
 
-      // --- 4. モーダル内のボタン処理 ---
-      const isConfirmed = await new Promise((resolve) => {
-        document.getElementById('lz-btn-back').onclick = () => resolve(false);
-        document.getElementById('lz-btn-go').onclick = () => resolve(true);
+      const isConfirmed = await new Promise(res => {
+        document.getElementById('lz-btn-back').onclick = () => res(false);
+        document.getElementById('lz-btn-go').onclick = () => res(true);
       });
 
       confirmOverlay.style.display = 'none';
       if (!isConfirmed) return;
 
-      // --- 5. 送信実行 ---
+      // 送信実行
       const allBtns = document.querySelectorAll('.lz-send-btn');
       allBtns.forEach(btn => { btn.disabled = true; btn.textContent = i18n.common.sending; btn.style.opacity = '0.6'; });
 
       try {
-        // 🍎 送信直前のデータ補完（曜日タイポ修正 e_e -> e_m）
-        days.forEach(d => {
-          ['s_h', 's_m', 'e_h', 'e_m'].forEach(suffix => {
-            const k = `c_${suffix}_${d}`; if (!payload[k]) payload[k] = "";
-          });
-        });
+        // 曜日別営業時間の補完
+        days.forEach(d => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { if (!payload[`c_${s}_${d}`]) payload[`c_${s}_${d}`] = ""; }); });
 
-        // 画像・ファイルのBase64変換
         if (uploadedFiles.length > 0) {
           payload.images = await Promise.all(uploadedFiles.map(file => new Promise(res => {
             const reader = new FileReader(); reader.onload = (ev) => res(ev.target.result); reader.readAsDataURL(file);
@@ -545,7 +528,6 @@ if (evS && evE) {
           alert(i18n.types[payload.art_type]?.label + " " + i18n.common.sendBtn + "に成功しました！"); 
           window.location.reload();
         } else { throw new Error(result.error); }
-
       } catch (err) {
         alert(i18n.alerts.send_error + "\n理由: " + err.message);
         allBtns.forEach(btn => { btn.disabled = false; btn.textContent = i18n.common.sendBtn; btn.style.opacity = '1'; });
@@ -554,18 +536,10 @@ if (evS && evE) {
   }
 
   // 初期化実行
-  // --- 🍎 修正：初期化実行ブロック ---
   const urlParams = new URLSearchParams(window.location.search);
   const typeFromUrl = urlParams.get('type');
-  
-  // 1. まず、現在アクティブなタブ（初期は情報提供）のクリックイベントを強制発火させる
-  // これにより、他のタブの不要な required 属性が即座に解除されます。
   const initialTab = document.querySelector('.lz-form-tab.is-active');
-  if (initialTab) {
-    initialTab.click(); 
-  }
-
-  // 2. URLにタイプ指定がある場合の処理
+  if (initialTab) initialTab.click(); 
   if (typeSelect) {
     if (typeFromUrl) typeSelect.value = typeFromUrl;
     typeSelect.onchange = updateTypeView;
