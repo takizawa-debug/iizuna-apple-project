@@ -160,6 +160,7 @@ export async function initFormLogic() {
 
   function bindDynamicEvents() {
     document.getElementsByName('cat_l1').forEach(c => {
+        
       c.onchange = (e) => {
   const targetId = e.target.getAttribute('data-subid');
   const el = document.getElementById(`sub-${targetId}`);
@@ -479,6 +480,16 @@ if (evS && evE) {
       }
     };
   }
+
+  // 🍎 時間の自動補完ロジック：時を選択したら分を "00" にする
+  document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
+    hSelect.addEventListener('change', (e) => {
+      if (e.target.value !== "") {
+        const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
+        if (mSelect && mSelect.value === "") mSelect.value = "00";
+      }
+    });
+  });
 
   // 初期化実行
   const urlParams = new URLSearchParams(window.location.search);
