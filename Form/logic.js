@@ -448,10 +448,23 @@ export async function initFormLogic() {
           farmer: ['shop_', 'ev_', 'simple_', 'c_'],
           other: ['shop_', 'ev_', 'pr_', 'writing_assist', 'simple_', 'c_']
         };
+
         if (fieldsToClean[type]) {
           Object.keys(payload).forEach(key => {
             if (fieldsToClean[type].some(p => key.startsWith(p))) delete payload[key];
           });
+        }
+
+        // 🍎 修正：店舗の営業モードに応じた「裏側データ」の強制削除
+        if (type === 'shop') {
+          const mode = payload.shop_mode; // 'simple' または 'custom'
+          if (mode === 'simple') {
+            // 標準設定を選んでいるなら、曜日別設定(c_)をすべて消す
+            Object.keys(payload).forEach(key => { if (key.startsWith('c_')) delete payload[key]; });
+          } else {
+            // 曜日別設定を選んでいるなら、標準設定(simple_)をすべて消す
+            Object.keys(payload).forEach(key => { if (key.startsWith('simple_')) delete payload[key]; });
+          }
         }
       }
 
@@ -487,23 +500,37 @@ export async function initFormLogic() {
           displayVal = i18n.labels.closed; // 休業
         }
 
-        // 🍎 B. 時間の結合ロジック (simple_s_h, c_s_月_h 等を 00:00 に整形)
-        else if (key.endsWith('_h')) {
-          const baseKey = key.replace('_h', ''); // 'simple_s' や 'c_s_月'
-          const hVal = val;
-          const mVal = payload[baseKey + '_m'] || "00";
-          displayVal = `${hVal}:${mVal}`;
+        // 🍎 B. 時間の1行表示ロジック (開始 - 終了 を統合)
+        else if (key.includes('_s_h') || key === 'simple_s_h') {
+          const isSimple = (key === 'simple_s_h');
+          const startH = val;
+          const startM = payload[key.replace('_h', '_m')] || "00";
+          const endKeyH = isSimple ? 'simple_e_h' : key.replace('_s_', '_e_');
+          const endKeyM = endKeyH.replace('_h', '_m');
+          
+          const endH = payload[endKeyH];
+          const endM = payload[endKeyM] || "00";
 
-          // 曜日別設定 (c_s_曜, c_e_曜) のラベル構築
-          if (baseKey.startsWith('c_s_')) {
-            label = `${baseKey.replace('c_s_', '')}${i18n.labels.day_suffix} ${i18n.labels.open_time}`;
-          } else if (baseKey.startsWith('c_e_')) {
-            label = `${baseKey.replace('c_e_', '')}${i18n.labels.day_suffix} ${i18n.labels.close_time}`;
+          if (endH) {
+            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+            if (isSimple) {
+              label = i18n.labels.std_biz_hours; // "標準営業時間" として表示
+            } else {
+              const day = key.split('_')[2];
+              label = `${day}${i18n.labels.day_suffix}`; // "月曜日" などの曜日名
+            }
+            // 関連する分と終了時間のキーを処理済みリストへ追加
+            processedKeys.add(key.replace('_h', '_m'));
+            processedKeys.add(endKeyH);
+            processedKeys.add(endKeyM);
           } else {
-            label = labelMap[baseKey] || label;
+            displayVal = `${startH}:${startM}`;
+            processedKeys.add(key.replace('_h', '_m'));
           }
-          processedKeys.add(baseKey + '_m');
         }
+        
+        // 終了時間のキー単体は無視（上記で統合済みのため）
+        else if (key.includes('_e_h') || key === 'simple_e_h') return;
 
         // 🍎 C. その他、動的カテゴリや選択肢の翻訳
         if (key.startsWith('cat_gen-')) label = `${i18n.labels.cat_l1} (${i18n.labels.content})`;
