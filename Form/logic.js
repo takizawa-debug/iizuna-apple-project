@@ -47,7 +47,6 @@ export async function initFormLogic() {
     lblLead.textContent = set.lead;
     inpLead.placeholder = set.leadPlaceholder || i18n.placeholders.art_lead;
     inpTitle.placeholder = i18n.placeholders.art_title || set.title;
-    inpLead.placeholder = i18n.placeholders.art_lead;
     inpBody.placeholder = i18n.placeholders.art_body;
     if (document.getElementById('art_memo')) document.getElementById('art_memo').placeholder = i18n.placeholders.art_memo;
     if (document.getElementById('lbl-notes')) document.getElementById('lbl-notes').textContent = set.notes;
