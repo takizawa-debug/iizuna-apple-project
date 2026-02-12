@@ -411,6 +411,7 @@ export async function initFormLogic() {
 
   // 送信処理
   const form = document.getElementById('lz-article-form');
+// 🍎 送信処理：タブ分離・完全網羅・営業時間整形版
   if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -426,63 +427,100 @@ export async function initFormLogic() {
         } else { rawPayload[key] = value; }
       });
 
-      // タブ・タイプ別のデータクレンジング
+      // --- 1. フィルタの拡張（simple_ と c_ を許可リストに追加） ---
       const payload = {};
       const tabAllowedPrefixes = {
         report: ['rep_'],
         inquiry: ['inq_'],
-        article: ['art_', 'cat_', 'shop_', 'ev_', 'pr_', 'writing_assist', 'simple_days', 'sns_', 'url_', 'rel_', 'cm_', 'cont_', 'admin_']
+        article: ['art_', 'cat_', 'shop_', 'ev_', 'pr_', 'writing_assist', 'simple_', 'c_', 'sns_', 'url_', 'rel_', 'cm_', 'cont_', 'admin_']
       };
+
       Object.keys(rawPayload).forEach(key => {
         if (tabAllowedPrefixes[activeTab].some(p => key.startsWith(p))) payload[key] = rawPayload[key];
       });
 
+      // --- 2. クレンジングの精密化（店舗以外の場合は営業情報を消去） ---
       if (activeTab === 'article') {
         const type = payload.art_type;
         const fieldsToClean = {
-          shop: ['ev_', 'pr_'], event: ['shop_', 'pr_', 'simple_days'],
-          farmer: ['shop_', 'ev_', 'simple_days'], other: ['shop_', 'ev_', 'pr_', 'writing_assist']
+          shop: ['ev_', 'pr_'],
+          event: ['shop_', 'pr_', 'simple_', 'c_'], // simple_ と c_ を消去対象に追加
+          farmer: ['shop_', 'ev_', 'simple_', 'c_'],
+          other: ['shop_', 'ev_', 'pr_', 'writing_assist', 'simple_', 'c_']
         };
         if (fieldsToClean[type]) {
           Object.keys(payload).forEach(key => {
             if (fieldsToClean[type].some(p => key.startsWith(p))) delete payload[key];
           });
         }
-        // 送信前バリデーション（イベント日付）
-        if (type === 'event' && payload.ev_sdate && payload.ev_edate && payload.ev_edate < payload.ev_sdate) {
-          alert("エラー：終了日は開始日以降の日付を選択してください。"); return;
-        }
       }
 
-      // 確認モーダルの生成
+      // --- 3. 確認モーダルの生成（辞書の紐付け強化版） ---
       const confirmOverlay = document.getElementById('lz-confirm-overlay');
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
-      const labelMap = { ...i18n.labels, art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title };
+      
+      // 辞書の紐付け：ベースキーを適切な日本語にマッピング
+      const labelMap = { 
+        ...i18n.labels, 
+        art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title,
+        simple_s: i18n.labels.open_time, // 営業開始
+        simple_e: i18n.labels.close_time // 営業終了
+      };
+
       const processedKeys = new Set();
 
       Object.keys(payload).forEach(key => {
         if (processedKeys.has(key)) return;
         let val = payload[key];
+        
         const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file'];
         if (skipKeys.includes(key) || !val || val.toString().trim() === "" || (typeof val === 'object' && !(val instanceof Array))) return;
 
         let label = labelMap[key] || key;
         let displayVal = val;
 
-        if (key.endsWith('_h')) {
-          const baseKey = key.replace('_h', '');
-          displayVal = `${val}:${payload[baseKey + '_m'] || "00"}`;
-          label = labelMap[baseKey] || labelMap[baseKey + '_time'] || label;
+        // 🍎 A. 曜日別設定の「休業」フラグの処理
+        if (key.startsWith('c_closed_')) {
+          const dayName = key.replace('c_closed_', '');
+          label = `${dayName}${i18n.labels.day_suffix}`; // 例：月曜日
+          displayVal = i18n.labels.closed; // 休業
+        }
+
+        // 🍎 B. 時間の結合ロジック (simple_s_h, c_s_月_h 等を 00:00 に整形)
+        else if (key.endsWith('_h')) {
+          const baseKey = key.replace('_h', ''); // 'simple_s' や 'c_s_月'
+          const hVal = val;
+          const mVal = payload[baseKey + '_m'] || "00";
+          displayVal = `${hVal}:${mVal}`;
+
+          // 曜日別設定 (c_s_曜, c_e_曜) のラベル構築
+          if (baseKey.startsWith('c_s_')) {
+            label = `${baseKey.replace('c_s_', '')}${i18n.labels.day_suffix} ${i18n.labels.open_time}`;
+          } else if (baseKey.startsWith('c_e_')) {
+            label = `${baseKey.replace('c_e_', '')}${i18n.labels.day_suffix} ${i18n.labels.close_time}`;
+          } else {
+            label = labelMap[baseKey] || label;
+          }
           processedKeys.add(baseKey + '_m');
         }
 
-        if (key.startsWith('cat_gen-')) label = i18n.labels.cat_l1 + "（詳細）";
-        if (Array.isArray(val)) displayVal = val.map(v => i18n.options[v] || v).join(", ");
-        else if (i18n.options[val]) displayVal = i18n.options[val];
-        else if (key === 'writing_assist') displayVal = val === "on" ? "希望する" : "しない";
+        // 🍎 C. その他、動的カテゴリや選択肢の翻訳
+        if (key.startsWith('cat_gen-')) label = `${i18n.labels.cat_l1} (${i18n.labels.content})`;
+        
+        if (Array.isArray(val)) {
+          displayVal = val.map(v => i18n.options[v] || v).join(", ");
+        } else if (i18n.options[val]) {
+          displayVal = i18n.options[val];
+        } else if (key === 'writing_assist') {
+          displayVal = val === "on" ? i18n.common.assistLabel : "---";
+        }
 
-        previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
+        previewHtml += `
+          <div class="lz-modal-item">
+            <div class="lz-modal-label">${label}</div>
+            <div class="lz-modal-value">${displayVal}</div>
+          </div>`;
         processedKeys.add(key);
       });
       
@@ -500,17 +538,17 @@ export async function initFormLogic() {
       confirmOverlay.style.display = 'none';
       if (!isConfirmed) return;
 
-      // 送信実行
+      // --- 送信実行（Base64変換含む） ---
       const allBtns = document.querySelectorAll('.lz-send-btn');
       allBtns.forEach(btn => { btn.disabled = true; btn.textContent = i18n.common.sending; btn.style.opacity = '0.6'; });
 
       try {
-        // 曜日別営業時間の補完
-        days.forEach(d => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { if (!payload[`c_${s}_${d}`]) payload[`c_${s}_${d}`] = ""; }); });
+        // 送信直前の補完：曜日別設定の空欄を埋める
+        days.forEach(d => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { const k = `c_${s}_${d}`; if (!payload[k]) payload[k] = ""; }); });
 
         if (uploadedFiles.length > 0) {
           payload.images = await Promise.all(uploadedFiles.map(file => new Promise(res => {
-            const reader = new FileReader(); reader.onload = (ev) => res(ev.target.result); reader.readAsDataURL(file);
+            const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(file);
           })));
         }
         const docFileInput = form.querySelector('input[name="art_file"]');
@@ -518,7 +556,7 @@ export async function initFormLogic() {
           const docFile = docFileInput.files[0];
           payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
           payload.art_file_data = await new Promise(res => {
-            const reader = new FileReader(); reader.onload = (ev) => res(ev.target.result); reader.readAsDataURL(docFile);
+            const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(docFile);
           });
         }
 

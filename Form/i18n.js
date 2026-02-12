@@ -46,7 +46,13 @@ const resources = {
       cat_root_other_val: "カテゴリー詳細（自由記述）",
       writing_assist: "事務局代行希望",
       simple_days: "営業曜日",
-      shop_mode: "営業モード"
+      shop_mode: "営業モード",
+      pr_variety: "栽培している品種",
+      pr_area_unit: "面積単位",
+      pr_ent_type: "経営区分",
+      simple_s: "営業開始（標準）",
+      simple_e: "営業終了（標準）",
+
     },
     status: {
       loading_cat: "カテゴリーを取得中...",
@@ -163,7 +169,12 @@ const resources = {
       cat_root_other_val: "Category Details (Free text)",
       writing_assist: "Writing Assistance",
       simple_days: "Business Days",
-      shop_mode: "Business Mode"
+      shop_mode: "Business Mode",
+      pr_variety: "Apple Varieties",
+      pr_area_unit: "Area Unit",
+      pr_ent_type: "Business Category",
+      simple_s: "Standard Open Time",
+      simple_e: "Standard Close Time"
     },
     status: { loading_cat: "Loading categories...", error_cat: "Failed to load categories." },
     alerts: { zip_empty: "Please enter a zip code", send_error: "Failed to send" },
@@ -249,7 +260,12 @@ const resources = {
       cat_root_other_val: "类别详情 (自由填写)",
       writing_assist: "委托代写",
       simple_days: "营业日",
-      shop_mode: "营业模式"
+      shop_mode: "营业模式",
+      pr_variety: "栽培品种",
+      pr_area_unit: "面积单位",
+      pr_ent_type: "经营类别",
+      simple_s: "营业开始 (标准)",
+      simple_e: "营业结束 (标准)"
     },
     status: { loading_cat: "正在获取类别...", error_cat: "获取类别失败。" },
     alerts: { zip_empty: "请输入邮政编码", send_error: "发送失败" },
