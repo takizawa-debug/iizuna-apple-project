@@ -22,12 +22,14 @@ export const getFormHTML = () => `
   <div id="pane-report" class="lz-form-body is-active">
      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> ${i18n.labels.name}</label><input type="text" name="rep_name" class="lz-input" placeholder="${i18n.placeholders.rep_name}" required></div>
      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> ${i18n.labels.content}</label><textarea name="rep_content" class="lz-textarea" rows="6" placeholder="${i18n.placeholders.rep_content}" required></textarea></div>
+     <button type="submit" class="lz-send-btn">${i18n.common.sendBtn}</button>
   </div>
 
   <div id="pane-inquiry" class="lz-form-body">
      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> ${i18n.labels.name}</label><input type="text" name="inq_name" class="lz-input" required></div>
      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> ${i18n.labels.email}</label><input type="email" name="inq_email" class="lz-input" required></div>
      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> ${i18n.labels.content}</label><textarea name="inq_content" class="lz-textarea" rows="6" required></textarea></div>
+     <button type="submit" class="lz-send-btn">${i18n.common.sendBtn}</button>
   </div>
 
   <div id="pane-article" class="lz-form-body">
@@ -289,9 +291,8 @@ export const getFormHTML = () => `
         <input type="email" id="adminEmail" name="admin_email" class="lz-input" required placeholder="${i18n.placeholders.admin_email}">
       </div>
       <div class="lz-field"><label class="lz-label"><span class="lz-badge opt">${i18n.badges.private}</span> ${i18n.labels.admin_msg}</label><textarea name="admin_msg" class="lz-textarea" rows="4"></textarea></div>
-
+      
       <button type="submit" class="lz-send-btn" id="lzBtn">${i18n.common.sendBtn}</button>
-    </div>
   </div>
 </form>
 `;
