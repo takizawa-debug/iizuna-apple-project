@@ -496,30 +496,40 @@ export async function initFormLogic() {
           displayVal = i18n.labels.closed;
         }
 
-        // 🍎 B. 時間の結合ロジック（c_s_月_h や simple_s_h をすべて検知）
-        else if (key.endsWith('_s_h')) {
-          const base = key.replace('_s_h', ''); // 'simple' や 'c_月'、'ev' 等
-          const hStart = val;
-          const mStart = payload[base + '_s_m'] || "00";
-          const hEnd = payload[base + '_e_h'];
-          const mEnd = payload[base + '_e_m'] || "00";
+        // 🍎 B. 時間の統合表示（「_s_」と「_h」が含まれるキーを全て捕まえる）
+        else if (key.includes('_s_') && key.endsWith('_h')) {
+          const startH = val;
+          const startM = payload[key.replace('_h', '_m')] || "00";
+          
+          // 開始キーから終了キーを推測生成 (例: c_s_火_h -> c_e_火_h)
+          const endKeyH = key.replace('_s_', '_e_');
+          const endKeyM = endKeyH.replace('_h', '_m');
+          
+          const endH = payload[endKeyH];
+          const endM = payload[endKeyM] || "00";
 
-          if (hEnd) {
-            displayVal = `${hStart}:${mStart} - ${hEnd}:${mEnd}`;
-            // ラベルの決定
-            if (base === 'simple') label = i18n.labels.std_biz_hours;
-            else if (base === 'ev') label = i18n.labels.ev_stime;
-            else if (base.startsWith('c_')) label = base.replace('c_', '') + i18n.labels.day_suffix;
+          if (endH) {
+            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
             
-            // 結合したパーツを「表示済み」としてマーク
-            processedKeys.add(base + '_s_m');
-            processedKeys.add(base + '_e_h');
-            processedKeys.add(base + '_e_m');
+            // ラベルの決定
+            if (key.startsWith('simple_')) {
+              label = i18n.labels.std_biz_hours; 
+            } else if (key.startsWith('ev_')) {
+              label = i18n.labels.ev_stime;
+            } else if (key.startsWith('c_s_')) {
+              const day = key.split('_')[2]; // 'c_s_火_h' から '火' を抽出
+              label = `${day}${i18n.labels.day_suffix}`;
+            }
+
+            // 関連するパーツ（分、終了時、終了分）を全て「処理済み」にして重複表示を防ぐ
+            processedKeys.add(key.replace('_h', '_m'));
+            processedKeys.add(endKeyH);
+            processedKeys.add(endKeyM);
           }
         }
         
-        // 残骸（分や終了時間のみのキー）は表示しない
-        else if (key.endsWith('_e_h') || key.endsWith('_s_m') || key.endsWith('_e_m')) return;
+        // 単独の終了時間や分キーは、結合済みなので無視
+        else if (key.includes('_e_h') || key.endsWith('_m')) return;
 
         // 🍎 C. その他（翻訳辞書の適用）
         else if (key.startsWith('cat_gen-')) label = `${i18n.labels.cat_l1}（詳細）`;
