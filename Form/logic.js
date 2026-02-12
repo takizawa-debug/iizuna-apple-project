@@ -161,9 +161,18 @@ export async function initFormLogic() {
   function bindDynamicEvents() {
     document.getElementsByName('cat_l1').forEach(c => {
       c.onchange = (e) => {
-        const targetId = e.target.getAttribute('data-subid');
-        const el = document.getElementById(`sub-${targetId}`);
-        if (el) el.style.display = e.target.checked ? 'flex' : 'none';
+  const targetId = e.target.getAttribute('data-subid');
+  const el = document.getElementById(`sub-${targetId}`);
+  if (el) {
+    const isChecked = e.target.checked;
+    el.style.display = isChecked ? 'flex' : 'none';
+    // 🍎 追加：チェックを外した時、子要素の入力をすべてリセット
+    if (!isChecked) {
+      el.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
+      const otherField = el.querySelector('.lz-sub-other-field');
+      if (otherField) { otherField.style.display = 'none'; otherField.value = ''; }
+    }
+  }
         const otherRoot = document.getElementById('sub-cat-root-other');
         const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => (i.value === i18n.common.cat_other_label || i.value === i18n.common.other_label) && i.checked);
         if (otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
@@ -274,6 +283,18 @@ export async function initFormLogic() {
     r.addEventListener('change', (e) => { if(evEndDateBox) evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none'; });
   });
 
+  // 🍎 日付逆転チェック
+const evS = document.getElementsByName('ev_sdate')[0];
+const evE = document.getElementsByName('ev_edate')[0];
+if (evS && evE) {
+  evE.addEventListener('change', () => {
+    if (evS.value && evE.value && evE.value < evS.value) {
+      alert("終了日は開始日以降の日付を選択してください。");
+      evE.value = "";
+    }
+  });
+}
+
   // 店舗モード連動
   document.getElementsByName('shop_mode').forEach(r => {
     r.onchange = (e) => {
@@ -382,6 +403,14 @@ export async function initFormLogic() {
           }
         });
 
+        // 🍎 追加：曜日別設定の「未入力」を空文字として明示的に送る（GAS側のパースミス防止）
+days.forEach(d => {
+  ['s_h', 's_m', 'e_h', 'e_e'].forEach(suffix => {
+    const key = `c_${suffix}_${d}`;
+    if (!payload[key]) payload[key] = "";
+  });
+});
+
         // 2. 必須配列フィールドの固定化
         const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
         Object.keys(payload).forEach(key => {
@@ -440,6 +469,16 @@ export async function initFormLogic() {
       }
     };
   }
+
+  // 🍎 時間の自動補完ロジック
+document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
+  hSelect.addEventListener('change', (e) => {
+    if (e.target.value !== "") {
+      const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
+      if (mSelect && mSelect.value === "") mSelect.value = "00";
+    }
+  });
+});
 
   // 初期化実行
   const urlParams = new URLSearchParams(window.location.search);
