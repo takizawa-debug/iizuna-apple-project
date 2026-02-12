@@ -1,6 +1,6 @@
 /**
  * i18n.js - 多言語対応（日・英・中）完全網羅辞書
- * templates.js および logic.js の変数キーと完全に同期しています。
+ * templates.js および logic.js の全変数キーと完全に同期し、確認画面の表示を最適化しています。
  */
 
 const resources = {
@@ -26,7 +26,7 @@ const resources = {
       pr_area: "作付面積（りんご）", pr_staff: "従業員数", pr_other_crops: "りんご以外の栽培品目（複数選択可）",
       pr_biz_type: "経営区分", pr_rep_name: "代表者名", pr_invoice: "インボイス登録",
       pr_invoice_num: "登録番号", cm_method: "問い合わせ方法（複数選択可）",
-      cm_url: "フォームURL", cm_mail: "掲載用メールアドレス", cm_tel: "掲載用電話番号",
+      cm_url: "掲載用問い合わせフォームURL", cm_mail: "掲載用メールアドレス", cm_tel: "掲載用電話番号",
       cm_other: "その他の受付方法", cm_notes: "問い合わせに関する注意事項",
       art_memo: "補足情報", cont_name: "投稿者・団体名", admin_email: "連絡用メールアドレス",
       admin_msg: "事務局への連絡事項",
@@ -53,6 +53,26 @@ const resources = {
       simple_s: "営業開始（標準）",
       simple_e: "営業終了（標準）",
 
+      url_home: "公式ホームページ",
+      url_ec: "オンラインショップ（通販）",
+      rel_url1: "関連リンク1",
+      rel_title1: "関連リンク1のタイトル",
+      rel_url2: "関連リンク2",
+      rel_title2: "関連リンク2のタイトル",
+      sns_ig: "Instagram",
+      sns_fb: "Facebook",
+      sns_x: "X (Twitter)",
+      sns_line: "LINE",
+      sns_tt: "TikTok",
+      cm_other_val: "その他の問い合わせ受付方法",
+      pr_variety_other: "栽培品種（その他）",
+      pr_product_other: "加工品（その他）",
+      pr_crop_fruit_val: "栽培果物の詳細",
+      pr_crop_veg_val: "栽培野菜の詳細",
+      pr_crop_other_val: "その他栽培品目の詳細",
+      shop_notes: "場所に関する注意事項",
+      shop_zip: "郵便番号",
+      shop_addr: "住所"
     },
     status: {
       loading_cat: "カテゴリーを取得中...",
@@ -78,36 +98,14 @@ const resources = {
       cm_mail: "info@example.com", cm_tel: "026-...", cm_other: "窓口へ直接、など",
       cm_notes: "（例）対応時間は平日10:00〜17:00です。土日は電話が繋がりません。",
       art_memo: "その他、補足情報があれば自由にご記入ください", admin_email: "example@mail.com",
-      // --- 🍎 logic.js 同期用の追加項目 ---
       genre_detail: "具体的な内容をご記入ください",
       genre_free: "具体的にご記入ください"
     },
-    // i18n.js の ja.types を以下のように更新
     types: {
-      shop: { 
-        label: "お店の登録", title: "店名・施設名", 
-        lead: "お店の概要", 
-        leadPlaceholder: "お店を一言で表すと？", // 🍎 追加
-        notes: "店舗/施設に関する注意事項", catLabel: "この場所でできること（複数選択可）" 
-      },
-      event: { 
-        label: "イベントの登録", title: "イベント名", 
-        lead: "イベントの概要", 
-        leadPlaceholder: "イベントを一言で表すと？", // 🍎 追加
-        notes: "会場に関する注意事項", catLabel: "イベントジャンル（複数選択可）" 
-      },
-      farmer: { 
-        label: "生産者の登録", title: "農園・団体名", 
-        lead: "生産者の概要", 
-        leadPlaceholder: "農園や活動を一言で表すと？", // 🍎 追加
-        notes: "農場訪問時の注意事項（防疫等）", catLabel: "生産・販売スタイル（複数選択可）" 
-      },
-      other: { 
-        label: "記事の登録", title: "記事タイトル", 
-        lead: "記事の概要", 
-        leadPlaceholder: "内容を一言で表すと？", // 🍎 追加
-        notes: "場所に関する注意事項", catLabel: "記事のジャンル（複数選択可）" 
-      }
+      shop: { label: "お店の登録", title: "店名・施設名", lead: "お店の概要", leadPlaceholder: "お店を一言で表すと？", notes: "店舗/施設に関する注意事項", catLabel: "この場所でできること（複数選択可）" },
+      event: { label: "イベントの登録", title: "イベント名", lead: "イベントの概要", leadPlaceholder: "イベントを一言で表すと？", notes: "会場に関する注意事項", catLabel: "イベントジャンル（複数選択可）" },
+      farmer: { label: "生産者の登録", title: "農園・団体名", lead: "生産者の概要", leadPlaceholder: "農園や活動を一言で表すと？", notes: "農場訪問時の注意事項（防疫等）", catLabel: "生産・販売スタイル（複数選択可）" },
+      other: { label: "記事の登録", title: "記事タイトル", lead: "記事の概要", leadPlaceholder: "内容を一言で表すと？", notes: "場所に関する注意事項", catLabel: "記事のジャンル（複数選択可）" }
     },
     options: {
       mode_simple: "標準設定", mode_custom: "曜日別設定",
@@ -124,7 +122,6 @@ const resources = {
       zipBtn: "住所検索", syncLabel: "掲載用メールアドレスと同じにする", sendBtn: "この内容で送信する", sending: "送信中...",
       assistLabel: "【文章作成が苦手な方へ】紹介文（概要・本文）の作成を事務局に任せる",
       assistNote: "⚠️ 注意事項：文章作成を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。",
-      // --- 🍎 logic.js 同期用の追加項目 ---
       dayList: ["月", "火", "水", "木", "金", "土", "日"],
       other_label: "その他",
       cat_other_label: "大カテゴリその他"
@@ -147,12 +144,12 @@ const resources = {
       std_biz_hours: "Standard Hours", open_time: "Open", close_time: "Close",
       day: "Day", closed: "Closed", holiday_biz: "Holiday Hours", shop_biz_notes: "Business Notes",
       ev_sdate: "Start Date", ev_edate: "End Date", ev_stime: "Start Time", ev_etime: "End Time",
-      ev_fee: "Fee", ev_items: "Items to Bring", ev_target: "Target Audience",
+      ev_org_name: "Organizer Name",ev_fee: "Fee", ev_items: "Items to Bring", ev_target: "Target Audience",
       pr_varieties: "Apple Varieties", pr_products: "Processed Products",
       pr_area: "Planting Area (Apple)", pr_staff: "Employees", pr_other_crops: "Other Crops (Multiple)",
       pr_biz_type: "Business Category", pr_rep_name: "Farmer Name", pr_invoice: "Invoice Registration",
       pr_invoice_num: "Reg. Number", cm_method: "Contact Method (Multiple)",
-      cm_url: "Form URL", cm_mail: "Public Email", cm_tel: "Public Phone",
+      cm_url: "Inquiry Form URL", cm_mail: "Public Email", cm_tel: "Public Phone",
       cm_other: "Other Contact", cm_notes: "Contact Notes",
       art_memo: "Supplementary Info", cont_name: "Poster/Org Name", admin_email: "Contact Email",
       admin_msg: "Message to Admin",
@@ -174,7 +171,27 @@ const resources = {
       pr_area_unit: "Area Unit",
       pr_ent_type: "Business Category",
       simple_s: "Standard Open Time",
-      simple_e: "Standard Close Time"
+      simple_e: "Standard Close Time",
+      url_home: "Official Website",
+      url_ec: "Online Shop (E-commerce)",
+      rel_url1: "Related Link 1",
+      rel_title1: "Title for Related Link 1",
+      rel_url2: "Related Link 2",
+      rel_title2: "Title for Related Link 2",
+      sns_ig: "Instagram",
+      sns_fb: "Facebook",
+      sns_x: "X (Twitter)",
+      sns_line: "LINE",
+      sns_tt: "TikTok",
+      cm_other_val: "Other Inquiry Method Details",
+      pr_variety_other: "Varieties (Others)",
+      pr_product_other: "Processed Products (Others)",
+      pr_crop_fruit_val: "Details of Fruits",
+      pr_crop_veg_val: "Details of Vegetables",
+      pr_crop_other_val: "Details of Other Crops",
+      shop_notes: "Location Notes",
+      shop_zip: "Zip Code",
+      shop_addr: "Address"
     },
     status: { loading_cat: "Loading categories...", error_cat: "Failed to load categories." },
     alerts: { zip_empty: "Please enter a zip code", send_error: "Failed to send" },
@@ -217,7 +234,7 @@ const resources = {
       zipBtn: "Search", syncLabel: "Same as public email", sendBtn: "Submit", sending: "Sending...",
       assistLabel: "[Writing Help] Let admin write the description",
       assistNote: "⚠️ Note: If delegating, please provide a URL or materials.",
-      dayList: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      dayList: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
       other_label: "Other", cat_other_label: "Other Main Category"
     }
   },
@@ -243,12 +260,12 @@ const resources = {
       pr_area: "种植面积", pr_staff: "员工人数", pr_other_crops: "其他品种（可多选）",
       pr_biz_type: "经营类别", pr_rep_name: "代表人姓名", pr_invoice: "发票注册",
       pr_invoice_num: "注册编号", cm_method: "联系方式（可多选）",
-      cm_url: "表单链接", cm_mail: "公开邮箱", cm_tel: "公开电话",
+      cm_url: "咨询表单链接", cm_mail: "公开邮箱", cm_tel: "公开电话",
       cm_other: "其他方式", cm_notes: "咨询注意事项",
       art_memo: "补充信息", cont_name: "投稿者姓名", admin_email: "联系邮箱",
       admin_msg: "给事务局的留言",
       genre_suffix: " 类型", genre_free: "类别详情（自由填写）",
-      other_venue_name: "相关地点名称", day_suffix: "星期",
+      other_venue_name: "相关地点名称", day_suffix: "",
       rep_name: "姓名 (提供信息)",
       rep_content: "提供内容",
       inq_name: "姓名 (咨询)",
@@ -265,7 +282,27 @@ const resources = {
       pr_area_unit: "面积单位",
       pr_ent_type: "经营类别",
       simple_s: "营业开始 (标准)",
-      simple_e: "营业结束 (标准)"
+      simple_e: "营业结束 (标准)",
+      url_home: "官方网站",
+      url_ec: "网上商店 (网店)",
+      rel_url1: "相关链接 1",
+      rel_title1: "相关链接 1 标题",
+      rel_url2: "相关链接 2",
+      rel_title2: "相关链接 2 标题",
+      sns_ig: "Instagram",
+      sns_fb: "Facebook",
+      sns_x: "X (Twitter)",
+      sns_line: "LINE",
+      sns_tt: "TikTok",
+      cm_other_val: "其他联系方式详情",
+      pr_variety_other: "栽培品种 (其他)",
+      pr_product_other: "加工产品 (其他)",
+      pr_crop_fruit_val: "栽培水果详情",
+      pr_crop_veg_val: "栽培蔬菜详情",
+      pr_crop_other_val: "其他作物详情",
+      shop_notes: "地点注意事项",
+      shop_zip: "邮政编码",
+      shop_addr: "地址"
     },
     status: { loading_cat: "正在获取类别...", error_cat: "获取类别失败。" },
     alerts: { zip_empty: "请输入邮政编码", send_error: "发送失败" },
@@ -308,7 +345,7 @@ const resources = {
       zipBtn: "搜索", syncLabel: "与公开邮箱相同", sendBtn: "提交内容", sending: "正在发送...",
       assistLabel: "【不擅长写作】委托事务局代写文章",
       assistNote: "⚠️ 注意事项：委托代写时，请提供相关网址或资料。",
-      dayList: ["一", "二", "三", "四", "五", "六", "日"],
+      dayList: ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"],
       other_label: "其他", cat_other_label: "其他大类"
     }
   }

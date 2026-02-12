@@ -496,29 +496,29 @@ export async function initFormLogic() {
           displayVal = i18n.labels.closed;
         }
 
-        // 🍎 B. 時間の統合表示ロジック（開始 - 終了 を1行にまとめる）
+        // 🍎 B. 時間の結合ロジック（c_s_月_h や simple_s_h をすべて検知）
         else if (key.endsWith('_s_h')) {
-          const baseKey = key.replace('_s_h', ''); // 'simple' や 'c_火' など
-          const startM = payload[`${baseKey}_s_m`] || "00";
-          const endH = payload[`${baseKey}_e_h`];
-          const endM = payload[`${baseKey}_e_m`] || "00";
+          const base = key.replace('_s_h', ''); // 'simple' や 'c_月'、'ev' 等
+          const hStart = val;
+          const mStart = payload[base + '_s_m'] || "00";
+          const hEnd = payload[base + '_e_h'];
+          const mEnd = payload[base + '_e_m'] || "00";
 
-          if (endH) {
-            displayVal = `${val}:${startM} - ${endH}:${endM}`;
-            if (baseKey === 'simple') {
-              label = i18n.labels.std_biz_hours; // 標準営業時間
-            } else {
-              const day = baseKey.replace('c_', '');
-              label = `${day}${i18n.labels.day_suffix}`; // 月曜日 等
-            }
-            // 関連する全ての時間キーを「処理済み」としてスキップさせる
-            processedKeys.add(`${baseKey}_s_m`);
-            processedKeys.add(`${baseKey}_e_h`);
-            processedKeys.add(`${baseKey}_e_m`);
+          if (hEnd) {
+            displayVal = `${hStart}:${mStart} - ${hEnd}:${mEnd}`;
+            // ラベルの決定
+            if (base === 'simple') label = i18n.labels.std_biz_hours;
+            else if (base === 'ev') label = i18n.labels.ev_stime;
+            else if (base.startsWith('c_')) label = base.replace('c_', '') + i18n.labels.day_suffix;
+            
+            // 結合したパーツを「表示済み」としてマーク
+            processedKeys.add(base + '_s_m');
+            processedKeys.add(base + '_e_h');
+            processedKeys.add(base + '_e_m');
           }
         }
         
-        // 単独の終了時間は上記で処理済みのためスキップ
+        // 残骸（分や終了時間のみのキー）は表示しない
         else if (key.endsWith('_e_h') || key.endsWith('_s_m') || key.endsWith('_e_m')) return;
 
         // 🍎 C. その他（翻訳辞書の適用）
