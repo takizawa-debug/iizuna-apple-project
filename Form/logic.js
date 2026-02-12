@@ -86,9 +86,9 @@ export async function initFormLogic() {
       const vLabel = venueBox.querySelector('.lz-label');
       if (vLabel) vLabel.textContent = (type === 'other') ? i18n.labels.other_venue_name : i18n.labels.ev_venue_name;
     }
-
-    // タイプ別エリアの強制リセット
-   if (type !== 'farmer') {
+    
+    // タイプ別エリアの強制リセットと初期表示制御
+    if (type !== 'farmer') {
       const invBox = document.getElementById('pr-invoice-num-box');
       if (invBox) invBox.style.display = 'none';
       ['pr-crop-fruit-input', 'pr-crop-veg-input', 'pr-crop-other-input'].forEach(id => {
@@ -98,9 +98,17 @@ export async function initFormLogic() {
     if (type !== 'event') {
       const evEnd = document.getElementById('ev-end-date-box'); if (evEnd) evEnd.style.display = 'none';
     }
+
+    // 🍎 修正：店舗選択時のモード初期表示ロジックを追加
+    const sSimple = document.getElementById('shop-simple'), sCustom = document.getElementById('shop-custom');
     if (type !== 'shop') {
-      const sSimple = document.getElementById('shop-simple'), sCustom = document.getElementById('shop-custom');
-      if (sSimple) sSimple.style.display = 'none'; if (sCustom) sCustom.style.display = 'none';
+      if (sSimple) sSimple.style.display = 'none'; 
+      if (sCustom) sCustom.style.display = 'none';
+    } else if (sSimple && sCustom) {
+      // ラジオボタンの現在の選択値（デフォルトはsimple）を取得して表示を反映
+      const mode = document.querySelector('input[name="shop_mode"]:checked')?.value || 'simple';
+      sSimple.style.display = mode === 'simple' ? 'block' : 'none';
+      sCustom.style.display = mode === 'custom' ? 'block' : 'none';
     }
 
     loadAndBuildGenres(type);
