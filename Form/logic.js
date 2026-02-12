@@ -427,7 +427,7 @@ export async function initFormLogic() {
         } else { rawPayload[key] = value; }
       });
 
-      // --- 1. フィルタの拡張（simple_ と c_ を許可リストに追加） ---
+      // --- 2. 厳格なクレンジング（不要データの完全破棄） ---
       const payload = {};
       const tabAllowedPrefixes = {
         report: ['rep_'],
@@ -435,16 +435,16 @@ export async function initFormLogic() {
         article: ['art_', 'cat_', 'shop_', 'ev_', 'pr_', 'writing_assist', 'simple_', 'c_', 'sns_', 'url_', 'rel_', 'cm_', 'cont_', 'admin_']
       };
 
+      // タブごとの基本フィルタリング
       Object.keys(rawPayload).forEach(key => {
         if (tabAllowedPrefixes[activeTab].some(p => key.startsWith(p))) payload[key] = rawPayload[key];
       });
 
-      // --- 2. クレンジングの精密化（店舗以外の場合は営業情報を消去） ---
       if (activeTab === 'article') {
         const type = payload.art_type;
         const fieldsToClean = {
           shop: ['ev_', 'pr_'],
-          event: ['shop_', 'pr_', 'simple_', 'c_'], // simple_ と c_ を消去対象に追加
+          event: ['shop_', 'pr_', 'simple_', 'c_'],
           farmer: ['shop_', 'ev_', 'simple_', 'c_'],
           other: ['shop_', 'ev_', 'pr_', 'writing_assist', 'simple_', 'c_']
         };
@@ -455,33 +455,29 @@ export async function initFormLogic() {
           });
         }
 
-        // 🍎 修正：店舗の営業モードに応じた「裏側データ」の強制削除
+        // 🍎 店舗：選択していない「営業モード」のデータを物理的に消去する
         if (type === 'shop') {
-          const mode = payload.shop_mode; // 'simple' または 'custom'
+          const mode = payload.shop_mode; // simple or custom
           if (mode === 'simple') {
-            // 標準設定を選んでいるなら、曜日別設定(c_)をすべて消す
             Object.keys(payload).forEach(key => { if (key.startsWith('c_')) delete payload[key]; });
           } else {
-            // 曜日別設定を選んでいるなら、標準設定(simple_)をすべて消す
             Object.keys(payload).forEach(key => { if (key.startsWith('simple_')) delete payload[key]; });
           }
         }
       }
 
-      // --- 3. 確認モーダルの生成（辞書の紐付け強化版） ---
+     // --- 3. 確認モーダルの生成（情報の精査・1行表示版） ---
       const confirmOverlay = document.getElementById('lz-confirm-overlay');
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
       
-      // 辞書の紐付け：ベースキーを適切な日本語にマッピング
       const labelMap = { 
         ...i18n.labels, 
         art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title,
-        simple_s: i18n.labels.open_time, // 営業開始
-        simple_e: i18n.labels.close_time // 営業終了
+        simple_days: i18n.labels.biz_days
       };
 
-      const processedKeys = new Set();
+      const processedKeys = new Set(); // 処理済みキーを記録
 
       Object.keys(payload).forEach(key => {
         if (processedKeys.has(key)) return;
@@ -493,54 +489,47 @@ export async function initFormLogic() {
         let label = labelMap[key] || key;
         let displayVal = val;
 
-        // 🍎 A. 曜日別設定の「休業」フラグの処理
+        // 🍎 A. 曜日別設定の「休業」フラグ
         if (key.startsWith('c_closed_')) {
           const dayName = key.replace('c_closed_', '');
-          label = `${dayName}${i18n.labels.day_suffix}`; // 例：月曜日
-          displayVal = i18n.labels.closed; // 休業
+          label = `${dayName}${i18n.labels.day_suffix}`;
+          displayVal = i18n.labels.closed;
         }
 
-        // 🍎 B. 時間の1行表示ロジック (開始 - 終了 を統合)
-        else if (key.includes('_s_h') || key === 'simple_s_h') {
-          const isSimple = (key === 'simple_s_h');
-          const startH = val;
-          const startM = payload[key.replace('_h', '_m')] || "00";
-          const endKeyH = isSimple ? 'simple_e_h' : key.replace('_s_', '_e_');
-          const endKeyM = endKeyH.replace('_h', '_m');
-          
-          const endH = payload[endKeyH];
-          const endM = payload[endKeyM] || "00";
+        // 🍎 B. 時間の統合表示ロジック（開始 - 終了 を1行にまとめる）
+        else if (key.endsWith('_s_h')) {
+          const baseKey = key.replace('_s_h', ''); // 'simple' や 'c_火' など
+          const startM = payload[`${baseKey}_s_m`] || "00";
+          const endH = payload[`${baseKey}_e_h`];
+          const endM = payload[`${baseKey}_e_m`] || "00";
 
           if (endH) {
-            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
-            if (isSimple) {
-              label = i18n.labels.std_biz_hours; // "標準営業時間" として表示
+            displayVal = `${val}:${startM} - ${endH}:${endM}`;
+            if (baseKey === 'simple') {
+              label = i18n.labels.std_biz_hours; // 標準営業時間
             } else {
-              const day = key.split('_')[2];
-              label = `${day}${i18n.labels.day_suffix}`; // "月曜日" などの曜日名
+              const day = baseKey.replace('c_', '');
+              label = `${day}${i18n.labels.day_suffix}`; // 月曜日 等
             }
-            // 関連する分と終了時間のキーを処理済みリストへ追加
-            processedKeys.add(key.replace('_h', '_m'));
-            processedKeys.add(endKeyH);
-            processedKeys.add(endKeyM);
-          } else {
-            displayVal = `${startH}:${startM}`;
-            processedKeys.add(key.replace('_h', '_m'));
+            // 関連する全ての時間キーを「処理済み」としてスキップさせる
+            processedKeys.add(`${baseKey}_s_m`);
+            processedKeys.add(`${baseKey}_e_h`);
+            processedKeys.add(`${baseKey}_e_m`);
           }
         }
         
-        // 終了時間のキー単体は無視（上記で統合済みのため）
-        else if (key.includes('_e_h') || key === 'simple_e_h') return;
+        // 単独の終了時間は上記で処理済みのためスキップ
+        else if (key.endsWith('_e_h') || key.endsWith('_s_m') || key.endsWith('_e_m')) return;
 
-        // 🍎 C. その他、動的カテゴリや選択肢の翻訳
-        if (key.startsWith('cat_gen-')) label = `${i18n.labels.cat_l1} (${i18n.labels.content})`;
+        // 🍎 C. その他（翻訳辞書の適用）
+        else if (key.startsWith('cat_gen-')) label = `${i18n.labels.cat_l1}（詳細）`;
         
         if (Array.isArray(val)) {
           displayVal = val.map(v => i18n.options[v] || v).join(", ");
         } else if (i18n.options[val]) {
           displayVal = i18n.options[val];
         } else if (key === 'writing_assist') {
-          displayVal = val === "on" ? i18n.common.assistLabel : "---";
+          displayVal = val === "on" ? "希望する" : "しない";
         }
 
         previewHtml += `
