@@ -1,6 +1,5 @@
 /**
- * templates.js - 構造定義（Skeleton 完全準拠版）
- * 役割：純粋なHTML構造の定義。テキストはすべて i18n.js から取得する。
+ * templates.js - 構造定義（送信ボタン全タブ配置版）
  */
 import { i18n } from './i18n.js';
 
@@ -293,6 +292,7 @@ export const getFormHTML = () => `
       <div class="lz-field"><label class="lz-label"><span class="lz-badge opt">${i18n.badges.private}</span> ${i18n.labels.admin_msg}</label><textarea name="admin_msg" class="lz-textarea" rows="4"></textarea></div>
       
       <button type="submit" class="lz-send-btn" id="lzBtn">${i18n.common.sendBtn}</button>
+    </div>
   </div>
 </form>
 `;
