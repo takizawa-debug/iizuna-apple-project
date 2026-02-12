@@ -463,6 +463,23 @@ if (evS && evE) {
           });
         }
 
+        // --- 1.5 不要なデータのクリーニング（選択タイプ以外のデータを破棄） ---
+        const type = payload.art_type;
+        const fieldsToClean = {
+          shop: ['ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
+          event: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
+          farmer: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name'],
+          other: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num']
+        };
+
+        if (fieldsToClean[type]) {
+          fieldsToClean[type].forEach(key => delete payload[key]);
+          // 曜日別の詳細時間(c_s_月...)なども店舗以外なら削除
+          if (type !== 'shop') {
+            Object.keys(payload).forEach(key => { if(key.startsWith('c_')) delete payload[key]; });
+          }
+        }
+
         // 7. GASへ送信（JSON形式）
         const res = await fetch(ENDPOINT, {
           method: "POST",
