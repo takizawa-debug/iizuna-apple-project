@@ -394,54 +394,93 @@ if (evS && evE) {
   // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
 
-// 🍎 送信処理：確認モーダルを挟む一流のフロー
+  // 🍎 送信処理：タブ分離・完全網羅型バリデーション
   if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
       
-      // --- 1. データの収集 ---
+      const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type; // 🍎 現在のタブを特定
       const formData = new FormData(form);
-      const payload = {};
+      const rawPayload = {};
+      
+      // 1. 全データを一旦収集
       formData.forEach((value, key) => {
-        if (payload[key]) {
-          if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-          payload[key].push(value);
-        } else { payload[key] = value; }
+        if (rawPayload[key]) {
+          if (!Array.isArray(rawPayload[key])) rawPayload[key] = [rawPayload[key]];
+          rawPayload[key].push(value);
+        } else { rawPayload[key] = value; }
       });
 
-      // --- 2. クレンジング（不要データの破棄） ---
-      const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type;
-      if (activeTab !== 'article') {
-        Object.keys(payload).forEach(key => {
-          if (!['rep_name', 'rep_content', 'inq_name', 'inq_email', 'inq_content'].includes(key)) delete payload[key];
-        });
+      // 2. 🍎 タブに応じた厳格なフィルタリング（他タブの残骸を除去）
+      const payload = {};
+      const tabAllowedPrefixes = {
+        report: ['rep_'],
+        inquiry: ['inq_'],
+        article: ['art_', 'cat_', 'shop_', 'ev_', 'pr_', 'writing_assist', 'simple_days', 'sns_', 'url_', 'rel_', 'cm_', 'cont_', 'admin_']
+      };
+
+      Object.keys(rawPayload).forEach(key => {
+        const allowed = tabAllowedPrefixes[activeTab].some(p => key.startsWith(p));
+        if (allowed) payload[key] = rawPayload[key];
+      });
+
+      // 🍎 記事投稿タブの場合のみ、さらにタイプ別のクレンジングを実行
+      if (activeTab === 'article') {
+        const type = payload.art_type;
+        const fieldsToClean = {
+          shop: ['ev_', 'pr_'],
+          event: ['shop_', 'pr_', 'simple_days'],
+          farmer: ['shop_', 'ev_', 'simple_days'],
+          other: ['shop_', 'ev_', 'pr_', 'writing_assist']
+        };
+        if (fieldsToClean[type]) {
+          Object.keys(payload).forEach(key => {
+            if (fieldsToClean[type].some(p => key.startsWith(p))) delete payload[key];
+          });
+        }
       }
 
-      // --- 3. 確認モーダルの生成と表示 ---
+      // --- 3. 確認モーダルの生成（完全網羅版） ---
       const confirmOverlay = document.getElementById('lz-confirm-overlay');
       const confirmBody = document.getElementById('lz-confirm-body');
-      
-      // 記入があった項目のみを抽出してHTML化
       let previewHtml = "";
-      const labelMap = { ...i18n.labels, art_title: i18n.types[payload.art_type]?.title || "タイトル" };
       
-      // 表示対象とする重要キーを定義（すべて表示すると煩雑なため）
-      const displayKeys = ['rep_name', 'rep_content', 'inq_name', 'inq_email', 'inq_content', 'art_title', 'art_lead', 'art_body', 'cont_name', 'admin_email'];
-      
-      displayKeys.forEach(key => {
-        const val = payload[key];
-        if (val && val.toString().trim() !== "") {
-          const label = labelMap[key] || key;
-          previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${val}</div></div>`;
+      const labelMap = { 
+        ...i18n.labels, 
+        art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title 
+      };
+
+      Object.keys(payload).forEach(key => {
+        let val = payload[key];
+        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode'];
+        if (skipKeys.includes(key) || !val || val.toString().trim() === "") return;
+
+        // 🍎 ラベルの決定（動的カテゴリ cat_gen-X への対応）
+        let label = labelMap[key] || key;
+        if (key.startsWith('cat_gen-')) label = i18n.labels.cat_l1 + "（詳細）";
+
+        // 値の整形（配列やオプション値の変換）
+        let displayVal = val;
+        if (Array.isArray(val)) {
+          displayVal = val.map(v => i18n.options[v] || v).join(", ");
+        } else if (i18n.options[val]) {
+          displayVal = i18n.options[val];
+        } else if (key === 'writing_assist') {
+          displayVal = val === "on" ? "希望する" : "しない";
         }
+
+        previewHtml += `
+          <div class="lz-modal-item">
+            <div class="lz-modal-label">${label}</div>
+            <div class="lz-modal-value">${displayVal}</div>
+          </div>`;
       });
       
-      // 画像枚数の表示
       if (uploadedFiles.length > 0) {
         previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
       }
 
-      confirmBody.innerHTML = previewHtml;
+      confirmBody.innerHTML = previewHtml || `<div style="text-align:center; padding:20px;">入力内容がありません</div>`;
       confirmOverlay.style.display = 'flex';
 
       // --- 4. モーダル内のボタン処理 ---
@@ -451,147 +490,48 @@ if (evS && evE) {
       });
 
       confirmOverlay.style.display = 'none';
-      if (!isConfirmed) return; // 修正するを選んだ場合は中断
+      if (!isConfirmed) return;
 
-      // --- 5. 実際の送信処理（既存のロジック） ---
-      const allBtns = e.target.querySelectorAll('.lz-send-btn');
-      allBtns.forEach(btn => {
-        btn.disabled = true;
-        btn.textContent = i18n.common.sending;
-        btn.style.opacity = '0.6';
-      });
+      // --- 5. 送信実行 ---
+      const allBtns = document.querySelectorAll('.lz-send-btn');
+      allBtns.forEach(btn => { btn.disabled = true; btn.textContent = i18n.common.sending; btn.style.opacity = '0.6'; });
 
       try {
-        const formData = new FormData(form);
-        const payload = {};
-
-        // 1. データの収集（バリデーションの前にまずこれを実行）
-        formData.forEach((value, key) => {
-          if (payload[key]) {
-            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-            payload[key].push(value);
-          } else {
-            payload[key] = value;
-          }
-        });
-
-        // 2. 🍎 修正：送信前バリデーション（データ収集後に実行することで正しく判定）
-        if (payload.art_type === 'event' && payload.ev_sdate && payload.ev_edate) {
-          if (payload.ev_edate < payload.ev_sdate) {
-            alert("エラー：終了日は開始日以降の日付を選択してください。");
-            btn.disabled = false;
-            btn.textContent = i18n.common.sendBtn;
-            return; // ここで中断
-          }
-        }
-
-        // 3. 🍎 修正：曜日別設定のタイポ（e_e → e_m）
+        // 🍎 送信直前のデータ補完（曜日タイポ修正 e_e -> e_m）
         days.forEach(d => {
-          ['s_h', 's_m', 'e_h', 'e_m'].forEach(suffix => { // e_m に修正済み
-            const key = `c_${suffix}_${d}`;
-            if (!payload[key]) payload[key] = "";
+          ['s_h', 's_m', 'e_h', 'e_m'].forEach(suffix => {
+            const k = `c_${suffix}_${d}`; if (!payload[k]) payload[k] = "";
           });
         });
 
-        // 4. 必須配列フィールドの固定化
-        const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
-        Object.keys(payload).forEach(key => {
-          if (key.startsWith('cat_gen-') || arrayFields.includes(key)) {
-            if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
-          }
-        });
-
-        // 5. 画像データの付与（Base64変換）
+        // 画像・ファイルのBase64変換
         if (uploadedFiles.length > 0) {
-          payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = (ev) => resolve(ev.target.result);
-            reader.readAsDataURL(file);
+          payload.images = await Promise.all(uploadedFiles.map(file => new Promise(res => {
+            const reader = new FileReader(); reader.onload = (ev) => res(ev.target.result); reader.readAsDataURL(file);
           })));
         }
-
-        // 6. 添付ファイルの検知とBase64変換
         const docFileInput = form.querySelector('input[name="art_file"]');
-        if (docFileInput && docFileInput.files.length > 0) {
+        if (docFileInput?.files.length > 0) {
           const docFile = docFileInput.files[0];
           payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
-          payload.art_file_data = await new Promise(resolve => {
-            const reader = new FileReader();
-            reader.onload = (ev) => resolve(ev.target.result);
-            reader.readAsDataURL(docFile);
+          payload.art_file_data = await new Promise(res => {
+            const reader = new FileReader(); reader.onload = (ev) => res(ev.target.result); reader.readAsDataURL(docFile);
           });
         }
 
-
-// --- 1.5 不要なデータのクリーニング（選択タイプ以外のデータを破棄） ---
-        const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type; // 🍎 追加：現在のタブを取得
-
-        if (activeTab !== 'article') {
-          // 🍎 追加：記事投稿以外のタブ（情報提供・お問い合わせ）なら、記事関連の全データを削除
-          Object.keys(payload).forEach(key => {
-            const keep = ['rep_name', 'rep_content', 'inq_name', 'inq_email', 'inq_content'];
-            if (!keep.includes(key)) delete payload[key];
-          });
-        } else {
-          // 記事投稿タブの場合（既存の処理）
-          const type = payload.art_type;
-          const fieldsToClean = {
-            shop: ['ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
-            event: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
-            farmer: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name'],
-            other: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num', 'writing_assist']
-          };
-
-          if (fieldsToClean[type]) {
-            fieldsToClean[type].forEach(key => delete payload[key]);
-            if (type !== 'shop') {
-              Object.keys(payload).forEach(key => { if(key.startsWith('c_')) delete payload[key]; });
-            }
-          }
-        }
-
-        // 7. GASへ送信（JSON形式）
-        const res = await fetch(ENDPOINT, {
-          method: "POST",
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) throw new Error(`Server status: ${res.status}`);
+        const res = await fetch(ENDPOINT, { method: "POST", body: JSON.stringify(payload) });
         const result = await res.json();
-        
         if (result.ok) {
           alert(i18n.types[payload.art_type]?.label + " " + i18n.common.sendBtn + "に成功しました！"); 
           window.location.reload();
-        } else {
-          throw new Error(result.error || "Unknown Error");
-        }
+        } else { throw new Error(result.error); }
 
-} catch (err) {
-        console.error("Submission failed:", err);
+      } catch (err) {
         alert(i18n.alerts.send_error + "\n理由: " + err.message);
-        
-        // 🍎 エラー時は全てのボタンを元に戻す
-        allBtns.forEach(btn => {
-          btn.disabled = false;
-          btn.textContent = i18n.common.sendBtn;
-          btn.style.opacity = '1';
-          btn.style.cursor = 'pointer';
-        });
-      } finally {
-        // ※ 成功時はリロードされるため、個別の復旧処理は不要です
+        allBtns.forEach(btn => { btn.disabled = false; btn.textContent = i18n.common.sendBtn; btn.style.opacity = '1'; });
       }
     };
   }
-
-  // 🍎 時間の自動補完ロジック：時を選択したら分を "00" にする
-  document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
-    hSelect.addEventListener('change', (e) => {
-      if (e.target.value !== "") {
-        const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
-        if (mSelect && mSelect.value === "") mSelect.value = "00";
-      }
-    });
-  });
 
   // 初期化実行
   // --- 🍎 修正：初期化実行ブロック ---
