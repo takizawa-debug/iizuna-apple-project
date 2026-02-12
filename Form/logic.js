@@ -395,12 +395,18 @@ if (evS && evE) {
   const form = document.getElementById('lz-article-form');
 
   // 🍎 修正後：送信処理（バリデーション・タイポ・括弧エラー解決版）
-  if (form) {
+if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
-      const btn = e.target.querySelector('.lz-send-btn');
-      btn.disabled = true;
-      btn.textContent = i18n.common.sending;
+      
+      // 🍎 全ての送信ボタンを取得して無効化＆「送信中...」に更新
+      const allBtns = e.target.querySelectorAll('.lz-send-btn');
+      allBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.textContent = i18n.common.sending;
+        btn.style.opacity = '0.6';      // グレーアウト（視覚的効果）
+        btn.style.cursor = 'not-allowed'; // クリック不可のカーソル
+      });
 
       try {
         const formData = new FormData(form);
@@ -507,12 +513,19 @@ if (evS && evE) {
           throw new Error(result.error || "Unknown Error");
         }
 
-      } catch (err) {
+} catch (err) {
         console.error("Submission failed:", err);
         alert(i18n.alerts.send_error + "\n理由: " + err.message);
+        
+        // 🍎 エラー時は全てのボタンを元に戻す
+        allBtns.forEach(btn => {
+          btn.disabled = false;
+          btn.textContent = i18n.common.sendBtn;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+        });
       } finally {
-        btn.disabled = false;
-        btn.textContent = i18n.common.sendBtn;
+        // ※ 成功時はリロードされるため、個別の復旧処理は不要です
       }
     };
   }
