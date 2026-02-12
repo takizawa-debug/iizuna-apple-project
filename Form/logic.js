@@ -234,6 +234,26 @@ export async function initFormLogic() {
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
+  // --- 🍎 追加：時間の自動補完ロジック（時を選択したら分を "00" にする） ---
+  // ページ内のすべての「時（_h）」セレクターに対してイベントを設定
+  const bindTimeAutoFill = () => {
+    document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
+      hSelect.onchange = (e) => {
+        if (e.target.value !== "") {
+          // 対応する「分（_m）」のセレクターを特定
+          const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
+          // 分がまだ未選択（空）の場合のみ "00" をセット
+          if (mSelect && mSelect.value === "") {
+            mSelect.value = "00";
+          }
+        }
+      };
+    });
+  };
+
+  // セレクター注入後に実行
+  bindTimeAutoFill();
+
   // タブ切り替えと必須属性管理
   document.querySelectorAll('.lz-form-tab').forEach(t => t.onclick = () => {
     document.querySelectorAll('.lz-form-tab').forEach(x => x.classList.toggle('is-active', x === t));
