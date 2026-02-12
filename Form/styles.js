@@ -267,4 +267,20 @@ input[type="date"].lz-input {
     letter-spacing: 0.05em;
     white-space: nowrap;
   }
+
+  /* 🍎 確認モーダルのスタイル */
+  .lz-confirm-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 20px; backdrop-filter: blur(4px); }
+  .lz-confirm-modal { background: #fff; width: 100%; max-width: 600px; max-height: 90vh; border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; animation: lz-modal-up 0.3s ease; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+  @keyframes lz-modal-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .lz-confirm-head { padding: 24px; background: #fdfaf8; border-bottom: 1px solid #eee; text-align: center; }
+  .lz-confirm-title { font-size: 1.4rem; font-weight: 900; color: #5b3a1e; }
+  .lz-confirm-body { padding: 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .lz-modal-item { display: flex; flex-direction: column; gap: 4px; padding-bottom: 12px; border-bottom: 1px dashed #eee; }
+  .lz-modal-label { font-size: 0.9rem; color: #888; font-weight: 800; }
+  .lz-modal-value { font-size: 1.1rem; color: #333; font-weight: 700; white-space: pre-wrap; line-height: 1.5; }
+  .lz-confirm-foot { padding: 24px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 12px; background: #fdfaf8; border-top: 1px solid #eee; }
+  .lz-btn-back { background: #eee; color: #666; padding: 16px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
+  .lz-btn-go { background: #cf3a3a; color: #fff; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.1rem; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(207, 58, 58, 0.3); }
+  .lz-btn-back:hover { background: #ddd; }
+  .lz-btn-go:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(207, 58, 58, 0.4); }
 `;

@@ -394,18 +394,71 @@ if (evS && evE) {
   // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
 
-  // 🍎 修正後：送信処理（バリデーション・タイポ・括弧エラー解決版）
-if (form) {
+// 🍎 送信処理：確認モーダルを挟む一流のフロー
+  if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
       
-      // 🍎 全ての送信ボタンを取得して無効化＆「送信中...」に更新
+      // --- 1. データの収集 ---
+      const formData = new FormData(form);
+      const payload = {};
+      formData.forEach((value, key) => {
+        if (payload[key]) {
+          if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
+          payload[key].push(value);
+        } else { payload[key] = value; }
+      });
+
+      // --- 2. クレンジング（不要データの破棄） ---
+      const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type;
+      if (activeTab !== 'article') {
+        Object.keys(payload).forEach(key => {
+          if (!['rep_name', 'rep_content', 'inq_name', 'inq_email', 'inq_content'].includes(key)) delete payload[key];
+        });
+      }
+
+      // --- 3. 確認モーダルの生成と表示 ---
+      const confirmOverlay = document.getElementById('lz-confirm-overlay');
+      const confirmBody = document.getElementById('lz-confirm-body');
+      
+      // 記入があった項目のみを抽出してHTML化
+      let previewHtml = "";
+      const labelMap = { ...i18n.labels, art_title: i18n.types[payload.art_type]?.title || "タイトル" };
+      
+      // 表示対象とする重要キーを定義（すべて表示すると煩雑なため）
+      const displayKeys = ['rep_name', 'rep_content', 'inq_name', 'inq_email', 'inq_content', 'art_title', 'art_lead', 'art_body', 'cont_name', 'admin_email'];
+      
+      displayKeys.forEach(key => {
+        const val = payload[key];
+        if (val && val.toString().trim() !== "") {
+          const label = labelMap[key] || key;
+          previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${val}</div></div>`;
+        }
+      });
+      
+      // 画像枚数の表示
+      if (uploadedFiles.length > 0) {
+        previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
+      }
+
+      confirmBody.innerHTML = previewHtml;
+      confirmOverlay.style.display = 'flex';
+
+      // --- 4. モーダル内のボタン処理 ---
+      const isConfirmed = await new Promise((resolve) => {
+        document.getElementById('lz-btn-back').onclick = () => resolve(false);
+        document.getElementById('lz-btn-go').onclick = () => resolve(true);
+      });
+
+      confirmOverlay.style.display = 'none';
+      if (!isConfirmed) return; // 修正するを選んだ場合は中断
+
+      // --- 5. 実際の送信処理（既存のロジック） ---
       const allBtns = e.target.querySelectorAll('.lz-send-btn');
       allBtns.forEach(btn => {
         btn.disabled = true;
         btn.textContent = i18n.common.sending;
-        btn.style.opacity = '0.6';      // グレーアウト（視覚的効果）
-        btn.style.cursor = 'not-allowed'; // クリック不可のカーソル
+        btn.style.opacity = '0.6';
       });
 
       try {

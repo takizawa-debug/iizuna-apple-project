@@ -294,6 +294,20 @@ export const getFormHTML = () => `
       <button type="submit" class="lz-send-btn" id="lzBtn">${i18n.common.sendBtn}</button>
     </div>
   </div>
+
+  <div id="lz-confirm-overlay" class="lz-confirm-overlay">
+    <div class="lz-confirm-modal">
+      <div class="lz-confirm-head">
+        <div class="lz-confirm-title">入力内容の確認</div>
+      </div>
+      <div id="lz-confirm-body" class="lz-confirm-body">
+        </div>
+      <div class="lz-confirm-foot">
+        <button type="button" id="lz-btn-back" class="lz-btn-back">修正する</button>
+        <button type="button" id="lz-btn-go" class="lz-btn-go">この内容で送信する</button>
+      </div>
+    </div>
+  </div>
 </form>
 `;
 
