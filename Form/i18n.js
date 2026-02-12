@@ -47,7 +47,7 @@ const resources = {
     placeholders: {
       rep_name: "ニックネーム可", rep_content: "町の発見を教えてください",
       art_type_unselected: "▼ 登録する内容を選択してください（未選択）",
-      art_lead: "お店やイベントを一言で表すと？", art_body: "詳しい内容を教えてください",
+      art_body: "詳しい内容を教えてください",
       ev_venue: "例：飯綱ふれあいパーク", zip: "389-1211", shop_notes: "注意事項があればご記入ください",
       shop_biz_notes: "（例）毎月最終月曜日は定休日です。ランチは売切次第終了。最新情報は公式Instagramをご確認ください。",
       ev_fee: "無料、500円 など", ev_items: "筆記用具、室内履き など", ev_target: "町内在住の方、小学生以上 など",
@@ -64,11 +64,32 @@ const resources = {
       genre_detail: "具体的な内容をご記入ください",
       genre_free: "具体的にご記入ください"
     },
+    // i18n.js の ja.types を以下のように更新
     types: {
-      shop: { label: "お店の登録", title: "店名・施設名", lead: "お店の概要", notes: "店舗/施設に関する注意事項", catLabel: "この場所でできること（複数選択可）" },
-      event: { label: "イベントの登録", title: "イベント名", lead: "イベントの概要", notes: "会場に関する注意事項", catLabel: "イベントジャンル（複数選択可）" },
-      farmer: { label: "生産者の登録", title: "農園・団体名", lead: "生産者の概要", notes: "農場訪問時の注意事項（防疫等）", catLabel: "生産・販売スタイル（複数選択可）" },
-      other: { label: "記事の登録", title: "記事タイトル", lead: "記事の概要", notes: "場所に関する注意事項", catLabel: "記事のジャンル（複数選択可）" }
+      shop: { 
+        label: "お店の登録", title: "店名・施設名", 
+        lead: "お店の概要", 
+        leadPlaceholder: "お店を一言で表すと？", // 🍎 追加
+        notes: "店舗/施設に関する注意事項", catLabel: "この場所でできること（複数選択可）" 
+      },
+      event: { 
+        label: "イベントの登録", title: "イベント名", 
+        lead: "イベントの概要", 
+        leadPlaceholder: "イベントを一言で表すと？", // 🍎 追加
+        notes: "会場に関する注意事項", catLabel: "イベントジャンル（複数選択可）" 
+      },
+      farmer: { 
+        label: "生産者の登録", title: "農園・団体名", 
+        lead: "生産者の概要", 
+        leadPlaceholder: "農園や活動を一言で表すと？", // 🍎 追加
+        notes: "農場訪問時の注意事項（防疫等）", catLabel: "生産・販売スタイル（複数選択可）" 
+      },
+      other: { 
+        label: "記事の登録", title: "記事タイトル", 
+        lead: "記事の概要", 
+        leadPlaceholder: "内容を一言で表すと？", // 🍎 追加
+        notes: "場所に関する注意事項", catLabel: "記事のジャンル（複数選択可）" 
+      }
     },
     options: {
       mode_simple: "標準設定", mode_custom: "曜日別設定",

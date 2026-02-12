@@ -45,6 +45,7 @@ export async function initFormLogic() {
     
     lblTitle.textContent = set.title;
     lblLead.textContent = set.lead;
+    inpLead.placeholder = set.leadPlaceholder || i18n.placeholders.art_lead;
     inpTitle.placeholder = i18n.placeholders.art_title || set.title;
     inpLead.placeholder = i18n.placeholders.art_lead;
     inpBody.placeholder = i18n.placeholders.art_body;

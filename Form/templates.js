@@ -51,7 +51,7 @@ export const getFormHTML = () => `
         <div id="lz-dynamic-category-area"></div>
       </div>
 
-      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> <span id="lbl-lead"></span>${i18n.labels.limit_100}</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" placeholder="${i18n.placeholders.art_lead}" required></textarea></div>
+      <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> <span id="lbl-lead"></span>${i18n.labels.limit_100}</label><textarea name="art_lead" class="lz-textarea" rows="2" maxlength="100" placeholder="" required></textarea> </div>
       <div class="lz-field"><label class="lz-label"><span class="lz-badge">${i18n.badges.required}</span> ${i18n.labels.art_body}</label><textarea name="art_body" class="lz-textarea" rows="8" placeholder="${i18n.placeholders.art_body}" required></textarea></div>
       
       <div id="box-writing-assist" class="lz-field" style="margin-top: -10px;">
