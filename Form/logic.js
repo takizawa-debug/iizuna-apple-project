@@ -463,20 +463,31 @@ if (evS && evE) {
           });
         }
 
-        // --- 1.5 不要なデータのクリーニング（選択タイプ以外のデータを破棄） ---
-        const type = payload.art_type;
-        const fieldsToClean = {
-          shop: ['ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
-          event: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
-          farmer: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name'],
-          other: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num']
-        };
 
-        if (fieldsToClean[type]) {
-          fieldsToClean[type].forEach(key => delete payload[key]);
-          // 曜日別の詳細時間(c_s_月...)なども店舗以外なら削除
-          if (type !== 'shop') {
-            Object.keys(payload).forEach(key => { if(key.startsWith('c_')) delete payload[key]; });
+// --- 1.5 不要なデータのクリーニング（選択タイプ以外のデータを破棄） ---
+        const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type; // 🍎 追加：現在のタブを取得
+
+        if (activeTab !== 'article') {
+          // 🍎 追加：記事投稿以外のタブ（情報提供・お問い合わせ）なら、記事関連の全データを削除
+          Object.keys(payload).forEach(key => {
+            const keep = ['rep_name', 'rep_content', 'inq_name', 'inq_email', 'inq_content'];
+            if (!keep.includes(key)) delete payload[key];
+          });
+        } else {
+          // 記事投稿タブの場合（既存の処理）
+          const type = payload.art_type;
+          const fieldsToClean = {
+            shop: ['ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
+            event: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num'],
+            farmer: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name'],
+            other: ['shop_mode', 'simple_days', 'shop_holiday_type', 'shop_notes_biz', 'ev_period_type', 'ev_sdate', 'ev_edate', 'ev_fee', 'ev_items', 'ev_target', 'ev_org_name', 'pr_variety', 'pr_product', 'pr_area', 'pr_area_unit', 'pr_staff', 'pr_other_crops', 'pr_ent_type', 'pr_rep_name', 'pr_invoice', 'pr_invoice_num', 'writing_assist']
+          };
+
+          if (fieldsToClean[type]) {
+            fieldsToClean[type].forEach(key => delete payload[key]);
+            if (type !== 'shop') {
+              Object.keys(payload).forEach(key => { if(key.startsWith('c_')) delete payload[key]; });
+            }
           }
         }
 
