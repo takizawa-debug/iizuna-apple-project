@@ -283,16 +283,20 @@ export async function initFormLogic() {
     r.addEventListener('change', (e) => { if(evEndDateBox) evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none'; });
   });
 
-  // 🍎 日付逆転チェック
+// 🍎 修正：日付逆転チェック（入力時）
 const evS = document.getElementsByName('ev_sdate')[0];
 const evE = document.getElementsByName('ev_edate')[0];
+
+const validateEventDates = () => {
+  if (evS.value && evE.value && evE.value < evS.value) {
+    alert("終了日は開始日以降の日付を選択してください。");
+    evE.value = ""; // 不正な方を消去
+  }
+};
+
 if (evS && evE) {
-  evE.addEventListener('change', () => {
-    if (evS.value && evE.value && evE.value < evS.value) {
-      alert("終了日は開始日以降の日付を選択してください。");
-      evE.value = "";
-    }
-  });
+  evS.addEventListener('change', validateEventDates);
+  evE.addEventListener('change', validateEventDates);
 }
 
   // 店舗モード連動
@@ -381,7 +385,7 @@ if (evS && evE) {
   // 送信処理（画像Base64変換含む）
   const form = document.getElementById('lz-article-form');
 
-  // 🍎 修正後：送信処理（画像 + 添付ファイルのAWS S3同期版）
+  // 🍎 修正後：送信処理（バリデーション・タイポ・括弧エラー解決版）
   if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
@@ -393,7 +397,7 @@ if (evS && evE) {
         const formData = new FormData(form);
         const payload = {};
 
-        // 1. データの収集と複数選択の配列化
+        // 1. データの収集（バリデーションの前にまずこれを実行）
         formData.forEach((value, key) => {
           if (payload[key]) {
             if (!Array.isArray(payload[key])) payload[key] = [payload[key]];
@@ -403,15 +407,25 @@ if (evS && evE) {
           }
         });
 
-        // 🍎 追加：曜日別設定の「未入力」を空文字として明示的に送る（GAS側のパースミス防止）
-days.forEach(d => {
-  ['s_h', 's_m', 'e_h', 'e_e'].forEach(suffix => {
-    const key = `c_${suffix}_${d}`;
-    if (!payload[key]) payload[key] = "";
-  });
-});
+        // 2. 🍎 修正：送信前バリデーション（データ収集後に実行することで正しく判定）
+        if (payload.art_type === 'event' && payload.ev_sdate && payload.ev_edate) {
+          if (payload.ev_edate < payload.ev_sdate) {
+            alert("エラー：終了日は開始日以降の日付を選択してください。");
+            btn.disabled = false;
+            btn.textContent = i18n.common.sendBtn;
+            return; // ここで中断
+          }
+        }
 
-        // 2. 必須配列フィールドの固定化
+        // 3. 🍎 修正：曜日別設定のタイポ（e_e → e_m）
+        days.forEach(d => {
+          ['s_h', 's_m', 'e_h', 'e_m'].forEach(suffix => { // e_m に修正済み
+            const key = `c_${suffix}_${d}`;
+            if (!payload[key]) payload[key] = "";
+          });
+        });
+
+        // 4. 必須配列フィールドの固定化
         const arrayFields = ['cat_l1', 'cm', 'sns_trigger', 'simple_days', 'pr_other_crops', 'pr_variety', 'pr_product'];
         Object.keys(payload).forEach(key => {
           if (key.startsWith('cat_gen-') || arrayFields.includes(key)) {
@@ -419,7 +433,7 @@ days.forEach(d => {
           }
         });
 
-        // 3. 🍎 画像データの付与（Base64変換）
+        // 5. 画像データの付与（Base64変換）
         if (uploadedFiles.length > 0) {
           payload.images = await Promise.all(uploadedFiles.map(file => new Promise(resolve => {
             const reader = new FileReader();
@@ -428,14 +442,11 @@ days.forEach(d => {
           })));
         }
 
-        // 4. 🍎 添付ファイル（汎用ファイル）の検知とBase64変換
+        // 6. 添付ファイルの検知とBase64変換
         const docFileInput = form.querySelector('input[name="art_file"]');
         if (docFileInput && docFileInput.files.length > 0) {
           const docFile = docFileInput.files[0];
-          
-          // ファイル名を安全な形式（スペース除去等）で取得
           payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
-          
           payload.art_file_data = await new Promise(resolve => {
             const reader = new FileReader();
             reader.onload = (ev) => resolve(ev.target.result);
@@ -443,14 +454,13 @@ days.forEach(d => {
           });
         }
 
-        // 5. GASへ送信（JSON形式）
+        // 7. GASへ送信（JSON形式）
         const res = await fetch(ENDPOINT, {
           method: "POST",
           body: JSON.stringify(payload)
         });
 
         if (!res.ok) throw new Error(`Server status: ${res.status}`);
-        
         const result = await res.json();
         
         if (result.ok) {
@@ -469,16 +479,6 @@ days.forEach(d => {
       }
     };
   }
-
-  // 🍎 時間の自動補完ロジック
-document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
-  hSelect.addEventListener('change', (e) => {
-    if (e.target.value !== "") {
-      const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
-      if (mSelect && mSelect.value === "") mSelect.value = "00";
-    }
-  });
-});
 
   // 初期化実行
   const urlParams = new URLSearchParams(window.location.search);
