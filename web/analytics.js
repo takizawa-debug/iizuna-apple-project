@@ -68,6 +68,16 @@
       return sid;
     };
 
+    // UTMパラメータ取得
+    const getUtmParams = () => {
+      const params = new URLSearchParams(location.search);
+      return {
+        utm_source: params.get('utm_source'),
+        utm_medium: params.get('utm_medium'),
+        utm_campaign: params.get('utm_campaign')
+      };
+    };
+
     /* ==========================================
        2. Geo情報取得 (ipapi.co)
        ========================================== */
@@ -97,6 +107,7 @@
           page_url: location.href, page_title: D.title,
           referrer: D.referrer, ua: N.userAgent,
           screen_w: S.width, screen_h: S.height,
+          ...getUtmParams(),
           ...(GEO ? { geo: GEO } : {})
         };
         const body = JSON.stringify(payload);
@@ -114,13 +125,13 @@
     D.addEventListener("click", e => {
       const t = e.target;
       const card = t.closest(".lz-card");
-      if (card) return sendEvent("card_click", { id: card.dataset.id, title: card.dataset.title });
+      if (card) return sendEvent("card_click", { card_id: card.dataset.id, label: card.dataset.title });
       
-      const btn = t.closest(".lz-btn");
-      if (btn) return sendEvent("ui_click", { label: text(btn) });
+      const btn = t.closest("a.lz-btn, button.lz-btn");
+      if (btn) return sendEvent("ui_click", { label: text(btn), href: btn.href });
 
       const sns = t.closest(".lz-sns a");
-      if (sns) return sendEvent("sns_click", { url: sns.href });
+      if (sns) return sendEvent("sns_click", { href: sns.href });
     }, { capture: true, passive: true });
 
     // モーダル開閉監視
@@ -130,7 +141,7 @@
           if (n.nodeType === 1 && n.classList?.contains("lz-backdrop")) {
             setTimeout(() => {
               const title = D.querySelector(".lz-modal .lz-mt")?.textContent;
-              if (title) sendEvent("modal_open", { title });
+              if (title) sendEvent("modal_open", { modal_name: title });
             }, 100);
           }
         });
@@ -147,7 +158,7 @@
     const flush = () => {
       if (isClosed) return; isClosed = true;
       const finalActive = D.visibilityState === "visible" ? activeTime + (now() - lastVisibleTs) : activeTime;
-      sendEvent("page_close", { total_ms: now() - tPage, active_ms: finalActive });
+      sendEvent("page_close", { engaged_ms: finalActive, total_ms: now() - tPage });
     };
     W.addEventListener("pagehide", flush);
     W.addEventListener("beforeunload", flush);

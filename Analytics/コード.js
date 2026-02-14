@@ -10,7 +10,7 @@ const HEADER = [
   'timestamp_jst', 'visitor_id', 'session_id', 'event_name', 'event_params_json',
   'page_url', 'page_title', 'referrer', 'utm_source', 'utm_medium', 'utm_campaign',
   'screen_w', 'screen_h', 'ua', 'geo_ip', 'geo_country', 'geo_region', 'geo_city',
-  'geo_postal', 'geo_lat', 'geo_lon', 'engaged_ms', 'element', 'label', 'href',
+  'geo_lat', 'geo_lon', 'engaged_ms', 'element', 'label', 'href',
   'modal_name', 'card_id', 'group', 'platform', 'action', 'idx'
 ];
 
@@ -41,9 +41,9 @@ function toJSTString(date) {
   return Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy-MM-dd HH:mm:ss');
 }
 
-function pick_(params, key) {
-  if (!params) return '';
-  const v = params[key];
+function pick_(obj, key) {
+  if (obj === null || obj === undefined) return '';
+  const v = obj[key];
   if (v === null || v === undefined) return '';
   return (typeof v === 'object') ? JSON.stringify(v) : String(v);
 }
@@ -53,28 +53,29 @@ function pick_(params, key) {
  */
 function formatRow_(data, timestampJST) {
   const params = data.event_params || {};
+  const geo = data.geo || {}; // geoオブジェクトを取得
+
   return [
     timestampJST,
-    String(data.visitor_id || ''),
-    String(data.session_id || ''),
-    String(data.event_name || 'page_view'),
+    pick_(data, 'visitor_id'),
+    pick_(data, 'session_id'),
+    pick_(data, 'event_name') || 'page_view',
     data.event_params ? JSON.stringify(data.event_params) : '',
-    String(data.page_url || ''),
-    String(data.page_title || ''),
-    String(data.referrer || ''),
-    String(data.utm_source || ''),
-    String(data.utm_medium || ''),
-    String(data.utm_campaign || ''),
-    (typeof data.screen_w === 'number') ? data.screen_w : '',
-    (typeof data.screen_h === 'number') ? data.screen_h : '',
-    String(data.ua || ''),
-    String(data.geo_ip || ''),
-    String(data.geo_country || ''),
-    String(data.geo_region || ''),
-    String(data.geo_city || ''),
-    String(data.geo_postal || ''),
-    (data.geo_lat != null) ? data.geo_lat : '',
-    (data.geo_lon != null) ? data.geo_lon : '',
+    pick_(data, 'page_url'),
+    pick_(data, 'page_title'),
+    pick_(data, 'referrer'),
+    pick_(data, 'utm_source'),
+    pick_(data, 'utm_medium'),
+    pick_(data, 'utm_campaign'),
+    pick_(data, 'screen_w'),
+    pick_(data, 'screen_h'),
+    pick_(data, 'ua'),
+    pick_(geo, 'ip'), // geoオブジェクトから取得
+    pick_(geo, 'country'),
+    pick_(geo, 'region'),
+    pick_(geo, 'city'),
+    pick_(geo, 'lat'),
+    pick_(geo, 'lon'),
     pick_(params, 'engaged_ms'),
     pick_(params, 'element') || pick_(params, 'element_id'),
     pick_(params, 'label'),
@@ -87,6 +88,7 @@ function formatRow_(data, timestampJST) {
     pick_(params, 'idx'),
   ];
 }
+
 
 /**
  * まとめてログを書き込む
