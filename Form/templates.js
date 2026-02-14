@@ -287,7 +287,7 @@ export const getFormHTML = () => {
         </div>
       </div>
 
-      <div id="cm-form-box" class="lz-field" style="display:none;"><label class="lz-label">${i18n.labels.cm_url}</label><input type="url" name="cm_url" class="lz-input" placeholder="${i18n.placeholders.url_hint}"></div>
+      <div id="cm-form-box" class="lz-field" style="display:none;"><label class="lz-label">${i18n.labels.cm_url}</label><input type="url" name="cm_url" class="lz-input" placeholder="${i18n.links.home.placeholder}"></div>
       <div id="cm-email-box" class="lz-field" style="display:none;"><label class="lz-label">${i18n.labels.cm_mail}</label><input type="email" id="pubEmail" name="cm_mail" class="lz-input" placeholder="${i18n.placeholders.cm_mail}"></div>
       <div id="cm-tel-box" class="lz-field" style="display:none;"><label class="lz-label">${i18n.labels.cm_tel}</label><input type="tel" name="cm_tel" class="lz-input" placeholder="${i18n.placeholders.cm_tel}"></div>
       <div id="cm-other-box" class="lz-field" style="display:none;"><label class="lz-label">${i18n.labels.cm_other}</label><input type="text" name="cm_other_val" class="lz-input" placeholder="${i18n.placeholders.cm_other}"></div>
@@ -327,3 +327,5 @@ export const getFormHTML = () => {
 </form>
 `;
 }
+
+export const formCommonHTML = ``;

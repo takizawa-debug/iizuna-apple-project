@@ -89,6 +89,7 @@ const resources = {
       assistNote: "⚠️ 注意事項：文章作成を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。",
       dayList: ["月", "火", "水", "木", "金", "土", "日"],
       other_label: "その他",
+      confirmTitle: "入力内容の確認", backBtn: "修正する", confirmBtn: "この内容で送信する"
     }
   },
   en: {
@@ -173,6 +174,7 @@ const resources = {
         assistNote: "⚠️ Note: If delegating, please provide a URL or materials.",
         dayList: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         other_label: "Other",
+        confirmTitle: "Confirm Your Input", backBtn: "Go Back & Edit", confirmBtn: "Submit"
     }
   },
   zh: {
@@ -257,6 +259,7 @@ const resources = {
       assistNote: "⚠️ 注意事項：委托代写时，请提供相关网址或資料。",
       dayList: ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"],
       other_label: "其他",
+      confirmTitle: "确认输入内容", backBtn: "返回修改", confirmBtn: "提交"
     }
   }
 };
