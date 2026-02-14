@@ -3,7 +3,7 @@
  */
 
 // 🍎【要設定】管理者用の通知先メールアドレス
-const ADMIN_EMAIL = "your-admin-email@example.com"; 
+const ADMIN_EMAIL = "takizawa@mimizuya.co.jp"; 
 // 🍎【要設定】送信元として表示するGmailアドレス（Gmailでエイリアス設定済みのもの）
 const FROM_EMAIL_ALIAS = "ringoiizuna@gmail.com";
 // 🍎【要設定】送信者名
