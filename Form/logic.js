@@ -1,5 +1,5 @@
 /**
- * logic.js - 制御エンジン（i18n・リファクタリング版）
+ * logic.js - 制御エンジン（i18n・リファクタリング・最終修正版）
  * 役割：ユーザー操作の検知、UIの動的変更、データの収集、API通信
  */
 import { utils } from './utils.js';
@@ -265,7 +265,6 @@ export async function initFormLogic() {
     try { document.getElementById('addressField').value = await utils.fetchAddress(zip); } catch(e) { alert(e.message); }
   };
 
-  // 🍎 リンク・SNSセクションのイベントリスナー（リファクタリング版）
   const linkBox = document.getElementById('box-link-section');
   if (linkBox) {
     linkBox.addEventListener('change', (e) => {
@@ -345,7 +344,6 @@ export async function initFormLogic() {
     chkAssist.onchange = syncAssist; syncAssist();
   }
 
-  // 🍎 関連リンクの自動追加（リファクタリング版）
   const relUrl1 = document.getElementById('rel_url1'), relTitle1 = document.getElementById('rel_title1'), rel2Row = document.getElementById('rel-link2-row');
   if (relUrl1 && relTitle1 && rel2Row) {
     const toggleRel2 = () => { rel2Row.style.display = (relUrl1.value.trim() !== "" || relTitle1.value.trim() !== "") ? 'grid' : 'none'; };
@@ -445,7 +443,14 @@ export async function initFormLogic() {
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
       
-      const labelMap = { ...i18n.labels };
+      // 🍎 ラベルのマッピングを定義
+      const labelMap = {
+        ...i18n.labels,
+        shop_zip: i18n.labels.zip,
+        shop_addr: i18n.labels.address,
+        simple_days: i18n.labels.biz_days,
+        shop_notes_biz: i18n.labels.shop_biz_notes
+      };
 
       const processedKeys = new Set();
 
@@ -456,12 +461,23 @@ export async function initFormLogic() {
         const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger'];
         if (skipKeys.includes(key) || !val || val.toString().trim() === "" || (typeof val === 'object' && !(val instanceof Array))) return;
 
-        let label = labelMap[key] || key;
+        let label = labelMap[key] || key.startsWith('cat_gen-') ? key : i18n.labels[key] || key;
         let displayVal = val;
 
         if (key.startsWith('link_')) {
-          const linkKey = key.replace('link_', '');
-          if(i18n.links[linkKey]) label = i18n.links[linkKey].label;
+            const linkKey = key.replace('link_', '');
+            if(i18n.links[linkKey]) label = i18n.links[linkKey].label;
+        } else if (key.startsWith('art_')) {
+            const artKey = key.replace('art_','')
+            if (i18n.labels[artKey]) label = i18n.labels[artKey];
+            if (artKey === 'title') {
+                const type = payload.art_type;
+                if(i18n.types[type]) label = i18n.types[type].title
+            }
+        } else if (key.startsWith('cat_gen')) {
+            const catL1Key = payload.cat_l1;
+            const catL1 = Array.isArray(catL1Key) ? catL1Key.map(k => i18n.labels[k] || k).join(', ') : i18n.labels[catL1Key] || catL1Key;
+            label = `${catL1}${i18n.labels.genre_suffix}`;
         }
 
         if (key.startsWith('c_closed_')) {

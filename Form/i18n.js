@@ -153,10 +153,10 @@ const resources = {
         genre_detail: "Please enter specific details", genre_free: "Please enter specifically"
     },
     types: {
-        shop: { label: "Shop", title: "Shop/Facility Name", lead: "Shop Summary", notes: "Notes for Shop/Facility", catLabel: "What you can do here (Multiple)" },
-        event: { label: "Event", title: "Event Name", lead: "Event Summary", notes: "Notes for Venue", catLabel: "Event Genre (Multiple)" },
-        farmer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", notes: "Notes for Farm Visit", catLabel: "Farming Style (Multiple)" },
-        other: { label: "Article", title: "Article Title", lead: "Article Summary", notes: "Notes for Location", catLabel: "Article Genre (Multiple)" }
+        shop: { label: "Shop", title: "Shop/Facility Name", lead: "Shop Summary", leadPlaceholder: "Describe the shop in one sentence.", notes: "Notes for Shop/Facility", catLabel: "What you can do here (Multiple)" },
+        event: { label: "Event", title: "Event Name", lead: "Event Summary", leadPlaceholder: "Describe the event in one sentence.", notes: "Notes for Venue", catLabel: "Event Genre (Multiple)" },
+        farmer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", leadPlaceholder: "Describe the farm/activity in one sentence.", notes: "Notes for Farm Visit", catLabel: "Farming Style (Multiple)" },
+        other: { label: "Article", title: "Article Title", lead: "Article Summary", leadPlaceholder: "Describe the content in one sentence.", notes: "Notes for Location", catLabel: "Article Genre (Multiple)" }
     },
     options: {
         mode_simple: "Standard", mode_custom: "By Day",
@@ -238,10 +238,10 @@ const resources = {
       genre_detail: "请输入具体内容", genre_free: "请填写具体内容"
     },
     types: {
-      shop: { label: "店铺", title: "店名/设施名", lead: "店铺概要", notes: "店铺/设施相关注意事项", catLabel: "在此可进行的操作（多选）" },
-      event: { label: "活动", title: "活动名称", lead: "活动概要", notes: "会场相关注意事項", catLabel: "活动类型（多選）" },
-      farmer: { label: "生产者注册", title: "农园/团体名", lead: "生产者概要", notes: "农场访问注意事項", catLabel: "生产/销售风格（多選）" },
-      other: { label: "文章", title: "文章标题", lead: "文章概要", notes: "地点関連注意事項", catLabel: "文章类型（多選）" }
+      shop: { label: "店铺", title: "店名/设施名", lead: "店铺概要", leadPlaceholder: "用一句话概括店铺。", notes: "店铺/设施相关注意事项", catLabel: "在此可进行的操作（多选）" },
+      event: { label: "活动", title: "活动名称", lead: "活动概要", leadPlaceholder: "用一句话概括活动。", notes: "会场相关注意事項", catLabel: "活动类型（多選）" },
+      farmer: { label: "生产者注册", title: "农园/团体名", lead: "生产者概要", leadPlaceholder: "用一句话概括农园或活动。", notes: "农场访问注意事項", catLabel: "生产/销售风格（多選）" },
+      other: { label: "文章", title: "文章标题", lead: "文章概要", leadPlaceholder: "用一句话概括内容。", notes: "地点関連注意事項", catLabel: "文章类型（多選）" }
     },
     options: {
       mode_simple: "标准设置", mode_custom: "按星期设置",
