@@ -1,5 +1,5 @@
 /**
- * logic.js - 制御エンジン（i18n・リファクタリング・最終FIX版）
+ * logic.js - 制御エンジン（i18n・リファクタリング・最終FIX決定版）
  * 役割：ユーザー操作の検知、UIの動的変更、データの収集、API通信
  */
 import { utils } from './utils.js';
@@ -161,7 +161,9 @@ export async function initFormLogic() {
       c.onchange = (e) => {
         const targetId = e.target.getAttribute('data-subid');
         const el = document.getElementById(`sub-${targetId}`);
-        if (el) {
+        const isOtherCheckbox = e.target.id === 'catRootOtherCheck';
+
+        if (el && !isOtherCheckbox) {
           const isChecked = e.target.checked;
           el.style.display = isChecked ? 'flex' : 'none';
           if (!isChecked) {
@@ -489,27 +491,33 @@ export async function initFormLogic() {
           return key.replace(/_val$/, '');
       };
 
-      const translateValue = (key, value) => {
-          if (Array.isArray(value)) return value.map(v => translateValue(key, v)).join(', ');
-          
+      const translateValue = (value) => {
+          if (Array.isArray(value)) return value.map(v => translateValue(v)).join(', ');
           const valueMap = {
-              'individual': i18n.options.pr_biz_indiv, 'corp': i18n.options.pr_biz_corp,
-              'none': i18n.options.holiday_none, 'follow_regular': i18n.options.holiday_follow,
-              'always_open': i18n.options.holiday_open, 'always_closed': i18n.options.holiday_closed,
+              //経営区分
+              'individual': i18n.options.pr_biz_indiv, 
+              'corp': i18n.options.pr_biz_corp,
+              //祝日営業
+              'none': i18n.options.holiday_none, 
+              'follow_regular': i18n.options.holiday_follow,
+              'always_open': i18n.options.holiday_open, 
+              'always_closed': i18n.options.holiday_closed,
               'irregular': i18n.options.holiday_irregular,
-              'fruit': i18n.options.crop_fruit, 'rice': i18n.options.crop_rice,
-              'soba': i18n.options.crop_soba, 'veg': i18n.options.crop_veg,
-              'other': i18n.options.crop_other,
-              'yes': i18n.options.invoice_yes, 'no': i18n.options.invoice_no,
-              ...i18n.options
+              //その他作物
+              'fruit': i18n.options.crop_fruit, 
+              'rice': i18n.options.crop_rice,
+              'soba': i18n.options.crop_soba, 
+              'veg': i18n.options.crop_veg,
+              //インボイス
+              'yes': i18n.options.invoice_yes, 
+              'no': i18n.options.invoice_no,
+              // 代行
+              'on': i18n.common.yes,
+              // 単位
+              'a': i18n.options.unit_a, 'ha': i18n.options.unit_ha, 'tan': i18n.options.unit_tan,
+              'cho': i18n.options.unit_cho, 'm2': i18n.options.unit_m2, 'tsubo': i18n.options.unit_tsubo,
+              ...i18n.options // フォールバック
           };
-          
-          if (key === 'pr_biz_type') return valueMap[value] || value;
-          if (key === 'shop_holiday_type') return valueMap[value] || value;
-          if (key === 'pr_other_crops') return valueMap[value] || value;
-          if (key === 'pr_invoice') return valueMap[value] || value;
-          if (key === 'writing_assist') return value === "on" ? i18n.common.yes : i18n.common.no;
-
           return valueMap[value] || value;
       };
 
@@ -569,11 +577,11 @@ export async function initFormLogic() {
         }
         else if (key.includes('_e_h') || key.endsWith('_m')) return;
         else {
-            displayVal = translateValue(key, val);
+            displayVal = translateValue(val);
         }
         
         if(key === 'pr_area') {
-            displayVal += translateValue(null, payload.pr_area_unit || '');
+            displayVal += translateValue(payload.pr_area_unit || '');
         }
 
         previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
