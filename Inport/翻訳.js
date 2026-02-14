@@ -2,10 +2,14 @@
  * 飯綱町・多言語翻訳システム (ミスマッチ対策・ログ強化版)
  */
 
-const TR_API_KEY = 'AIzaSyCC-xpsu1RX3PZQ-36pMLBL7Y1eW4qP7-U'; 
-const TR_MODEL_ID = 'gemini-2.5-flash'; 
-const TR_GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${TR_MODEL_ID}:generateContent?key=${TR_API_KEY}`;
 
+const props = PropertiesService.getScriptProperties();
+// APIキーをプロパティから取得（コード内には一切書き込まない）
+const TR_API_KEY = props.getProperty('TR_API_KEY');
+// モデルIDなどは、頻繁に変えないなら定数、変える可能性があるならプロパティへ
+const TR_MODEL_ID = 'gemini-2.5-flash'; // 最新の安定版（1.5-flashなど）を推奨
+// URLの組み立て
+const TR_GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${TR_MODEL_ID}:generateContent?key=${TR_API_KEY}`;
 const TR_START_ROW = 5;
 const TR_BATCH_SIZE = 3; 
 

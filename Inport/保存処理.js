@@ -2,12 +2,23 @@
  * GAS - AWS S3 統合保存エンジン（プロフェッショナル版：列構成・カテゴリ整形強化）
  */
 
+/**
+ * AWS設定
+ * スクリプトプロパティから認証情報を取得します。
+ */
+const scriptProperties = PropertiesService.getScriptProperties();
+
 const AWS_CONFIG = {
   bucket: "appletown-iizuna",
-  accessKey: "AKIAVSTYY36722WM6Z7X",
-  secretKey: "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",
+  accessKey: scriptProperties.getProperty('AWS_ACCESS_KEY_ID'),
+  secretKey: scriptProperties.getProperty('AWS_SECRET_ACCESS_KEY'),
   region: "ap-northeast-1"
 };
+
+// 値が取得できているか確認するデバッグ用のバリデーション（任意）
+if (!AWS_CONFIG.accessKey || !AWS_CONFIG.secretKey) {
+  throw new Error('AWSの認証情報がスクリプトプロパティに設定されていません。');
+}
 
 const SHEET_NAME_FOR_APP = "投稿一覧"; 
 
