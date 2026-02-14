@@ -114,7 +114,7 @@ export async function initFormLogic() {
       const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}&_t=${Date.now()}`);
       const json = await res.json();
       if (type !== currentFetchType) return;
-      if (!json.ok) throw new Error();
+      if (!json.ok) throw new Error('Failed to fetch categories');
       
       let l1Html = '<div class="lz-choice-flex">';
       let l2Html = '';
@@ -125,7 +125,7 @@ export async function initFormLogic() {
         
         l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}" data-l1key="${l1}"><span class="lz-choice-inner">${l1}</span></label>`;
 
-        if (json.items[l1]) {
+        if (json.items[l1] && !isRootOther) {
           l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}${i18n.labels.genre_suffix}</label><div class="lz-choice-flex">`;
           json.items[l1].forEach(l2 => {
             const isOther = l2.includes(i18n.common.other_label);
@@ -185,9 +185,9 @@ export async function initFormLogic() {
 
   const customBody = document.getElementById('customSchedBody');
   if (customBody) {
-    days.forEach(d => {
+    days.forEach((d, i) => {
       const tr = document.createElement('tr'); tr.id = `row-${d}`;
-      tr.innerHTML = `<td><strong>${d}${i18n.labels.day_suffix}</strong></td><td data-label="${i18n.labels.closed}"><input type="checkbox" name="c_closed_${d}" class="lz-closed-trigger"></td><td data-label="${i18n.labels.open_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_'+d)}</div></td><td data-label="${i18n.labels.close_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_'+d)}</div></td>`;
+      tr.innerHTML = `<td><strong>${d}${i18n.labels.day_suffix}</strong></td><td data-label="${i18n.labels.closed}"><input type="checkbox" name="c_closed_${i}" class="lz-closed-trigger"></td><td data-label="${i18n.labels.open_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_'+i)}</div></td><td data-label="${i18n.labels.close_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_'+i)}</div></td>`;
       customBody.appendChild(tr);
       const trigger = tr.querySelector('.lz-closed-trigger');
       const timeBoxes = tr.querySelectorAll('.lz-time-box');
@@ -461,11 +461,11 @@ export async function initFormLogic() {
               shop_zip: i18n.labels.zip, shop_addr: i18n.labels.address, shop_notes: i18n.labels.shop_notes,
               simple_days: i18n.labels.biz_days, shop_holiday_type: i18n.labels.holiday_biz,
               shop_notes_biz: i18n.labels.shop_biz_notes, 
-              ev_sdate: i18n.labels.ev_sdate, ev_edate: i18n.labels.ev_edate, ev_fee: i18n.labels.ev_fee,
-              ev_items: i18n.labels.ev_items, ev_target: i18n.labels.ev_target,
+              ev_org_name: i18n.labels.ev_org_name, ev_sdate: i18n.labels.ev_sdate, ev_edate: i18n.labels.ev_edate, 
+              ev_fee: i18n.labels.ev_fee, ev_items: i18n.labels.ev_items, ev_target: i18n.labels.ev_target,
               pr_variety: i18n.labels.pr_varieties, pr_product: i18n.labels.pr_products,
               pr_area: i18n.labels.pr_area, pr_staff: i18n.labels.pr_staff,
-              pr_other_crops: i18n.labels.pr_other_crops, pr_ent_type: i18n.labels.pr_biz_type,
+              pr_other_crops: i18n.labels.pr_other_crops, pr_biz_type: i18n.labels.pr_biz_type,
               pr_rep_name: i18n.labels.pr_rep_name, pr_invoice: i18n.labels.pr_invoice, 
               pr_invoice_num: i18n.labels.pr_invoice_num,
               cm_method: i18n.labels.cm_method, cm_url: i18n.labels.cm_url, cm_mail: i18n.labels.cm_mail, 
@@ -491,30 +491,47 @@ export async function initFormLogic() {
 
       const translateValue = (key, value) => {
           if (Array.isArray(value)) return value.map(v => translateValue(key, v)).join(', ');
-          if (i18n.options[value]) return i18n.options[value];
-          if (value === 'yes') return i18n.options.invoice_yes;
-          if (value === 'no') return i18n.options.invoice_no;
+          
+          const valueMap = {
+              'individual': i18n.options.pr_biz_indiv, 'corp': i18n.options.pr_biz_corp,
+              'none': i18n.options.holiday_none, 'follow_regular': i18n.options.holiday_follow,
+              'always_open': i18n.options.holiday_open, 'always_closed': i18n.options.holiday_closed,
+              'irregular': i18n.options.holiday_irregular,
+              'fruit': i18n.options.crop_fruit, 'rice': i18n.options.crop_rice,
+              'soba': i18n.options.crop_soba, 'veg': i18n.options.crop_veg,
+              'other': i18n.options.crop_other,
+              'yes': i18n.options.invoice_yes, 'no': i18n.options.invoice_no,
+              ...i18n.options
+          };
+          
+          if (key === 'pr_biz_type') return valueMap[value] || value;
+          if (key === 'shop_holiday_type') return valueMap[value] || value;
+          if (key === 'pr_other_crops') return valueMap[value] || value;
+          if (key === 'pr_invoice') return valueMap[value] || value;
           if (key === 'writing_assist') return value === "on" ? i18n.common.yes : i18n.common.no;
-          return value;
+
+          return valueMap[value] || value;
       };
 
       const processedKeys = new Set();
+      const displayOrder = Object.keys(rawPayload);
 
-      Object.keys(payload).forEach(key => {
-        if (processedKeys.has(key)) return;
+      displayOrder.forEach(key => {
+        if (processedKeys.has(key) || !Object.prototype.hasOwnProperty.call(payload, key)) return;
+
         let val = payload[key];
-        
         const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger','pr_area_unit'];
         if (skipKeys.includes(key) || val === null || val.toString().trim() === "" || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) return;
 
         let label = getLabel(key);
-        let displayVal = translateValue(key, val);
+        let displayVal;
         
         if (key.startsWith('c_closed_')) {
-          const dayName = key.replace('c_closed_', '');
-          label = `${dayName}${i18n.labels.day_suffix}`;
+          const dayIndex = key.replace('c_closed_', '');
+          label = `${days[dayIndex]}${i18n.labels.day_suffix}`;
           displayVal = i18n.labels.closed;
-        } else if (key.includes('_s_') && key.endsWith('_h')) {
+        } else if (key.startsWith('c_s_') && key.endsWith('_h')) {
+          const dayIndex = key.match(/c_s_(\d+)_h/)[1];
           const startH = val;
           const startM = payload[key.replace('_h', '_m')] || "00";
           const endKeyH = key.replace('_s_', '_e_');
@@ -524,17 +541,36 @@ export async function initFormLogic() {
 
           if (endH) {
             displayVal = `${startH}:${startM} - ${endH}:${endM}`;
-            if (key.startsWith('simple_')) { label = i18n.labels.std_biz_hours; } 
-            else if (key.startsWith('ev_')) { label = i18n.labels.ev_stime; }
-            else if (key.startsWith('c_s_')) { 
-                const day = key.split('_s_')[1].split('_')[0]; 
-                label = `${days[parseInt(day)]}${i18n.labels.day_suffix}`;
-            }
+            label = `${days[dayIndex]}${i18n.labels.day_suffix}`;
             processedKeys.add(key.replace('_h', '_m'));
             processedKeys.add(endKeyH);
             processedKeys.add(endKeyM);
           }
-        } else if (key.includes('_e_h') || key.endsWith('_m')) return;
+        } else if (key.startsWith('simple_s_h')) {
+            const startH = val;
+            const startM = payload['simple_s_m'] || "00";
+            const endH = payload['simple_e_h'];
+            const endM = payload['simple_e_m'] || "00";
+            if (endH) {
+                displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+                label = i18n.labels.std_biz_hours;
+                processedKeys.add('simple_s_m').add('simple_e_h').add('simple_e_m');
+            }
+        } else if (key.startsWith('ev_s_h')) {
+            const startH = val;
+            const startM = payload['ev_s_m'] || "00";
+            const endH = payload['ev_e_h'];
+            const endM = payload['ev_e_m'] || "00";
+            if (endH) {
+                displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+                label = i18n.labels.ev_stime;
+                processedKeys.add('ev_s_m').add('ev_e_h').add('ev_e_m');
+            }
+        }
+        else if (key.includes('_e_h') || key.endsWith('_m')) return;
+        else {
+            displayVal = translateValue(key, val);
+        }
         
         if(key === 'pr_area') {
             displayVal += translateValue(null, payload.pr_area_unit || '');
@@ -563,7 +599,7 @@ export async function initFormLogic() {
       allBtns.forEach(btn => { btn.disabled = true; btn.textContent = i18n.common.sending; btn.style.opacity = '0.6'; });
 
       try {
-        days.forEach(d => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { const k = `c_${s}_${d}`; if (!payload[k]) payload[k] = ""; }); });
+        days.forEach((d,i) => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { const k = `c_${s}_${i}`; if (!payload[k]) payload[k] = ""; }); });
 
         if (uploadedFiles.length > 0) {
           payload.images = await Promise.all(uploadedFiles.map(file => new Promise(res => {
@@ -585,7 +621,7 @@ export async function initFormLogic() {
           window.location.reload();
         } else { throw new Error(result.error); }
       } catch (err) {
-        alert(i18n.alerts.send_error + "\n理由: " + err.message);
+        alert(i18n.alerts.send_error + "\\n理由: " + err.message);
         allBtns.forEach(btn => { btn.disabled = false; btn.textContent = i18n.common.sendBtn; btn.style.opacity = '1'; });
       }
     };
