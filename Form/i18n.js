@@ -1,9 +1,8 @@
 /**
- * i18n.js - 多言語対応（日・英・中）完全網羅辞書 (リファクタリング版)
+ * i18n.js - 多言語対応（日・英・中）完全網羅辞書 (リファクタリング・最終版)
  * labels: フォーム各項目のラベル用
  * options: フォーム選択肢（checkbox, radio）の値の表示用
  * links: リンクとSNS入力欄の定義用
- * これにより、templates.jsとlogic.jsの両方で一貫した定義を参照します。
  */
 
 const resources = {
@@ -19,24 +18,26 @@ const resources = {
     },
     labels: {
       name: "お名前", email: "メールアドレス", content: "内容", limit_100: "（100文字以内）",
-      art_body: "詳細本文", art_images: "画像（最大6枚）", art_file: "資料（PDF,Word,Excel,PowerPoint等）",
-      ev_venue_name: "会場名", zip: "郵便番号", address: "住所", biz_days: "営業曜日",
+      art_title: "タイトル", art_lead: "概要・リード", art_body: "詳細本文", 
+      art_images: "画像（最大6枚）", art_file: "資料（PDF,Word,Excel,PowerPoint等）",
+      ev_venue_name: "会場名", zip: "郵便番号", address: "住所", 
+      shop_notes: "場所に関する注意事項", biz_days: "営業曜日",
       std_biz_hours: "標準営業時間", open_time: "営業開始", close_time: "営業終了",
       day: "曜日", closed: "休業", holiday_biz: "祝日の営業", shop_biz_notes: "営業に関する注意事項",
       ev_sdate: "開催日（開始日）", ev_edate: "終了日", ev_stime: "開始時刻", ev_etime: "終了時刻",
       ev_org_name: "主催者名",ev_fee: "参加費", ev_items: "参加者のもちもの", ev_target: "対象",
       pr_varieties: "栽培している品種", pr_products: "扱っている加工品",
-      pr_area: "作付面積（りんご）", pr_staff: "従業員数", pr_other_crops: "りんご以外の栽培品目（複数選択可）",
+      pr_area: "作付面積（りんご）", pr_staff: "従業員数", pr_other_crops: "りんご以外の栽培品目",
       pr_biz_type: "経営区分", pr_rep_name: "代表者名", pr_invoice: "インボイス登録",
-      pr_invoice_num: "登録番号", cm_method: "問い合わせ方法（複数選択可）",
-      cm_url: "掲載用問い合わせフォームURL", cm_mail: "掲載用メールアドレス", cm_tel: "掲載用電話番号",
+      pr_invoice_num: "登録番号", 
+      cm_method: "問い合わせ方法", cm_url: "掲載用問い合わせフォームURL", 
+      cm_mail: "掲載用メールアドレス", cm_tel: "掲載用電話番号",
       cm_other: "その他の受付方法", cm_notes: "問い合わせに関する注意事項",
       art_memo: "補足情報", cont_name: "投稿者・団体名", admin_email: "連絡用メールアドレス",
       admin_msg: "事務局への連絡事項", genre_suffix: "のジャンル", genre_free: "カテゴリーの詳細（自由記述）",
-      other_venue_name: "関連する場所の名称", day_suffix: "曜日", art_title: "タイトル", art_lead: "概要・リード",
-      cat_l1: "カテゴリー（大）", writing_assist: "事務局代行希望",
-      link_trigger: "表示するリンク・SNSの選択", rel_url: "関連リンクURL", rel_title: "関連リンクのタイトル",
-      shop_notes: "場所に関する注意事項",
+      other_venue_name: "関連する場所の名称", day_suffix: "曜日", cat_l1: "カテゴリー（大）", 
+      writing_assist: "事務局代行希望", link_trigger: "表示するリンク・SNSの選択", 
+      rel_url: "関連リンクURL", rel_title: "関連リンクのタイトル",
     },
     links: {
       home: { label: "公式ホームページ", placeholder: "https://..." },
@@ -46,7 +47,7 @@ const resources = {
       x: { label: "X (旧Twitter)", placeholder: "@ユーザーネーム または プロフィールURL" },
       line: { label: "LINE公式アカウント", placeholder: "LINE ID または プロフィールURL" },
       tt: { label: "TikTok", placeholder: "@ユーザーネーム または プロフィールURL" },
-      rel: { label: "関連リンク記事", placeholder: "" } // This is special for the checkbox grid
+      rel: { label: "関連リンク記事", placeholder: "" }
     },
     status: { loading_cat: "カテゴリーを取得中...", error_cat: "カテゴリーの取得に失敗しました。" },
     alerts: { zip_empty: "郵便番号を入力してください", send_error: "送信に失敗しました" },
@@ -89,7 +90,8 @@ const resources = {
       assistNote: "⚠️ 注意事項：文章作成を委任する場合、内容がわかるHP・SNSのURL入力、またはチラシ画像・資料の添付を必ずお願いします。",
       dayList: ["月", "火", "水", "木", "金", "土", "日"],
       other_label: "その他",
-      confirmTitle: "入力内容の確認", backBtn: "修正する", confirmBtn: "この内容で送信する"
+      confirmTitle: "入力内容の確認", backBtn: "修正する", confirmBtn: "この内容で送信する",
+      yes: "はい", no: "いいえ"
     }
   },
   en: {
@@ -104,24 +106,26 @@ const resources = {
     },
     labels: {
         name: "Name", email: "Email", content: "Content", limit_100: " (Within 100 chars)",
-        art_body: "Detailed Description", art_images: "Images (Max 6)", art_file: "Files (PDF,Word,Excel,PowerPoint etc.)",
-        ev_venue_name: "Venue Name", zip: "Zip Code", address: "Address", biz_days: "Business Days",
+        art_title: "Title", art_lead: "Summary / Lead", art_body: "Detailed Description", 
+        art_images: "Images (Max 6)", art_file: "Files (PDF,Word,Excel,PowerPoint etc.)",
+        ev_venue_name: "Venue Name", zip: "Zip Code", address: "Address", 
+        shop_notes: "Location Notes", biz_days: "Business Days",
         std_biz_hours: "Standard Hours", open_time: "Open", close_time: "Close",
         day: "Day", closed: "Closed", holiday_biz: "Holiday Hours", shop_biz_notes: "Business Notes",
         ev_sdate: "Start Date", ev_edate: "End Date", ev_stime: "Start Time", ev_etime: "End Time",
         ev_org_name: "Organizer Name", ev_fee: "Fee", ev_items: "Items to Bring", ev_target: "Target Audience",
         pr_varieties: "Apple Varieties", pr_products: "Processed Products",
-        pr_area: "Planting Area (Apple)", pr_staff: "Employees", pr_other_crops: "Other Crops (Multiple)",
+        pr_area: "Planting Area (Apple)", pr_staff: "Employees", pr_other_crops: "Other Crops",
         pr_biz_type: "Business Category", pr_rep_name: "Farmer Name", pr_invoice: "Invoice Registration",
-        pr_invoice_num: "Reg. Number", cm_method: "Contact Method (Multiple)",
-        cm_url: "Inquiry Form URL", cm_mail: "Public Email", cm_tel: "Public Phone",
+        pr_invoice_num: "Reg. Number", 
+        cm_method: "Contact Method", cm_url: "Inquiry Form URL", 
+        cm_mail: "Public Email", cm_tel: "Public Phone",
         cm_other: "Other Contact", cm_notes: "Contact Notes",
         art_memo: "Supplementary Info", cont_name: "Poster/Org Name", admin_email: "Contact Email",
         admin_msg: "Message to Admin", genre_suffix: " Genres", genre_free: "Category Details (Free Text)",
-        other_venue_name: "Name of Related Location", day_suffix: "", art_title: "Title", art_lead: "Summary / Lead",
-        cat_l1: "Main Category", writing_assist: "Writing Assistance",
-        link_trigger: "Select links and social media to display", rel_url: "Related Link URL", rel_title: "Related Link Title",
-        shop_notes: "Location Notes",
+        other_venue_name: "Name of Related Location", day_suffix: "", cat_l1: "Main Category", 
+        writing_assist: "Writing Assistance", link_trigger: "Select links and social media to display", 
+        rel_url: "Related Link URL", rel_title: "Related Link Title",
     },
     links: {
       home: { label: "Official Website", placeholder: "https://..." },
@@ -174,7 +178,8 @@ const resources = {
         assistNote: "⚠️ Note: If delegating, please provide a URL or materials.",
         dayList: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
         other_label: "Other",
-        confirmTitle: "Confirm Your Input", backBtn: "Go Back & Edit", confirmBtn: "Submit"
+        confirmTitle: "Confirm Your Input", backBtn: "Go Back & Edit", confirmBtn: "Submit",
+        yes: "Yes", no: "No"
     }
   },
   zh: {
@@ -189,24 +194,26 @@ const resources = {
     },
     labels: {
       name: "姓名", email: "电子邮箱", content: "内容", limit_100: "（100字以内）",
-      art_body: "详细内容", art_images: "图片（最多6张）", art_file: "资料（PDF,Word,Excel,PowerPoint等）",
-      ev_venue_name: "会场名称", zip: "邮政编码", address: "详细地址", biz_days: "营业日",
+      art_title: "标题", art_lead: "摘要 / 导语", art_body: "详细内容",
+      art_images: "图片（最多6张）", art_file: "资料（PDF,Word,Excel,PowerPoint等）",
+      ev_venue_name: "会场名称", zip: "邮政编码", address: "详细地址",
+      shop_notes: "地点注意事项", biz_days: "营业日",
       std_biz_hours: "营业时间", open_time: "开始营业", close_time: "结束营业",
       day: "星期", closed: "休息", holiday_biz: "节假日营业", shop_biz_notes: "营业注意事项",
       ev_sdate: "举办日期", ev_edate: "结束日期", ev_stime: "开始时间", ev_etime: "结束时间",
       ev_org_name: "主办方名称",ev_fee: "费用", ev_items: "随身物品", ev_target: "对象范围",
       pr_varieties: "栽培品種", pr_products: "加工产品",
-      pr_area: "种植面积", pr_staff: "员工人数", pr_other_crops: "其他品種（可多选）",
+      pr_area: "种植面积", pr_staff: "员工人数", pr_other_crops: "其他品種",
       pr_biz_type: "经营类别", pr_rep_name: "代表人姓名", pr_invoice: "发票注册",
-      pr_invoice_num: "注册编号", cm_method: "联系方式（可多选）",
-      cm_url: "咨询表单链接", cm_mail: "公开邮箱", cm_tel: "公开电话",
+      pr_invoice_num: "注册编号",
+      cm_method: "联系方式", cm_url: "咨询表单链接",
+      cm_mail: "公开邮箱", cm_tel: "公开电话",
       cm_other: "其他方式", cm_notes: "咨询注意事项",
       art_memo: "补充信息", cont_name: "投稿者姓名", admin_email: "联系邮箱",
       admin_msg: "给事务局的留言", genre_suffix: " 类型", genre_free: "类别详情（自由填写）",
       other_venue_name: "相关地点名称", day_suffix: "", art_title: "标题", art_lead: "摘要 / 导语",
       cat_l1: "主类别", writing_assist: "委托代写",
       link_trigger: "选择要显示的链接和社交媒体", rel_url: "相关链接URL", rel_title: "相关链接标题",
-      shop_notes: "地点注意事项",
     },
     links: {
       home: { label: "官方网站", placeholder: "https://..." },
@@ -259,7 +266,8 @@ const resources = {
       assistNote: "⚠️ 注意事項：委托代写时，请提供相关网址或資料。",
       dayList: ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"],
       other_label: "其他",
-      confirmTitle: "确认输入内容", backBtn: "返回修改", confirmBtn: "提交"
+      confirmTitle: "确认输入内容", backBtn: "返回修改", confirmBtn: "提交",
+      yes: "是", no: "否"
     }
   }
 };

@@ -1,5 +1,5 @@
 /**
- * logic.js - 制御エンジン（i18n・リファクタリング・最終修正版）
+ * logic.js - 制御エンジン（i18n・リファクタリング・最終FIX版）
  * 役割：ユーザー操作の検知、UIの動的変更、データの収集、API通信
  */
 import { utils } from './utils.js';
@@ -118,14 +118,14 @@ export async function initFormLogic() {
       
       let l1Html = '<div class="lz-choice-flex">';
       let l2Html = '';
-      Object.keys(json.items).forEach((l1, idx) => {
+      (json.l1_order || Object.keys(json.items)).forEach((l1, idx) => {
         const baseId = `gen-${idx}`;
-        const isRootOther = l1 === i18n.common.cat_other_label || l1 === i18n.common.other_label;
+        const isRootOther = l1 === i18n.common.other_label;
         const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
         
-        l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}"><span class="lz-choice-inner">${l1}</span></label>`;
+        l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}" data-l1key="${l1}"><span class="lz-choice-inner">${l1}</span></label>`;
 
-        if (!isRootOther) {
+        if (json.items[l1]) {
           l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}${i18n.labels.genre_suffix}</label><div class="lz-choice-flex">`;
           json.items[l1].forEach(l2 => {
             const isOther = l2.includes(i18n.common.other_label);
@@ -134,6 +134,7 @@ export async function initFormLogic() {
           l2Html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="${i18n.placeholders.genre_detail}"></div>`;
         }
       });
+
       container.innerHTML = l1Html + '</div>' + l2Html + `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">${i18n.labels.genre_free}</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="${i18n.placeholders.genre_free}"></div>`;
       
       const buildChips = (targetId, list, namePrefix) => {
@@ -152,7 +153,7 @@ export async function initFormLogic() {
       buildChips('area-apple-products', json.appleProducts, 'pr_product');
       
       bindDynamicEvents();
-    } catch (e) { container.innerHTML = `<div style="color:#cf3a3a;">${i18n.status.error_cat}</div>`; }
+    } catch (e) { console.error(e); container.innerHTML = `<div style="color:#cf3a3a;">${i18n.status.error_cat}</div>`; }
   }
 
   function bindDynamicEvents() {
@@ -169,8 +170,8 @@ export async function initFormLogic() {
             if (otherField) { otherField.style.display = 'none'; otherField.value = ''; }
           }
         }
+        const isOtherChecked = document.getElementById('catRootOtherCheck')?.checked;
         const otherRoot = document.getElementById('sub-cat-root-other');
-        const isOtherChecked = Array.from(document.getElementsByName('cat_l1')).some(i => (i.value === i18n.common.cat_other_label || i.value === i18n.common.other_label) && i.checked);
         if (otherRoot) otherRoot.style.display = isOtherChecked ? 'flex' : 'none';
       };
     });
@@ -216,16 +217,17 @@ export async function initFormLogic() {
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
-  const rebindTimeEvents = () => {
-    document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
-      hSelect.onchange = (e) => {
-        if (e.target.value !== "") {
-          const mSelect = document.querySelector(`select[name="${e.target.name.replace('_h', '_m')}"]`);
-          if (mSelect && mSelect.value === "") mSelect.value = "00";
-        }
-      };
-    });
-  };
+  function rebindTimeEvents() {
+      document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
+          hSelect.onchange = (e) => {
+              if (e.target.value !== "") {
+                  const mSelectName = e.target.name.replace('_h', '_m');
+                  const mSelect = document.querySelector(`select[name="${mSelectName}"]`);
+                  if (mSelect && mSelect.value === "") mSelect.value = "00";
+              }
+          };
+      });
+  }
 
   rebindTimeEvents();
 
@@ -443,25 +445,46 @@ export async function initFormLogic() {
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
       
-      // 🍎 全てのキーをi18n.labelsと照合するためのヘルパー関数
+      // 🍎 ラベル取得ロジックを全面改修
+      const l1Checkboxes = Array.from(document.querySelectorAll('input[name="cat_l1"]'));
+      const l1KeyMap = l1Checkboxes.reduce((acc, chk) => {
+          acc[chk.dataset.subid] = chk.dataset.l1key;
+          return acc;
+      }, {});
+      
       const getLabel = (key) => {
-        // プレフィックスを削除して一般的なキーに変換
-        const genericKey = key.replace(/^(rep_|inq_|art_|pr_|cm_|cont_|admin_)/, '');
-        if (i18n.labels[key]) return i18n.labels[key];
-        if (i18n.labels[genericKey]) return i18n.labels[genericKey];
-
-        // 動的なキーや特殊なケース
+        const keyMap = {
+            rep_name: i18n.labels.name, rep_content: i18n.labels.content,
+            inq_name: i18n.labels.name, inq_email: i18n.labels.email, inq_content: i18n.labels.content,
+            art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title,
+            art_lead: i18n.labels.art_lead, art_body: i18n.labels.art_body,
+            cat_l1: i18n.labels.cat_l1,
+            shop_zip: i18n.labels.zip, shop_addr: i18n.labels.address, shop_notes: i18n.labels.shop_notes,
+            simple_days: i18n.labels.biz_days, shop_holiday_type: i18n.labels.holiday_biz,
+            shop_notes_biz: i18n.labels.shop_biz_notes, 
+            pr_variety: i18n.labels.pr_varieties, pr_product: i18n.labels.pr_products,
+            pr_area: i18n.labels.pr_area, pr_staff: i18n.labels.pr_staff,
+            pr_other_crops: i18n.labels.pr_other_crops, pr_ent_type: i18n.labels.pr_biz_type,
+            pr_rep_name: i18n.labels.pr_rep_name, pr_invoice: i18n.labels.pr_invoice, 
+            pr_invoice_num: i18n.labels.pr_invoice_num,
+            cm_method: i18n.labels.cm_method, cm_notes: i18n.labels.cm_notes,
+            art_memo: i18n.labels.art_memo, 
+            cont_name: i18n.labels.cont_name, admin_email: i18n.labels.admin_email, admin_msg: i18n.labels.admin_msg
+        };
+        if (keyMap[key]) return keyMap[key];
+        
         if (key.startsWith('link_')) {
             const linkKey = key.replace(/^link_/, '').replace(/_url\d*|_title\d*$/, '');
             return i18n.links[linkKey]?.label || key;
         }
-        if (key === 'shop_zip') return i18n.labels.zip;
-        if (key === 'shop_addr') return i18n.labels.address;
-        if (key === 'simple_days') return i18n.labels.biz_days;
-        if (key === 'shop_notes_biz') return i18n.labels.shop_biz_notes;
-        if (key === 'art_title') return i18n.types[payload.art_type]?.title || i18n.labels.art_title;
 
-        return key; // 見つからない場合はキーをそのまま返す
+        if (key.startsWith('cat_gen-') && !key.endsWith('_val')) {
+            const subId = key.match(/cat_(gen-\d+)/)?.[1];
+            const l1Label = l1KeyMap[subId] || i18n.labels.genre_suffix.replace('の','');
+            return `${l1Label}${i18n.labels.genre_suffix}`;
+        }
+
+        return key.replace(/_val$/, '');
       };
 
       const processedKeys = new Set();
@@ -470,21 +493,12 @@ export async function initFormLogic() {
         if (processedKeys.has(key)) return;
         let val = payload[key];
         
-        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger'];
+        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger','pr_area_unit'];
         if (skipKeys.includes(key) || val === null || val.toString().trim() === "" || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) return;
 
         let label = getLabel(key);
         let displayVal = val;
-
-        // カテゴリー（ジャンル）の特殊処理
-        if (key.startsWith('cat_gen-')) {
-          const catL1Values = Array.isArray(payload.cat_l1) ? payload.cat_l1 : [payload.cat_l1];
-          const catL1Key = catL1Values.find(c => key.includes(c.replace(/\s/g, ''))); // 仮のロジック
-          label = `${catL1Key || 'ジャンル'}${i18n.labels.genre_suffix}`;
-        } else if (key.startsWith('cat_root_other_val')) {
-          label = i18n.labels.genre_free;
-        }
-
+        
         if (key.startsWith('c_closed_')) {
           const dayName = key.replace('c_closed_', '');
           label = `${dayName}${i18n.labels.day_suffix}`;
@@ -507,13 +521,18 @@ export async function initFormLogic() {
             processedKeys.add(endKeyM);
           }
         } else if (key.includes('_e_h') || key.endsWith('_m')) return;
+        
+        if(key === 'pr_area') {
+            displayVal += payload.pr_area_unit || '';
+            processedKeys.add('pr_area_unit');
+        }
 
         if (Array.isArray(val)) {
           displayVal = val.map(v => i18n.options[v] || v).join(", ");
         } else if (i18n.options[val]) {
           displayVal = i18n.options[val];
         } else if (key === 'writing_assist') {
-          displayVal = val === "on" ? "希望する" : "しない";
+          displayVal = val === "on" ? i18n.common.yes : i18n.common.no;
         }
 
         previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
@@ -521,7 +540,8 @@ export async function initFormLogic() {
       });
       
       if (uploadedFiles.length > 0) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
-      if (payload.art_file_name) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_file}</div><div class="lz-modal-value">${payload.art_file_name}</div></div>`;
+      const docFile = form.querySelector('input[name="art_file"]')?.files[0];
+      if(docFile) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_file}</div><div class="lz-modal-value">${docFile.name}</div></div>`;
 
       confirmBody.innerHTML = previewHtml || `<div style="text-align:center; padding:20px;">入力内容がありません</div>`;
       confirmOverlay.style.display = 'flex';
@@ -545,9 +565,8 @@ export async function initFormLogic() {
             const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(file);
           })));
         }
-        const docFileInput = form.querySelector('input[name="art_file"]');
-        if (docFileInput?.files.length > 0) {
-          const docFile = docFileInput.files[0];
+        
+        if (docFile) {
           payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
           payload.art_file_data = await new Promise(res => {
             const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(docFile);
