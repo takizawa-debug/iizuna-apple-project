@@ -7,7 +7,7 @@ const ADMIN_EMAIL = "takizawa@mimizuya.co.jp";
 // 🍎【要設定】送信元として表示するGmailアドレス（Gmailでエイリアス設定済みのもの）
 const FROM_EMAIL_ALIAS = "ringoiizuna@gmail.com";
 // 🍎【要設定】送信者名
-const SENDER_NAME = "飯綱町ウェブサイト";
+const SENDER_NAME = "りんごのまちいいづな";
 
 /**
  * AWS設定
