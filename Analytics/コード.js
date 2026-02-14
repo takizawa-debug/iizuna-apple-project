@@ -10,8 +10,9 @@ const HEADER = [
   'timestamp_jst', 'visitor_id', 'session_id', 'event_name', 'event_params_json',
   'page_url', 'page_title', 'referrer', 'utm_source', 'utm_medium', 'utm_campaign',
   'screen_w', 'screen_h', 'ua', 'geo_ip', 'geo_country', 'geo_region', 'geo_city',
-  'geo_lat', 'geo_lon', 'engaged_ms', 'element', 'label', 'href',
-  'modal_name', 'card_id', 'group', 'platform', 'action', 'idx'
+  'geo_lat', 'geo_lon', 'language',
+  'engaged_ms', 'element', 'label', 'href', 'modal_name', 'card_id', 'group', 
+  'platform', 'action', 'idx', 'search_term', 'link_domain', 'scroll_depth'
 ];
 
 const ss_ = () => SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -53,7 +54,7 @@ function pick_(obj, key) {
  */
 function formatRow_(data, timestampJST) {
   const params = data.event_params || {};
-  const geo = data.geo || {}; // geoオブジェクトを取得
+  const geo = data.geo || {};
 
   return [
     timestampJST,
@@ -70,12 +71,13 @@ function formatRow_(data, timestampJST) {
     pick_(data, 'screen_w'),
     pick_(data, 'screen_h'),
     pick_(data, 'ua'),
-    pick_(geo, 'ip'), // geoオブジェクトから取得
+    pick_(geo, 'ip'),
     pick_(geo, 'country'),
     pick_(geo, 'region'),
     pick_(geo, 'city'),
     pick_(geo, 'lat'),
     pick_(geo, 'lon'),
+    pick_(data, 'language'),
     pick_(params, 'engaged_ms'),
     pick_(params, 'element') || pick_(params, 'element_id'),
     pick_(params, 'label'),
@@ -86,9 +88,11 @@ function formatRow_(data, timestampJST) {
     pick_(params, 'platform'),
     pick_(params, 'action'),
     pick_(params, 'idx'),
+    pick_(params, 'search_term'),
+    pick_(params, 'link_domain'),
+    pick_(params, 'scroll_depth')
   ];
 }
-
 
 /**
  * まとめてログを書き込む
@@ -98,7 +102,6 @@ function appendLogRows_(dataList, timestampJST) {
   const sh = ensureLogsSheet_();
   const lock = LockService.getScriptLock();
   
-  // 10秒間ロックを待機
   if (lock.tryLock(10000)) {
     try {
       const lastRow = sh.getLastRow();
@@ -137,10 +140,7 @@ function doPost(e) {
   try {
     const raw = e?.postData?.contents || '{}';
     const parsed = JSON.parse(raw);
-    
-    // 配列でも単体オブジェクトでも受け入れ可能にする
     const dataList = Array.isArray(parsed) ? parsed : [parsed];
-    
     appendLogRows_(dataList, nowJST);
     return textOut_('OK');
   } catch (err) {

@@ -5,6 +5,7 @@
   packages = [
     pkgs.python3
     pkgs.nodejs_20
+    pkgs.gh
     # 一旦、ここでパッケージとして追加するのをやめ、後ほど別の方法でclaspを有効にします
   ];
 

@@ -1,6 +1,6 @@
 /**
  * analytics.js - Appletown Analytics (独立観測コンポーネント)
- * 役割: ユーザー行動追跡、滞在時間の精密計測、Geo情報取得
+ * 役割: ユーザー行動追跡、滞在時間の精密計測、Geo情報取得、インタラクション分析
  */
 (function () {
   "use strict";
@@ -16,21 +16,27 @@
       check();
     });
 
-    const D = document, W = window, N = navigator, S = screen;
+    const D = document, W = window, N = navigator, S = screen, L = location;
     const now = () => Date.now();
     const text = el => (el?.getAttribute?.("aria-label") || el?.textContent || "").trim();
 
     /* ==========================================
-       1. 状態管理 (Visitor / Session / Time)
+       1. 状態管理 (Visitor / Session / Time / Scroll)
        ========================================== */
-    let activeTime = 0, lastVisibleTs = now(), tPage = now();
+    let activeTime = 0, lastVisibleTs = now(), tPage = now(), maxScroll = 0;
 
-    // 実際にページを見ていた時間（タブが裏にある時間は除外）を計算
     const updateActiveTime = () => {
       if (D.visibilityState === "visible") lastVisibleTs = now();
       else activeTime += now() - lastVisibleTs;
     };
     D.addEventListener("visibilitychange", updateActiveTime);
+
+    const updateScrollDepth = () => {
+      const h = D.documentElement;
+      const p = W.scrollY / (h.scrollHeight - h.clientHeight);
+      if (p > maxScroll) maxScroll = p;
+    };
+    D.addEventListener("scroll", updateScrollDepth, { passive: true });
 
     // ID管理
     const uuid4 = () => "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
@@ -48,7 +54,6 @@
       return m ? decodeURIComponent(m[1]) : null;
     };
 
-    // 永続ビジターID
     const visitorId = (() => {
       let vid = getCookie(CONF.VISITOR_COOKIE);
       if (vid) return vid;
@@ -58,7 +63,6 @@
       return vid;
     })();
 
-    // セッションID
     const touchSession = () => {
       let sid = sessionStorage.getItem("apz_sid");
       const t = now(), last = +sessionStorage.getItem("apz_sid_ts") || 0;
@@ -68,9 +72,8 @@
       return sid;
     };
 
-    // UTMパラメータ取得
     const getUtmParams = () => {
-      const params = new URLSearchParams(location.search);
+      const params = new URLSearchParams(L.search);
       return {
         utm_source: params.get('utm_source'),
         utm_medium: params.get('utm_medium'),
@@ -104,7 +107,8 @@
         const payload = {
           visitor_id: visitorId, session_id: touchSession(),
           event_name, event_params,
-          page_url: location.href, page_title: D.title,
+          page_url: L.href, page_title: D.title,
+          language: D.documentElement.lang || N.language,
           referrer: D.referrer, ua: N.userAgent,
           screen_w: S.width, screen_h: S.height,
           ...getUtmParams(),
@@ -121,9 +125,25 @@
     /* ==========================================
        4. 自動イベント計測
        ========================================== */
-    // クリック計測（イベント委譲）
+    // クリック計測
     D.addEventListener("click", e => {
       const t = e.target;
+
+      const extLink = t.closest('a[href^="http"]:not([href*="' + L.hostname + '"])');
+      if (extLink) {
+        return sendEvent("outbound_click", {
+          href: extLink.href, label: text(extLink),
+          link_domain: new URL(extLink.href).hostname
+        });
+      }
+
+      const sugg = t.closest(".lz-search-suggestion");
+      if (sugg) {
+        return sendEvent("search_suggestion_click", {
+          search_term: sugg.dataset.term, card_id: sugg.dataset.id, label: sugg.dataset.title
+        });
+      }
+
       const card = t.closest(".lz-card");
       if (card) return sendEvent("card_click", { card_id: card.dataset.id, label: card.dataset.title });
       
@@ -131,12 +151,32 @@
       if (btn) return sendEvent("ui_click", { label: text(btn), href: btn.href });
 
       const sns = t.closest(".lz-sns a");
-      if (sns) return sendEvent("sns_click", { href: sns.href });
+      if (sns) return sendEvent("share_click", { platform: sns.dataset.platform, href: sns.href });
+
+      const toolBtn = t.closest("[data-action]");
+      if (toolBtn) return sendEvent("tool_click", { action: toolBtn.dataset.action });
+
     }, { capture: true, passive: true });
 
-    // モーダル開閉監視
+    // フォーム送信
+    D.addEventListener("submit", e => {
+      if (e.target.matches(".lz-search-form")) {
+        const input = e.target.querySelector("input[type=search]");
+        if (input.value) sendEvent("search_submit", { search_term: input.value });
+      }
+    });
+
+    // 属性変更監視 (モーダル, 言語切替)
     const obs = new MutationObserver(ms => {
       ms.forEach(m => {
+        // 言語切替
+        if (m.type === 'attributes' && m.attributeName === 'lang') {
+          return sendEvent('language_switched', { 
+            label: `${m.oldValue} -> ${D.documentElement.lang}`,
+            group: D.documentElement.lang
+          });
+        }
+        // モーダル表示
         m.addedNodes.forEach(n => {
           if (n.nodeType === 1 && n.classList?.contains("lz-backdrop")) {
             setTimeout(() => {
@@ -147,7 +187,7 @@
         });
       });
     });
-    obs.observe(D.body, { childList: true });
+    obs.observe(D.documentElement, { attributes: true, attributeOldValue: true, subtree: true, childList: true });
 
     // ライフサイクルイベント
     loadGeo().finally(() => {
@@ -157,8 +197,13 @@
     let isClosed = false;
     const flush = () => {
       if (isClosed) return; isClosed = true;
+      updateScrollDepth();
       const finalActive = D.visibilityState === "visible" ? activeTime + (now() - lastVisibleTs) : activeTime;
-      sendEvent("page_close", { engaged_ms: finalActive, total_ms: now() - tPage });
+      sendEvent("page_close", { 
+        engaged_ms: finalActive, 
+        total_ms: now() - tPage,
+        scroll_depth: Math.round(maxScroll * 100)
+      });
     };
     W.addEventListener("pagehide", flush);
     W.addEventListener("beforeunload", flush);
