@@ -1,5 +1,5 @@
 /**
- * templates.js - 構造定義（送信ボタン全タブ配置版）
+ * templates.js - 構造定義（リンク定義を動的生成するリファクタリング版）
  */
 import { i18n } from './i18n.js';
 
@@ -10,7 +10,42 @@ export const catLabels = {
   other: i18n.types.other.catLabel
 };
 
-export const getFormHTML = () => `
+// 🍎 リンクとSNSのHTMLを動的に生成するヘルパー関数
+const generateLinksHTML = () => {
+  const linkKeys = Object.keys(i18n.links);
+
+  const checkboxes = linkKeys.map(key => {
+    const linkInfo = i18n.links[key];
+    return `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="link_trigger" value="${key}"><span class="lz-choice-inner">${linkInfo.label}</span></label>`;
+  }).join('');
+
+  const inputs = linkKeys.map(key => {
+    const linkInfo = i18n.links[key];
+    if (key === 'rel') {
+      // 「関連リンク」は2セットの入力を持つ特別ケース
+      return `
+        <div id="f-rel" style="display:none; flex-direction:column; gap:12px;">
+          <div class="lz-grid">
+            <input type="url" id="rel_url1" name="link_rel_url1" class="lz-input" placeholder="${i18n.labels.rel_url} 1">
+            <input type="text" id="rel_title1" name="link_rel_title1" class="lz-input" placeholder="${i18n.labels.rel_title} 1">
+          </div>
+          <div id="rel-link2-row" class="lz-grid" style="display:none;">
+            <input type="url" id="rel_url2" name="link_rel_url2" class="lz-input" placeholder="${i18n.labels.rel_url} 2">
+            <input type="text" id="rel_title2" name="link_rel_title2" class="lz-input" placeholder="${i18n.labels.rel_title} 2">
+          </div>
+        </div>`;
+    }
+    // 通常のリンク・SNS入力
+    return `<div id="f-${key}" style="display:none;"><input type="text" name="link_${key}" class="lz-input" placeholder="${linkInfo.placeholder}"></div>`;
+  }).join('');
+
+  return { checkboxes, inputs };
+};
+
+export const getFormHTML = () => {
+  const { checkboxes, inputs } = generateLinksHTML();
+
+  return `
 <form id="lz-article-form" class="lz-form-wrap">
   <div class="lz-form-tabs">
     <div class="lz-form-tab is-active" data-type="report">${i18n.tabs.report}</div>
@@ -231,31 +266,12 @@ export const getFormHTML = () => `
         </div>
       </div>
 
-      <div id="box-sns-links" class="lz-field">
+      <div id="box-link-section" class="lz-field">
         <div class="lz-section-head">${i18n.sections.links}</div>
-        <div class="lz-choice-flex">
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="home"><span class="lz-choice-inner">${i18n.options.sns_home}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ec"><span class="lz-choice-inner">${i18n.options.sns_ec}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="rel"><span class="lz-choice-inner">${i18n.options.sns_rel}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="ig"><span class="lz-choice-inner">${i18n.options.sns_ig}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="fb"><span class="lz-choice-inner">${i18n.options.sns_fb}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="x"><span class="lz-choice-inner">${i18n.options.sns_x}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="line"><span class="lz-choice-inner">${i18n.options.sns_line}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="sns_trigger" value="tt"><span class="lz-choice-inner">${i18n.options.sns_tt}</span></label>
-        </div>
-
-        <div id="sns-inputs" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
-          <div id="f-home" style="display:none;"><input type="url" name="url_home" class="lz-input" placeholder="${i18n.placeholders.url_prefix} ${i18n.placeholders.url_hint}"></div>
-          <div id="f-ec" style="display:none;"><input type="url" name="url_ec" class="lz-input" placeholder="${i18n.placeholders.url_prefix_ec} ${i18n.placeholders.url_hint}"></div>
-          <div id="f-rel" style="display:none; flex-direction:column; gap:12px;">
-            <div class="lz-grid"><input type="url" id="rel_url1" name="rel_url1" class="lz-input" placeholder="${i18n.placeholders.rel_url} 1 ${i18n.placeholders.url_hint}"><input type="text" id="rel_title1" name="rel_title1" class="lz-input" placeholder="${i18n.placeholders.rel_title} 1"></div>
-            <div id="rel-link2-row" class="lz-grid" style="display:none;"><input type="url" id="rel_url2" name="rel_url2" class="lz-input" placeholder="${i18n.placeholders.rel_url} 2 ${i18n.placeholders.url_hint}"><input type="text" id="rel_title2" name="rel_title2" class="lz-input" placeholder="${i18n.placeholders.rel_title} 2"></div>
-          </div>
-          <div id="f-ig" style="display:none;"><input type="text" name="sns_ig" class="lz-input" placeholder="${i18n.placeholders.sns_ig}"></div>
-          <div id="f-fb" style="display:none;"><input type="text" name="sns_fb" class="lz-input" placeholder="${i18n.placeholders.sns_fb}"></div>
-          <div id="f-x" style="display:none;"><input type="text" name="sns_x" class="lz-input" placeholder="${i18n.placeholders.sns_x}"></div>
-          <div id="f-line" style="display:none;"><input type="text" name="sns_line" class="lz-input" placeholder="${i18n.placeholders.sns_line}"></div>
-          <div id="f-tt" style="display:none;"><input type="text" name="sns_tt" class="lz-input" placeholder="${i18n.placeholders.sns_tt}"></div>
+        <label class="lz-label">${i18n.labels.link_trigger}</label>
+        <div class="lz-choice-flex">${checkboxes}</div>
+        <div id="link-inputs" style="display:flex; flex-direction:column; gap:12px; margin-top:15px;">
+          ${inputs}
         </div>
       </div>
 
@@ -267,7 +283,7 @@ export const getFormHTML = () => `
           <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="form"><span class="lz-choice-inner">${i18n.options.cm_form}</span></label>
           <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="email"><span class="lz-choice-inner">${i18n.options.cm_email}</span></label>
           <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="tel"><span class="lz-choice-inner">${i18n.options.cm_tel}</span></label>
-          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="other"><span class="lz-choice-inner">${i18n.options.cm_other}</span></label>
+          <label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cm" value="other"><span class="lz-choice-inner">${i18n.common.other_label}</span></label>
         </div>
       </div>
 
@@ -298,17 +314,16 @@ export const getFormHTML = () => `
   <div id="lz-confirm-overlay" class="lz-confirm-overlay">
     <div class="lz-confirm-modal">
       <div class="lz-confirm-head">
-        <div class="lz-confirm-title">入力内容の確認</div>
+        <div class="lz-confirm-title">${i18n.common.confirmTitle}</div>
       </div>
       <div id="lz-confirm-body" class="lz-confirm-body">
         </div>
       <div class="lz-confirm-foot">
-        <button type="button" id="lz-btn-back" class="lz-btn-back">修正する</button>
-        <button type="button" id="lz-btn-go" class="lz-btn-go">この内容で送信する</button>
+        <button type="button" id="lz-btn-back" class="lz-btn-back">${i18n.common.backBtn}</button>
+        <button type="button" id="lz-btn-go" class="lz-btn-go">${i18n.common.confirmBtn}</button>
       </div>
     </div>
   </div>
 </form>
 `;
-
-export const formCommonHTML = ``;
+}
