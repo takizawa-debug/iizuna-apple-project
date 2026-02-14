@@ -262,13 +262,3 @@ function getSignatureKey(key, dateStamp, regionName, serviceName) {
   const kService = Utilities.computeHmacSha256Signature(Utilities.newBlob(serviceName).getBytes(), kRegion);
   return Utilities.computeHmacSha256Signature(Utilities.newBlob("aws4_request").getBytes(), kService);
 }
-
-// フォームのジャンルデータを取得する（doPost内でカテゴリ整形に参照されるため必要）
-function getFormGenresData(type) {
-  // この関数はサーバーサイドで直接は実行されないが、カテゴリ名のインデックスを
-  // 正しく取得するためのマスターデータ構造を返すダミーとして機能する。
-  if (type === 'shop') return { items: {"食べる":[], "買う":[], "楽しむ":[], "泊まる":[], "学ぶ":[], "働く":[], "その他":[]} };
-  if (type === 'event') return { items: {"体験・ツアー":[], "講座・セミナー":[], "こども向け":[], "祭り・催し":[], "アート・文化":[], "その他":[]} };
-  if (type === 'farmer') return { items: {"りんご農家":[], "その他果樹":[], "米・雑穀":[], "野菜":[], "その他":[]} };
-  return { items: {} };
-}
