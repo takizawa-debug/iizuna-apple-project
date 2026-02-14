@@ -207,6 +207,9 @@ function _mapRowToObject(row, idx) {
 function doGet(e) {
   try {
     const p = e.parameter || {};
+    if (p.mode === 'form_genres') {
+      return serveFormGenres(e); // 新しいファイルに書いた関数を呼び出す
+    }
     const sh = _sheet();
     const values = sh.getDataRange().getValues();
     const header = values[HEADER_ROW - 1].map(v => String(v).trim());

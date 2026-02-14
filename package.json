@@ -4,13 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gas-push-analytics": "cd Analytics && clasp push",
+    "gas-pull-analytics": "cd Analytics && clasp pull",
+    "gas-push-import": "cd Inport && clasp push",
+    "gas-pull-import": "cd Inport && clasp pull"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@types/google-apps-script": "^2.0.8"
+    "@types/google-apps-script": "^1.0.98",
+    "@google/clasp": "latest"
   }
 }
