@@ -26,7 +26,7 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   let lastRowIndex = 0;
   let sheet = null;
-zq
+
   try {
     lock.waitLock(30000);
     const ss = SpreadsheetApp.getActiveSpreadsheet();
