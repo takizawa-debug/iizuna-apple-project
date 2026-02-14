@@ -443,13 +443,25 @@ export async function initFormLogic() {
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
       
-      // 🍎 ラベルのマッピングを定義
-      const labelMap = {
-        ...i18n.labels,
-        shop_zip: i18n.labels.zip,
-        shop_addr: i18n.labels.address,
-        simple_days: i18n.labels.biz_days,
-        shop_notes_biz: i18n.labels.shop_biz_notes
+      // 🍎 全てのキーをi18n.labelsと照合するためのヘルパー関数
+      const getLabel = (key) => {
+        // プレフィックスを削除して一般的なキーに変換
+        const genericKey = key.replace(/^(rep_|inq_|art_|pr_|cm_|cont_|admin_)/, '');
+        if (i18n.labels[key]) return i18n.labels[key];
+        if (i18n.labels[genericKey]) return i18n.labels[genericKey];
+
+        // 動的なキーや特殊なケース
+        if (key.startsWith('link_')) {
+            const linkKey = key.replace(/^link_/, '').replace(/_url\d*|_title\d*$/, '');
+            return i18n.links[linkKey]?.label || key;
+        }
+        if (key === 'shop_zip') return i18n.labels.zip;
+        if (key === 'shop_addr') return i18n.labels.address;
+        if (key === 'simple_days') return i18n.labels.biz_days;
+        if (key === 'shop_notes_biz') return i18n.labels.shop_biz_notes;
+        if (key === 'art_title') return i18n.types[payload.art_type]?.title || i18n.labels.art_title;
+
+        return key; // 見つからない場合はキーをそのまま返す
       };
 
       const processedKeys = new Set();
@@ -459,25 +471,18 @@ export async function initFormLogic() {
         let val = payload[key];
         
         const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger'];
-        if (skipKeys.includes(key) || !val || val.toString().trim() === "" || (typeof val === 'object' && !(val instanceof Array))) return;
+        if (skipKeys.includes(key) || val === null || val.toString().trim() === "" || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) return;
 
-        let label = labelMap[key] || key.startsWith('cat_gen-') ? key : i18n.labels[key] || key;
+        let label = getLabel(key);
         let displayVal = val;
 
-        if (key.startsWith('link_')) {
-            const linkKey = key.replace('link_', '');
-            if(i18n.links[linkKey]) label = i18n.links[linkKey].label;
-        } else if (key.startsWith('art_')) {
-            const artKey = key.replace('art_','')
-            if (i18n.labels[artKey]) label = i18n.labels[artKey];
-            if (artKey === 'title') {
-                const type = payload.art_type;
-                if(i18n.types[type]) label = i18n.types[type].title
-            }
-        } else if (key.startsWith('cat_gen')) {
-            const catL1Key = payload.cat_l1;
-            const catL1 = Array.isArray(catL1Key) ? catL1Key.map(k => i18n.labels[k] || k).join(', ') : i18n.labels[catL1Key] || catL1Key;
-            label = `${catL1}${i18n.labels.genre_suffix}`;
+        // カテゴリー（ジャンル）の特殊処理
+        if (key.startsWith('cat_gen-')) {
+          const catL1Values = Array.isArray(payload.cat_l1) ? payload.cat_l1 : [payload.cat_l1];
+          const catL1Key = catL1Values.find(c => key.includes(c.replace(/\s/g, ''))); // 仮のロジック
+          label = `${catL1Key || 'ジャンル'}${i18n.labels.genre_suffix}`;
+        } else if (key.startsWith('cat_root_other_val')) {
+          label = i18n.labels.genre_free;
         }
 
         if (key.startsWith('c_closed_')) {
@@ -496,7 +501,7 @@ export async function initFormLogic() {
             displayVal = `${startH}:${startM} - ${endH}:${endM}`;
             if (key.startsWith('simple_')) { label = i18n.labels.std_biz_hours; } 
             else if (key.startsWith('ev_')) { label = i18n.labels.ev_stime; }
-            else if (key.startsWith('c_s_')) { const day = key.split('_')[2]; label = `${day}${i18n.labels.day_suffix}`; }
+            else if (key.startsWith('c_s_')) { const day = key.split('_s_')[1].split('_')[0]; label = `${day}${i18n.labels.day_suffix}`; }
             processedKeys.add(key.replace('_h', '_m'));
             processedKeys.add(endKeyH);
             processedKeys.add(endKeyM);
