@@ -31,13 +31,13 @@ export async function initFormLogic() {
     if (!type || !set) {
       if (fieldsContainer) fieldsContainer.style.display = 'none';
       url.searchParams.delete('type');
-      window.history.replaceState({}, '', url.pathname + url.search);
+      window.history.replaceState({}, '', url.toString()); // 🍎 .toString() に修正
       return;
     }
 
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
     url.searchParams.set('type', type);
-    window.history.replaceState({}, '', url.pathname + url.search);
+    window.history.replaceState({}, '', url.toString()); // 🍎 .toString() に修正
 
     // テキスト・ラベル・プレースホルダの一括反映
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
@@ -252,6 +252,18 @@ export async function initFormLogic() {
   // タブ切り替えと必須属性管理
   document.querySelectorAll('.lz-form-tab').forEach(t => {
     t.addEventListener('click', () => {
+      const activeType = t.dataset.type;
+
+      // 🍎 URLにタブの状態を反映
+      const url = new URL(window.location);
+      url.searchParams.set('form', activeType);
+      
+      // 「記事投稿」タブ以外では、内部的な `type` パラメータは不要なので削除
+      if (activeType !== 'article') {
+        url.searchParams.delete('type');
+      }
+      window.history.replaceState({}, '', url.toString());
+
       document.querySelectorAll('.lz-form-tab').forEach(x => x.classList.toggle('is-active', x === t));
       document.querySelectorAll('.lz-form-body').forEach(b => {
         b.classList.remove('is-active');
@@ -262,7 +274,10 @@ export async function initFormLogic() {
         target.classList.add('is-active');
         target.querySelectorAll('[data-required="true"]').forEach(el => el.required = true);
       }
-      if (t.dataset.type === 'article') updateTypeView();
+      
+      if (t.dataset.type === 'article') {
+        updateTypeView();
+      }
       
       // タブ切り替え時に時間のイベントを再バインド
       rebindTimeEvents();
@@ -593,20 +608,40 @@ export async function initFormLogic() {
           window.location.reload();
         } else { throw new Error(result.error); }
       } catch (err) {
-        alert(i18n.alerts.send_error + "\n理由: " + err.message);
+        alert(i18n.alerts.send_error + "\\n理由: " + err.message);
         allBtns.forEach(btn => { btn.disabled = false; btn.textContent = i18n.common.sendBtn; btn.style.opacity = '1'; });
       }
     };
   }
 
-  // 初期化実行
+  // 🍎 初期化実行 (URLパラメータ対応)
   const urlParams = new URLSearchParams(window.location.search);
+  const formTypeFromUrl = urlParams.get('form');
   const typeFromUrl = urlParams.get('type');
-  const initialTab = document.querySelector('.lz-form-tab.is-active');
-  if (initialTab) initialTab.click(); 
+
+  // URLの `type` パラメータに基づいて、記事タイプのselectを先に設定
+  if (typeSelect && typeFromUrl) {
+    typeSelect.value = typeFromUrl;
+  }
+  
+  // `onchange` イベントは常にバインドしておく
   if (typeSelect) {
-    if (typeFromUrl) typeSelect.value = typeFromUrl;
     typeSelect.onchange = updateTypeView;
-    updateTypeView();
+  }
+
+  // URLの `form` パラメータに基づいて、表示するタブを決定
+  let tabToActivate = null;
+  if (formTypeFromUrl) {
+    tabToActivate = document.querySelector(`.lz-form-tab[data-type="${formTypeFromUrl}"]`);
+  }
+
+  // URLに `form` パラメータがないか、対応するタブが見つからない場合は、デフォルトの 'report' を表示
+  if (!tabToActivate) {
+    tabToActivate = document.querySelector('.lz-form-tab[data-type="report"]');
+  }
+
+  // 決定したタブをプログラムからクリックして、状態の整合性を保つ
+  if (tabToActivate) {
+    tabToActivate.click();
   }
 }
