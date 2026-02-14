@@ -129,6 +129,34 @@
     D.addEventListener("click", e => {
       const t = e.target;
 
+      // モーダル内の検索結果クリック
+      const searchItem = t.closest('.lz-s-item');
+      if (searchItem) {
+          const wrap = searchItem.closest('.lz-s-wrap');
+          return sendEvent('search_result_click', { 
+              search_term: wrap?.dataset.searchTerm, // どのキーワード検索からの遷移か
+              card_id: searchItem.dataset.gotoId, // どの記事へ遷移したか
+              label: searchItem.querySelector('.lz-s-name')?.textContent
+          });
+      }
+
+      // モーダル本文の自動リンククリック
+      const autoLink = t.closest('.lz-auto-link');
+      if (autoLink) {
+          if (autoLink.dataset.gotoId) {
+              return sendEvent('direct_link_click', {
+                  card_id: autoLink.dataset.gotoId,
+                  label: text(autoLink)
+              });
+          }
+          if (autoLink.dataset.keyword) {
+              return sendEvent('keyword_click', {
+                  search_term: autoLink.dataset.keyword,
+                  label: text(autoLink)
+              });
+          }
+      }
+
       const extLink = t.closest('a[href^="http"]:not([href*="' + L.hostname + '"])');
       if (extLink) {
         return sendEvent("outbound_click", {

@@ -62,7 +62,7 @@ window.lzSearchEngine = (function() {
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
       '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1000; } }',
       '.lz-s-loading-label { font-size: 1.2rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
-    ].join('\n');
+    ].join('\\n');
     document.head.appendChild(style);
   };
 
@@ -196,8 +196,7 @@ window.lzSearchEngine = (function() {
 
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
         
-        var html = '<div class="lz-s-wrap">';
-        /* 🍎 閉じるボタン (維持) */
+        var html = '<div class="lz-s-wrap" data-search-term="' + C.esc(keyword) + '">';
         html += '<div class="lz-s-close-sticky" id="lzSearchStickyClose">&times;</div>';
         html += '<div class="lz-s-title">' + resTitle + '</div>';
         
