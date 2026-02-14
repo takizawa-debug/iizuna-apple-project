@@ -445,46 +445,57 @@ export async function initFormLogic() {
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
       
-      // 🍎 ラベル取得ロジックを全面改修
       const l1Checkboxes = Array.from(document.querySelectorAll('input[name="cat_l1"]'));
       const l1KeyMap = l1Checkboxes.reduce((acc, chk) => {
-          acc[chk.dataset.subid] = chk.dataset.l1key;
-          return acc;
+        acc[chk.dataset.subid] = chk.dataset.l1key;
+        return acc;
       }, {});
       
       const getLabel = (key) => {
-        const keyMap = {
-            rep_name: i18n.labels.name, rep_content: i18n.labels.content,
-            inq_name: i18n.labels.name, inq_email: i18n.labels.email, inq_content: i18n.labels.content,
-            art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title,
-            art_lead: i18n.labels.art_lead, art_body: i18n.labels.art_body,
-            cat_l1: i18n.labels.cat_l1,
-            shop_zip: i18n.labels.zip, shop_addr: i18n.labels.address, shop_notes: i18n.labels.shop_notes,
-            simple_days: i18n.labels.biz_days, shop_holiday_type: i18n.labels.holiday_biz,
-            shop_notes_biz: i18n.labels.shop_biz_notes, 
-            pr_variety: i18n.labels.pr_varieties, pr_product: i18n.labels.pr_products,
-            pr_area: i18n.labels.pr_area, pr_staff: i18n.labels.pr_staff,
-            pr_other_crops: i18n.labels.pr_other_crops, pr_ent_type: i18n.labels.pr_biz_type,
-            pr_rep_name: i18n.labels.pr_rep_name, pr_invoice: i18n.labels.pr_invoice, 
-            pr_invoice_num: i18n.labels.pr_invoice_num,
-            cm_method: i18n.labels.cm_method, cm_notes: i18n.labels.cm_notes,
-            art_memo: i18n.labels.art_memo, 
-            cont_name: i18n.labels.cont_name, admin_email: i18n.labels.admin_email, admin_msg: i18n.labels.admin_msg
-        };
-        if (keyMap[key]) return keyMap[key];
-        
-        if (key.startsWith('link_')) {
-            const linkKey = key.replace(/^link_/, '').replace(/_url\d*|_title\d*$/, '');
-            return i18n.links[linkKey]?.label || key;
-        }
+          const keyMap = {
+              rep_name: i18n.labels.name, rep_content: i18n.labels.content,
+              inq_name: i18n.labels.name, inq_email: i18n.labels.email, inq_content: i18n.labels.content,
+              art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title,
+              art_lead: i18n.labels.art_lead, art_body: i18n.labels.art_body,
+              cat_l1: i18n.labels.cat_l1, cat_root_other_val: i18n.labels.genre_free,
+              shop_zip: i18n.labels.zip, shop_addr: i18n.labels.address, shop_notes: i18n.labels.shop_notes,
+              simple_days: i18n.labels.biz_days, shop_holiday_type: i18n.labels.holiday_biz,
+              shop_notes_biz: i18n.labels.shop_biz_notes, 
+              ev_sdate: i18n.labels.ev_sdate, ev_edate: i18n.labels.ev_edate, ev_fee: i18n.labels.ev_fee,
+              ev_items: i18n.labels.ev_items, ev_target: i18n.labels.ev_target,
+              pr_variety: i18n.labels.pr_varieties, pr_product: i18n.labels.pr_products,
+              pr_area: i18n.labels.pr_area, pr_staff: i18n.labels.pr_staff,
+              pr_other_crops: i18n.labels.pr_other_crops, pr_ent_type: i18n.labels.pr_biz_type,
+              pr_rep_name: i18n.labels.pr_rep_name, pr_invoice: i18n.labels.pr_invoice, 
+              pr_invoice_num: i18n.labels.pr_invoice_num,
+              cm_method: i18n.labels.cm_method, cm_url: i18n.labels.cm_url, cm_mail: i18n.labels.cm_mail, 
+              cm_tel: i18n.labels.cm_tel, cm_other: i18n.labels.cm_other, cm_notes: i18n.labels.cm_notes,
+              art_memo: i18n.labels.art_memo, 
+              cont_name: i18n.labels.cont_name, admin_email: i18n.labels.admin_email, admin_msg: i18n.labels.admin_msg
+          };
+          if (keyMap[key]) return keyMap[key];
+          
+          if (key.startsWith('link_')) {
+              const linkKey = key.replace(/^link_/, '').replace(/_url\d*|_title\d*$/, '');
+              return i18n.links[linkKey]?.label || key;
+          }
 
-        if (key.startsWith('cat_gen-') && !key.endsWith('_val')) {
-            const subId = key.match(/cat_(gen-\d+)/)?.[1];
-            const l1Label = l1KeyMap[subId] || i18n.labels.genre_suffix.replace('の','');
-            return `${l1Label}${i18n.labels.genre_suffix}`;
-        }
+          if (key.startsWith('cat_gen-') && !key.endsWith('_val')) {
+              const subId = key.match(/cat_(gen-\d+)/)?.[1];
+              const l1Label = l1KeyMap[subId];
+              if (l1Label) return `${l1Label}${i18n.labels.genre_suffix}`;
+          }
 
-        return key.replace(/_val$/, '');
+          return key.replace(/_val$/, '');
+      };
+
+      const translateValue = (key, value) => {
+          if (Array.isArray(value)) return value.map(v => translateValue(key, v)).join(', ');
+          if (i18n.options[value]) return i18n.options[value];
+          if (value === 'yes') return i18n.options.invoice_yes;
+          if (value === 'no') return i18n.options.invoice_no;
+          if (key === 'writing_assist') return value === "on" ? i18n.common.yes : i18n.common.no;
+          return value;
       };
 
       const processedKeys = new Set();
@@ -497,7 +508,7 @@ export async function initFormLogic() {
         if (skipKeys.includes(key) || val === null || val.toString().trim() === "" || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) return;
 
         let label = getLabel(key);
-        let displayVal = val;
+        let displayVal = translateValue(key, val);
         
         if (key.startsWith('c_closed_')) {
           const dayName = key.replace('c_closed_', '');
@@ -515,7 +526,10 @@ export async function initFormLogic() {
             displayVal = `${startH}:${startM} - ${endH}:${endM}`;
             if (key.startsWith('simple_')) { label = i18n.labels.std_biz_hours; } 
             else if (key.startsWith('ev_')) { label = i18n.labels.ev_stime; }
-            else if (key.startsWith('c_s_')) { const day = key.split('_s_')[1].split('_')[0]; label = `${day}${i18n.labels.day_suffix}`; }
+            else if (key.startsWith('c_s_')) { 
+                const day = key.split('_s_')[1].split('_')[0]; 
+                label = `${days[parseInt(day)]}${i18n.labels.day_suffix}`;
+            }
             processedKeys.add(key.replace('_h', '_m'));
             processedKeys.add(endKeyH);
             processedKeys.add(endKeyM);
@@ -523,16 +537,7 @@ export async function initFormLogic() {
         } else if (key.includes('_e_h') || key.endsWith('_m')) return;
         
         if(key === 'pr_area') {
-            displayVal += payload.pr_area_unit || '';
-            processedKeys.add('pr_area_unit');
-        }
-
-        if (Array.isArray(val)) {
-          displayVal = val.map(v => i18n.options[v] || v).join(", ");
-        } else if (i18n.options[val]) {
-          displayVal = i18n.options[val];
-        } else if (key === 'writing_assist') {
-          displayVal = val === "on" ? i18n.common.yes : i18n.common.no;
+            displayVal += translateValue(null, payload.pr_area_unit || '');
         }
 
         previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
