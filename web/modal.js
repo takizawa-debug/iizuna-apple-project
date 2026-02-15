@@ -11,8 +11,9 @@ window.lzModal = (function () {
 
   var MODAL_ACTIVE_LANG = null;
   var ORIGINAL_SITE_LANG = null;
-  var MODAL_OPEN_TS = 0; // モーダル滞在時間計測用
   var MODAL_OPEN_SOURCE = 'card'; // モーダルを開いた経路
+  var MODAL_CUMULATIVE_ACTIVE_MS = 0; // アクティブな滞在時間の合計
+  var MODAL_LAST_RESUME_TS = 0; // 直近の計測開始タイミング
 
   var track = function (name, params) { if (window.mzTrack) window.mzTrack(name, params); };
 
@@ -348,22 +349,44 @@ window.lzModal = (function () {
     HOST.classList.add("open"); MODAL.scrollTop = 0;
   }
 
+  function pauseActiveTimer() {
+    if (MODAL_LAST_RESUME_TS > 0) {
+      MODAL_CUMULATIVE_ACTIVE_MS += (Date.now() - MODAL_LAST_RESUME_TS);
+      MODAL_LAST_RESUME_TS = 0;
+    }
+  }
+
+  function resumeActiveTimer() {
+    if (HOST && HOST.classList.contains("open") && !document.hidden) {
+      if (MODAL_LAST_RESUME_TS === 0) {
+        MODAL_LAST_RESUME_TS = Date.now();
+      }
+    }
+  }
+
+  // タブの切り替えを検知して計測を制御
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) pauseActiveTimer();
+    else resumeActiveTimer();
+  });
+
   function close() {
     if (HOST) {
-      // 🍎 Analytics: モーダル閉じる（滞在時間付き）
+      pauseActiveTimer();
+      // 🍎 Analytics: モーダル閉じる（アクティブ滞在時間付き）
       var cardId = CURRENT_CARD ? CURRENT_CARD.dataset.id : '';
       var modalTitle = document.querySelector('.lz-modal .lz-mt');
       track('modal_close', {
         card_id: cardId,
         modal_title: modalTitle ? modalTitle.textContent : '',
-        dwell_ms: MODAL_OPEN_TS ? Date.now() - MODAL_OPEN_TS : 0
+        dwell_ms: MODAL_CUMULATIVE_ACTIVE_MS
       });
       HOST.classList.remove("open");
     }
     document.title = C.originalTitle;
     var url = new URL(location.href); url.searchParams.delete('id'); url.searchParams.set('lang', ORIGINAL_SITE_LANG);
     window.history.replaceState(null, "", url.toString());
-    MODAL_ACTIVE_LANG = null; MODAL_OPEN_TS = 0;
+    MODAL_ACTIVE_LANG = null; MODAL_CUMULATIVE_ACTIVE_MS = 0; MODAL_LAST_RESUME_TS = 0;
   }
 
   var checkDeepLink = function () {
@@ -404,7 +427,9 @@ window.lzModal = (function () {
         document.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
       }
       ORIGINAL_SITE_LANG = window.LZ_CURRENT_LANG; MODAL_ACTIVE_LANG = ORIGINAL_SITE_LANG;
-      MODAL_OPEN_TS = Date.now(); MODAL_OPEN_SOURCE = 'card';
+      MODAL_CUMULATIVE_ACTIVE_MS = 0;
+      MODAL_LAST_RESUME_TS = Date.now();
+      MODAL_OPEN_SOURCE = 'card';
       var tr = card.closest(".lz-track"); CARDS = tr ? Array.from(tr.querySelectorAll(".lz-card")) : [card];
       IDX = CARDS.indexOf(card);
       // 🍎 Analytics: モーダル表示

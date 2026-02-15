@@ -43,7 +43,7 @@ graph LR
 
 ### 4. 高度なアクセス分析システム (`Analytics/`)
 単なるPV計測に留まらず、ユーザーの「興味の遷移」を高度に可視化します：
-- **[Web版ダッシュボード](https://script.google.com/macros/s/AKfycbw0BClnZFrQtETAz3gwPBJXuSq76RM6WuCVqsbknGk3OnAfByQP9ZlrIMx8I0s9iwShGw/exec?mode=dashboard)**: パラメータを正規化したページ別集計に加え、個別モーダル（むーちゃん等の記事）の人気度を階層別に分析可能。
+- **[Web版ダッシュボード](https://script.google.com/macros/s/AKfycbzkygm3SbcZMqnLA6_U0cKkG_V-5tQHucTa6RZ8kMDtD6uJA8qDL45gQ5lcKWAq_Q1waA/exec?mode=dashboard)**: パラメータを正規化したページ別集計に加え、個別モーダル（むーちゃん等の記事）の人気度を階層別に分析可能。
 - **流入・離脱の可視化**: どの外部サイトから来たか（Referrer）や、どの外部リンクをクリックして離脱したか（Exit Link）を新たに計測。
 - **キーワードジャーニー追跡**: 検索フォームからの入力と、記事内キーワードクリックを完全に統合。トップページ（ドメインのみ）へのアクセスも `/` として正確に合算されます。
 - **完全日本語化**: 運用チームが迷わず利用できるよう、管理画面の全項目を日本語化。
