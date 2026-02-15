@@ -84,11 +84,14 @@ function onEdit(e) {
   // ヘッダー行以前の編集は無視
   if (rowEnd < START_ROW) return;
 
-  // E列(5) または F列(6) が編集範囲に含まれているかチェック
+  // E列(5), F列(6), H列(8) が編集範囲に含まれているかチェック
+  // - H列: Formulaのドライバ（これが変わるとEが変わる）
+  const COL_H = 8;
   const isL1Edited = (colStart <= COL_E && colEnd >= COL_E);
   const isL2Edited = (colStart <= COL_F && colEnd >= COL_F);
+  const isDriverEdited = (colStart <= COL_H && colEnd >= COL_H);
 
-  if (!isL1Edited && !isL2Edited) return;
+  if (!isL1Edited && !isL2Edited && !isDriverEdited) return;
 
   // マスタデータの取得
   const ss = e.source || sheet.getParent(); // e.sourceが稀に無い場合への保険
@@ -105,10 +108,12 @@ function onEdit(e) {
   for (let r = rowStart; r <= rowEnd; r++) {
     if (r < START_ROW) continue;
 
-    if (isL1Edited) {
+    // L1更新トリガー: E列直接編集 OR H列(ドライバ)編集
+    if (isL1Edited || isDriverEdited) {
       updateL2Validation_(sheet, r, masterValues);
     }
 
+    // L2更新トリガー: F列直接編集
     if (isL2Edited) {
       updateL3Validation_(sheet, r, masterValues);
     }
