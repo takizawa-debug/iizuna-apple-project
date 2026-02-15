@@ -213,7 +213,11 @@ const PAGE_NAME_MAP = {
   'index.html': 'トップページ'
 };
 
-function getDashboardStats() {
+/**
+ * ダッシュボード表示用の統計データを集計
+ * @param {Object} params - 期間指定 (startDate, endDate)
+ */
+function getDashboardStats(params = {}) {
   const sh = ensureLogsSheet_();
   const data = sh.getDataRange().getValues();
   if (data.length <= 1) return { error: "No data yet" };
@@ -221,6 +225,20 @@ function getDashboardStats() {
   const headers = data[0];
   const rows = data.slice(1);
   const now = new Date();
+
+  // 🍎 期間指定の解決
+  let filterStart = null;
+  let filterEnd = null;
+
+  if (params.startDate && params.endDate) {
+    filterStart = new Date(params.startDate + "T00:00:00+09:00");
+    filterEnd = new Date(params.endDate + "T23:59:59+09:00");
+  } else {
+    // デフォルト: 直近7日間
+    filterStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    filterEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  }
+
   const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
   // インデックス取得
@@ -265,6 +283,10 @@ function getDashboardStats() {
   rows.forEach(row => {
     const tsStr = row[colTs];
     const ts = new Date(tsStr);
+
+    // 🍎 指定期間外ならスキップ
+    if (ts < filterStart || ts > filterEnd) return;
+
     const ev = row[colEvent];
     const sid = row[colSessionId];
 

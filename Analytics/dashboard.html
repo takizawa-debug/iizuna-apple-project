@@ -179,6 +179,56 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* 🍎 期間指定 UI */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .date-range-picker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            padding: 8px 16px;
+            border-radius: 99px;
+            border: 1px solid #e5e5e5;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .date-range-picker input {
+            border: none;
+            outline: none;
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+            background: transparent;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .btn-refresh {
+            background: var(--text);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 99px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .btn-refresh:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        #loading {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+        }
     </style>
 </head>
 
@@ -194,9 +244,13 @@
                 <span class="badge">Live Analytics</span>
                 <h1>アクセス解析ダッシュボード</h1>
             </div>
-            <div style="text-align: right; color: var(--text-muted); font-size: 14px;">
-                直近7日間のインサイト<br>
-                <span id="date-now"></span>
+            <div class="header-actions">
+                <div class="date-range-picker">
+                    <input type="date" id="start-date">
+                    <span style="color:#ccc; font-weight:800;">~</span>
+                    <input type="date" id="end-date">
+                </div>
+                <button class="btn-refresh" onclick="refresh()">更新</button>
             </div>
         </header>
 
@@ -343,13 +397,30 @@
 
     <script>
         window.onload = function () {
+            // 🍎 初期値（直近7日間）
+            const now = new Date();
+            const last7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const toStr = d => d.toISOString().split('T')[0];
+
+            document.getElementById('start-date').value = toStr(last7);
+            document.getElementById('end-date').value = toStr(now);
+
+            refresh();
+        };
+
+        function refresh() {
+            const start = document.getElementById('start-date').value;
+            const end = document.getElementById('end-date').value;
+
+            document.getElementById('loading').style.display = 'flex';
+            // 各テーブルを一旦クリア
+            document.querySelectorAll('tbody').forEach(b => b.innerHTML = '');
+
             google.script.run
                 .withSuccessHandler(showStats)
                 .withFailureHandler(handleError)
-                .getDashboardStats();
-
-            document.getElementById('date-now').innerText = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
-        };
+                .getDashboardStats({ startDate: start, endDate: end });
+        }
 
         function showStats(stats) {
             document.getElementById('loading').style.display = 'none';
