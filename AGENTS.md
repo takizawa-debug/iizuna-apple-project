@@ -12,7 +12,7 @@
   - **Analytics**: `Analytics` ⇔ [Appletown Analytics](https://docs.google.com/spreadsheets/d/1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU) (`1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU`)
 - **Storage**: AWS S3 (`appletown-iizuna` バケット)
 - **AI**: Google Gemini API (`gemini-2.5-flash`)
-- **DevOps**: Google Clasp, Google IDX
+- **DevOps**: Google Clasp
 
 ## 重要環境変数 (Script Properties)
 以下の変数は `PropertiesService.getScriptProperties()` を通じて管理・取得します。**コードセット内にハードコードしてはいけません。**
