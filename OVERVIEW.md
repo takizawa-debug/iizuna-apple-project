@@ -40,10 +40,10 @@
 ## 4. 次世代型アクセス分析システム
 本サイト専用に開発された「Appletown Analytics」は、単なる数字の集計を超え、ユーザーの「真の関心」を可視化します。
 
-### 4.1 トレンド推移と前期間比較
-PV（閲覧数）やUU（ユーザー数）を時系列で表示。前期間との比較をグラフで可視化することで、キャンペーンやSNS拡散の効果を即座に判定できます。
+### 4.1 トレンド推移・前期間比較・モバイル対応
+PV（閲覧数）やUU（ユーザー数）を時系列で表示。前期間との比較をグラフで可視化することで、キャンペーンやSNS拡散の効果を即座に判定できます。また、**スマホ表示に完全対応**しており、出先でも素早く状況を確認可能です。
 
-![分析ダッシュボード概要](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/dashboard_upper_screenshot_1771156431682.png)
+![分析ダッシュボード概要](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/dashboard_desktop_1771158627598.png)
 
 ### 4.2 「アクティブ滞在時間」による関心度測定
 従来の「開いていた時間」ではなく、Page Visibility API を活用した**「実際に画面を注視していた時間」**を計測。どの記事が本当に読まれているかを正確にランキングします。
@@ -51,7 +51,7 @@ PV（閲覧数）やUU（ユーザー数）を時系列で表示。前期間と�
 ### 4.3 詳細な回遊・流入分析
 ユーザーがどこから来て、何に興味を持ち、どのPDFを発行したか。これらを1つの画面で俯瞰することが可能です。
 
-![詳細ランキング分析](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/dashboard_rankings_1_screenshot_1771156476784.png)
+![モバイル表示と詳細分析](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/mobile_top_metrics_1771158742682.png)
 
 ---
 
