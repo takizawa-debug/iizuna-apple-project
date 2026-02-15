@@ -240,7 +240,7 @@ function getDashboardStats() {
   const colUtmSource = idx('utm_source');
 
   const stats = {
-    totalPv: rows.length,
+    totalPv: rows.slice(-1000).length, // 全体計は全データだが、最近の傾向は直近を見る。ただし表示は全体。
     recentPv: 0,
     basePageRanking: {}, // /savor, /discover etc.
     itemRanking: {},     // { card_id: { count, title } }
@@ -252,6 +252,10 @@ function getDashboardStats() {
     interactionRanking: { share: {}, pdf: {} }, // 共有・PDF
     engagement: {}       // { card_id: { sum_ms, count } }
   };
+  stats.totalPv = rows.length;
+
+  const colSessionId = idx('session_id');
+  const processedSessions = new Set();
 
   rows.forEach(row => {
     const tsStr = row[colTs];
@@ -323,23 +327,30 @@ function getDashboardStats() {
       }
     }
 
-    // 流入元（リファラ）の集計
-    const ref = String(row[colReferrer] || "").trim();
-    const utmSource = String(row[colUtmSource] || "").trim();
-    const internalDomain = 'appletown-iizuna.com';
-    const isInternal = ref.includes(internalDomain);
+    // 流入元（リファラ）の集計 - セッションごとに最初の1回のみカウント
+    const sid = row[colSessionId];
+    if (sid && !processedSessions.has(sid)) {
+      const ref = String(row[colReferrer] || "").trim();
+      const utmSource = String(row[colUtmSource] || "").trim();
+      const internalDomain = 'appletown-iizuna.com';
+      const isInternal = ref.includes(internalDomain);
 
-    if (utmSource === 'share' && !isInternal) {
-      stats.referrerRanking["SNS共有経由"] = (stats.referrerRanking["SNS共有経由"] || 0) + 1;
-    } else if (utmSource === 'pdf_qr' && !isInternal) {
-      stats.referrerRanking["印刷チラシQR経由"] = (stats.referrerRanking["印刷チラシQR経由"] || 0) + 1;
-    } else if (ref && !isInternal) {
-      const refDomain = ref.split('/')[2] || "直接アクセス/不明";
-      stats.referrerRanking[refDomain] = (stats.referrerRanking[refDomain] || 0) + 1;
-    } else if (!ref) {
-      stats.referrerRanking["直接アクセス/不明"] = (stats.referrerRanking["直接アクセス/不明"] || 0) + 1;
+      if (utmSource === 'share' || utmSource.includes('share')) {
+        stats.referrerRanking["SNS共有経由"] = (stats.referrerRanking["SNS共有経由"] || 0) + 1;
+        processedSessions.add(sid);
+      } else if (utmSource === 'pdf_qr' || utmSource.includes('qr')) {
+        stats.referrerRanking["印刷チラシQR経由"] = (stats.referrerRanking["印刷チラシQR経由"] || 0) + 1;
+        processedSessions.add(sid);
+      } else if (ref && !isInternal) {
+        const refDomain = ref.split('/')[2] || "直接アクセス/不明";
+        stats.referrerRanking[refDomain] = (stats.referrerRanking[refDomain] || 0) + 1;
+        processedSessions.add(sid);
+      } else if (!ref || isInternal) {
+        // 内部遷移の場合は、セッションの最初であれば「直接アクセス」扱い（通常は空のはず）
+        stats.referrerRanking["直接アクセス/不明"] = (stats.referrerRanking["直接アクセス/不明"] || 0) + 1;
+        processedSessions.add(sid);
+      }
     }
-    // 🍎 内部ドメインの場合はスキップ（ランキングを汚さない）
 
     // 離脱先（外部リンク）の集計
     if (ev === 'outbound_click' || ev === 'sns_link_click' || ev === 'related_article_click') {
@@ -462,6 +473,7 @@ function setupSpreadsheetDashboard() {
 
   // セクション5: 検索キーワード (合算)
   sh.getRange('A35').setValue('注目ワード (検索・リンク) 合計ランキング').setFontWeight('bold').setBackground('#f5f5f7');
+  // QUERYの範囲を最新の列数に合わせて調整
   sh.getRange('A36').setFormula(`={QUERY(Logs!A:AZ, "SELECT AZ, COUNT(A) WHERE AZ IS NOT NULL GROUP BY AZ LABEL COUNT(A) 'ヒッツ'", 1); QUERY(Logs!A:AF, "SELECT AF, COUNT(A) WHERE AF IS NOT NULL GROUP BY AF LABEL COUNT(A) 'ヒッツ'", 0)}`);
   sh.getRange('A36').setValue('注目キーワード (合算)'); // ヘッダーを上書きしてラベルを日本語化
   sh.getRange('A36').setFontWeight('bold').setBackground('#f5f5f7');

@@ -106,7 +106,8 @@
       try {
         const payload = {
           visitor_id: visitorId, session_id: touchSession(),
-          event_name, event_params,
+          event_name,
+          event_params: { ...getUtmParams(), ...event_params }, // 🍎 安全のためparamsの中にも入れる
           page_url: L.href, page_title: D.title,
           language: W.LZ_CURRENT_LANG || D.documentElement.lang || N.language,
           referrer: D.referrer, ua: N.userAgent,
