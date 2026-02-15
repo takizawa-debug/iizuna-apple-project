@@ -8,7 +8,7 @@ import { catLabels } from './templates.js';
 
 export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
-  const days = i18n.common.dayList;
+  const days = i18n.lists.days;
   let currentFetchType = null;
   let uploadedFiles = [];
 
@@ -39,7 +39,7 @@ export async function initFormLogic() {
 
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
     if (lblDynCat) lblDynCat.textContent = catLabels[type];
-    
+
     lblTitle.textContent = set.title;
     lblLead.textContent = set.lead;
     inpLead.placeholder = set.leadPlaceholder || i18n.placeholders.art_lead;
@@ -53,7 +53,7 @@ export async function initFormLogic() {
       if (el) {
         el.style.display = cond ? 'flex' : 'none';
         el.querySelectorAll('input, textarea, select').forEach(f => {
-          if (cond) { if (f.dataset.needed === "true") f.required = true; } 
+          if (cond) { if (f.dataset.needed === "true") f.required = true; }
           else { if (f.required) f.dataset.needed = "true"; f.required = false; }
         });
       }
@@ -72,15 +72,15 @@ export async function initFormLogic() {
     if (zipBadge && addrBadge && zipInp && addrInp) {
       zipBadge.style.display = addrBadge.style.display = isShop ? 'inline-block' : 'none';
       zipInp.required = addrInp.required = isShop;
-      zipBadge.textContent = addrBadge.textContent = i18n.badges.required;
+      zipBadge.textContent = addrBadge.textContent = i18n.ui.badges.required;
     }
 
     const venueBox = document.getElementById('ev-venue-box');
     if (venueBox) {
       const vLabel = venueBox.querySelector('.lz-label');
-      if (vLabel) vLabel.textContent = (type === 'other') ? i18n.labels.other_venue_name : i18n.labels.ev_venue_name;
+      if (vLabel) vLabel.textContent = (type === 'other') ? i18n.misc.other_venue_name : i18n.fields.ev_venue_name;
     }
-    
+
     if (type !== 'farmer') {
       const invBox = document.getElementById('pr-invoice-num-box');
       if (invBox) invBox.style.display = 'none';
@@ -94,7 +94,7 @@ export async function initFormLogic() {
 
     const sSimple = document.getElementById('shop-simple'), sCustom = document.getElementById('shop-custom');
     if (type !== 'shop') {
-      if (sSimple) sSimple.style.display = 'none'; 
+      if (sSimple) sSimple.style.display = 'none';
       if (sCustom) sCustom.style.display = 'none';
     } else if (sSimple && sCustom) {
       const mode = document.querySelector('input[name="shop_mode"]:checked')?.value || 'simple';
@@ -109,39 +109,39 @@ export async function initFormLogic() {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
     currentFetchType = type;
-    container.innerHTML = `<div style="font-size:0.9rem; color:#888;">${i18n.status.loading_cat}</div>`;
+    container.innerHTML = `<div style="font-size:0.9rem; color:#888;">${i18n.ui.status.loading_cat}</div>`;
     try {
       const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}&_t=${Date.now()}`);
       const json = await res.json();
       if (type !== currentFetchType) return;
       if (!json.ok) throw new Error('Failed to fetch categories');
-      
+
       let l1Html = '<div class="lz-choice-flex">';
       let l2Html = '';
       (json.l1_order || Object.keys(json.items)).forEach((l1, idx) => {
         const baseId = `gen-${idx}`;
-        const isRootOther = l1 === i18n.common.other_label;
+        const isRootOther = l1 === i18n.ui.common.other;
         const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
-        
+
         l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}" data-l1key="${l1}"><span class="lz-choice-inner">${l1}</span></label>`;
 
         if (json.items[l1] && !isRootOther) {
-          l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}${i18n.labels.genre_suffix}</label><div class="lz-choice-flex">`;
+          l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}${i18n.misc.genre_suffix}</label><div class="lz-choice-flex">`;
           json.items[l1].forEach(l2 => {
-            const isOther = l2.includes(i18n.common.other_label);
+            const isOther = l2.includes(i18n.ui.common.other);
             l2Html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
           });
           l2Html += `</div><input type="text" name="cat_${baseId}_val" class="lz-input lz-sub-other-field" style="display:none;" placeholder="${i18n.placeholders.genre_detail}"></div>`;
         }
       });
 
-      container.innerHTML = l1Html + '</div>' + l2Html + `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">${i18n.labels.genre_free}</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="${i18n.placeholders.genre_free}"></div>`;
-      
+      container.innerHTML = l1Html + '</div>' + l2Html + `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">${i18n.fields.genre_free}</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="${i18n.placeholders.genre_free}"></div>`;
+
       const buildChips = (targetId, list, namePrefix) => {
         const area = document.getElementById(targetId);
         if (!area || !list) return;
-        area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') + 
-        `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${i18n.common.other_label}" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">${i18n.common.other_label}</span></label>`;
+        area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') +
+          `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${i18n.ui.common.other}" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">${i18n.ui.common.other}</span></label>`;
         area.querySelectorAll('.pr-other-trigger').forEach(chk => {
           chk.onchange = (e) => {
             const inputEl = document.getElementById(e.target.dataset.target);
@@ -151,9 +151,9 @@ export async function initFormLogic() {
       };
       buildChips('area-apple-varieties', json.appleVarieties, 'pr_variety');
       buildChips('area-apple-products', json.appleProducts, 'pr_product');
-      
+
       bindDynamicEvents();
-    } catch (e) { console.error(e); container.innerHTML = `<div style="color:#cf3a3a;">${i18n.status.error_cat}</div>`; }
+    } catch (e) { console.error(e); container.innerHTML = `<div style="color:#cf3a3a;">${i18n.ui.status.error_cat}</div>`; }
   }
 
   function bindDynamicEvents() {
@@ -180,7 +180,7 @@ export async function initFormLogic() {
     document.querySelectorAll('.lz-sub-trigger').forEach(trigger => {
       trigger.onchange = (e) => {
         const inp = e.target.closest('.lz-dynamic-sub-area').querySelector('.lz-sub-other-field');
-        if(inp) inp.style.display = e.target.checked ? 'block' : 'none';
+        if (inp) inp.style.display = e.target.checked ? 'block' : 'none';
       };
     });
   }
@@ -189,7 +189,7 @@ export async function initFormLogic() {
   if (customBody) {
     days.forEach((d, i) => {
       const tr = document.createElement('tr'); tr.id = `row-${d}`;
-      tr.innerHTML = `<td><strong>${d}${i18n.labels.day_suffix}</strong></td><td data-label="${i18n.labels.closed}"><input type="checkbox" name="c_closed_${i}" class="lz-closed-trigger"></td><td data-label="${i18n.labels.open_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_'+i)}</div></td><td data-label="${i18n.labels.close_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_'+i)}</div></td>`;
+      tr.innerHTML = `<td><strong>${d}${i18n.ui.common.day_suffix}</strong></td><td data-label="${i18n.misc.closed}"><input type="checkbox" name="c_closed_${i}" class="lz-closed-trigger"></td><td data-label="${i18n.misc.open_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_' + i)}</div></td><td data-label="${i18n.misc.close_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_' + i)}</div></td>`;
       customBody.appendChild(tr);
       const trigger = tr.querySelector('.lz-closed-trigger');
       const timeBoxes = tr.querySelectorAll('.lz-time-box');
@@ -213,22 +213,22 @@ export async function initFormLogic() {
     });
   }
 
-  const setHtml = (id, html) => { const el = document.getElementById(id); if(el) el.innerHTML = html; };
+  const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
   setHtml('sel-simple-start', utils.createTimeSelectorHTML('simple_s'));
   setHtml('sel-simple-end', utils.createTimeSelectorHTML('simple_e'));
   setHtml('sel-ev-s', utils.createTimeSelectorHTML('ev_s'));
   setHtml('sel-ev-e', utils.createTimeSelectorHTML('ev_e'));
 
   function rebindTimeEvents() {
-      document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
-          hSelect.onchange = (e) => {
-              if (e.target.value !== "") {
-                  const mSelectName = e.target.name.replace('_h', '_m');
-                  const mSelect = document.querySelector(`select[name="${mSelectName}"]`);
-                  if (mSelect && mSelect.value === "") mSelect.value = "00";
-              }
-          };
-      });
+    document.querySelectorAll('select[name$="_h"]').forEach(hSelect => {
+      hSelect.onchange = (e) => {
+        if (e.target.value !== "") {
+          const mSelectName = e.target.name.replace('_h', '_m');
+          const mSelect = document.querySelector(`select[name="${mSelectName}"]`);
+          if (mSelect && mSelect.value === "") mSelect.value = "00";
+        }
+      };
+    });
   }
 
   rebindTimeEvents();
@@ -253,11 +253,11 @@ export async function initFormLogic() {
         target.classList.add('is-active');
         target.querySelectorAll('[data-required="true"]').forEach(el => el.required = true);
       }
-      
+
       if (t.dataset.type === 'article') {
         updateTypeView();
       }
-      
+
       rebindTimeEvents();
     });
   });
@@ -265,8 +265,8 @@ export async function initFormLogic() {
   const zipBtn = document.getElementById('zipBtnAction');
   if (zipBtn) zipBtn.onclick = async () => {
     const zip = document.getElementById('zipCode').value;
-    if (!zip) return alert(i18n.alerts.zip_empty);
-    try { document.getElementById('addressField').value = await utils.fetchAddress(zip); } catch(e) { alert(e.message); }
+    if (!zip) return alert(i18n.ui.alerts.zip_empty);
+    try { document.getElementById('addressField').value = await utils.fetchAddress(zip); } catch (e) { alert(e.message); }
   };
 
   const linkBox = document.getElementById('box-link-section');
@@ -298,7 +298,7 @@ export async function initFormLogic() {
 
   const evEndDateBox = document.getElementById('ev-end-date-box');
   document.getElementsByName('ev_period_type').forEach(r => {
-    r.addEventListener('change', (e) => { if(evEndDateBox) evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none'; });
+    r.addEventListener('change', (e) => { if (evEndDateBox) evEndDateBox.style.display = e.target.value === 'period' ? 'flex' : 'none'; });
   });
 
   const evS = document.getElementsByName('ev_sdate')[0];
@@ -306,7 +306,7 @@ export async function initFormLogic() {
   const validateEventDates = () => {
     if (evS.value && evE.value && evE.value < evS.value) {
       alert("終了日は開始日以降の日付を選択してください。");
-      evE.value = ""; 
+      evE.value = "";
     }
   };
   if (evS && evE) {
@@ -362,7 +362,7 @@ export async function initFormLogic() {
       if (syncCheck.checked) admMail.value = pubMail.value;
     });
     syncCheck.addEventListener('change', () => {
-      if (syncCheck.checked) { admMail.value = pubMail.value; admMail.style.background = "#f0f0f0"; admMail.readOnly = true; } 
+      if (syncCheck.checked) { admMail.value = pubMail.value; admMail.style.background = "#f0f0f0"; admMail.readOnly = true; }
       else { admMail.style.background = "#fafafa"; admMail.readOnly = false; }
     });
   }
@@ -395,11 +395,11 @@ export async function initFormLogic() {
   if (form) {
     form.onsubmit = async (e) => {
       e.preventDefault();
-      
+
       const activeTab = document.querySelector('.lz-form-tab.is-active').dataset.type;
       const formData = new FormData(form);
       const rawPayload = {};
-      
+
       formData.forEach((value, key) => {
         if (rawPayload[key]) {
           if (!Array.isArray(rawPayload[key])) rawPayload[key] = [rawPayload[key]];
@@ -446,79 +446,33 @@ export async function initFormLogic() {
       const confirmOverlay = document.getElementById('lz-confirm-overlay');
       const confirmBody = document.getElementById('lz-confirm-body');
       let previewHtml = "";
-      
+
       const l1Checkboxes = Array.from(document.querySelectorAll('input[name="cat_l1"]'));
       const l1KeyMap = l1Checkboxes.reduce((acc, chk) => {
         acc[chk.dataset.subid] = chk.dataset.l1key;
         return acc;
       }, {});
-      
+
       const getLabel = (key) => {
-          const keyMap = {
-              rep_name: i18n.labels.name, rep_content: i18n.labels.content,
-              inq_name: i18n.labels.name, inq_email: i18n.labels.email, inq_content: i18n.labels.content,
-              art_title: i18n.types[payload.art_type]?.title || i18n.labels.art_title,
-              art_lead: i18n.labels.art_lead, art_body: i18n.labels.art_body,
-              cat_l1: i18n.labels.cat_l1, cat_root_other_val: i18n.labels.genre_free,
-              shop_zip: i18n.labels.zip, shop_addr: i18n.labels.address, shop_notes: i18n.labels.shop_notes,
-              simple_days: i18n.labels.biz_days, shop_holiday_type: i18n.labels.holiday_biz,
-              shop_notes_biz: i18n.labels.shop_biz_notes, 
-              ev_org_name: i18n.labels.ev_org_name, ev_sdate: i18n.labels.ev_sdate, ev_edate: i18n.labels.ev_edate, 
-              ev_fee: i18n.labels.ev_fee, ev_items: i18n.labels.ev_items, ev_target: i18n.labels.ev_target,
-              pr_variety: i18n.labels.pr_varieties, pr_product: i18n.labels.pr_products,
-              pr_area: i18n.labels.pr_area, pr_staff: i18n.labels.pr_staff,
-              pr_other_crops: i18n.labels.pr_other_crops, pr_biz_type: i18n.labels.pr_biz_type,
-              pr_rep_name: i18n.labels.pr_rep_name, pr_invoice: i18n.labels.pr_invoice, 
-              pr_invoice_num: i18n.labels.pr_invoice_num,
-              cm_method: i18n.labels.cm_method, cm_url: i18n.labels.cm_url, cm_mail: i18n.labels.cm_mail, 
-              cm_tel: i18n.labels.cm_tel, cm_other: i18n.labels.cm_other, cm_notes: i18n.labels.cm_notes,
-              art_memo: i18n.labels.art_memo, 
-              cont_name: i18n.labels.cont_name, admin_email: i18n.labels.admin_email, admin_msg: i18n.labels.admin_msg
-          };
-          if (keyMap[key]) return keyMap[key];
-          
-          if (key.startsWith('link_')) {
-              const linkKey = key.replace(/^link_/, '').replace(/_url\d*|_title\d*$/, '');
-              return i18n.links[linkKey]?.label || key;
-          }
+        if (i18n.fields[key]) return i18n.fields[key];
 
-          if (key.startsWith('cat_gen-') && !key.endsWith('_val')) {
-              const subId = key.match(/cat_(gen-\d+)/)?.[1];
-              const l1Label = l1KeyMap[subId];
-              if (l1Label) return `${l1Label}${i18n.labels.genre_suffix}`;
-          }
+        if (key.startsWith('link_')) {
+          const linkKey = key.replace(/^link_/, '').replace(/_url\d*|_title\d*$/, '');
+          return i18n.links[linkKey]?.label || key;
+        }
 
-          return key.replace(/_val$/, '');
+        if (key.startsWith('cat_gen-') && !key.endsWith('_val')) {
+          const subId = key.match(/cat_(gen-\d+)/)?.[1];
+          const l1Label = l1KeyMap[subId];
+          if (l1Label) return `${l1Label}${i18n.misc.genre_suffix}`;
+        }
+
+        return key.replace(/_val$/, '');
       };
 
       const translateValue = (value) => {
-          if (Array.isArray(value)) return value.map(v => translateValue(v)).join(', ');
-          const valueMap = {
-              //経営区分
-              'individual': i18n.options.pr_biz_indiv, 
-              'corp': i18n.options.pr_biz_corp,
-              //祝日営業
-              'none': i18n.options.holiday_none, 
-              'follow_regular': i18n.options.holiday_follow,
-              'always_open': i18n.options.holiday_open, 
-              'always_closed': i18n.options.holiday_closed,
-              'irregular': i18n.options.holiday_irregular,
-              //その他作物
-              'fruit': i18n.options.crop_fruit, 
-              'rice': i18n.options.crop_rice,
-              'soba': i18n.options.crop_soba, 
-              'veg': i18n.options.crop_veg,
-              //インボイス
-              'yes': i18n.options.invoice_yes, 
-              'no': i18n.options.invoice_no,
-              // 代行
-              'on': i18n.common.yes,
-              // 単位
-              'a': i18n.options.unit_a, 'ha': i18n.options.unit_ha, 'tan': i18n.options.unit_tan,
-              'cho': i18n.options.unit_cho, 'm2': i18n.options.unit_m2, 'tsubo': i18n.options.unit_tsubo,
-              ...i18n.options // フォールバック
-          };
-          return valueMap[value] || value;
+        if (Array.isArray(value)) return value.map(v => translateValue(v)).join(', ');
+        return i18n.options[value] || value;
       };
 
       const processedKeys = new Set();
@@ -528,16 +482,16 @@ export async function initFormLogic() {
         if (processedKeys.has(key) || !Object.prototype.hasOwnProperty.call(payload, key)) return;
 
         let val = payload[key];
-        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger','pr_area_unit'];
+        const skipKeys = ['art_type', 'images', 'art_file_data', 'ev_period_type', 'shop_mode', 'art_file', 'link_trigger', 'pr_area_unit'];
         if (skipKeys.includes(key) || val === null || val.toString().trim() === "" || (typeof val === 'object' && !Array.isArray(val) && Object.keys(val).length === 0)) return;
 
         let label = getLabel(key);
         let displayVal;
-        
+
         if (key.startsWith('c_closed_')) {
           const dayIndex = key.replace('c_closed_', '');
-          label = `${days[dayIndex]}${i18n.labels.day_suffix}`;
-          displayVal = i18n.labels.closed;
+          label = `${days[dayIndex]}${i18n.ui.common.day_suffix}`;
+          displayVal = i18n.misc.closed;
         } else if (key.startsWith('c_s_') && key.endsWith('_h')) {
           const dayIndex = key.match(/c_s_(\d+)_h/)[1];
           const startH = val;
@@ -549,48 +503,48 @@ export async function initFormLogic() {
 
           if (endH) {
             displayVal = `${startH}:${startM} - ${endH}:${endM}`;
-            label = `${days[dayIndex]}${i18n.labels.day_suffix}`;
+            label = `${days[dayIndex]}${i18n.ui.common.day_suffix}`;
             processedKeys.add(key.replace('_h', '_m'));
             processedKeys.add(endKeyH);
             processedKeys.add(endKeyM);
           }
         } else if (key.startsWith('simple_s_h')) {
-            const startH = val;
-            const startM = payload['simple_s_m'] || "00";
-            const endH = payload['simple_e_h'];
-            const endM = payload['simple_e_m'] || "00";
-            if (endH) {
-                displayVal = `${startH}:${startM} - ${endH}:${endM}`;
-                label = i18n.labels.std_biz_hours;
-                processedKeys.add('simple_s_m').add('simple_e_h').add('simple_e_m');
-            }
+          const startH = val;
+          const startM = payload['simple_s_m'] || "00";
+          const endH = payload['simple_e_h'];
+          const endM = payload['simple_e_m'] || "00";
+          if (endH) {
+            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+            label = i18n.misc.std_biz_hours;
+            processedKeys.add('simple_s_m').add('simple_e_h').add('simple_e_m');
+          }
         } else if (key.startsWith('ev_s_h')) {
-            const startH = val;
-            const startM = payload['ev_s_m'] || "00";
-            const endH = payload['ev_e_h'];
-            const endM = payload['ev_e_m'] || "00";
-            if (endH) {
-                displayVal = `${startH}:${startM} - ${endH}:${endM}`;
-                label = i18n.labels.ev_stime;
-                processedKeys.add('ev_s_m').add('ev_e_h').add('ev_e_m');
-            }
+          const startH = val;
+          const startM = payload['ev_s_m'] || "00";
+          const endH = payload['ev_e_h'];
+          const endM = payload['ev_e_m'] || "00";
+          if (endH) {
+            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+            label = i18n.fields.ev_stime;
+            processedKeys.add('ev_s_m').add('ev_e_h').add('ev_e_m');
+          }
         }
         else if (key.includes('_e_h') || key.endsWith('_m')) return;
         else {
-            displayVal = translateValue(val);
+          displayVal = translateValue(val);
         }
-        
-        if(key === 'pr_area') {
-            displayVal += translateValue(payload.pr_area_unit || '');
+
+        if (key === 'pr_area') {
+          displayVal += translateValue(payload.pr_area_unit || '');
         }
 
         previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
         processedKeys.add(key);
       });
-      
-      if (uploadedFiles.length > 0) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
+
+      if (uploadedFiles.length > 0) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.fields.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
       const docFile = form.querySelector('input[name="art_file"]')?.files[0];
-      if(docFile) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.labels.art_file}</div><div class="lz-modal-value">${docFile.name}</div></div>`;
+      if (docFile) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.fields.art_file}</div><div class="lz-modal-value">${docFile.name}</div></div>`;
 
       confirmBody.innerHTML = previewHtml || `<div style="text-align:center; padding:20px;">入力内容がありません</div>`;
       confirmOverlay.style.display = 'flex';
@@ -604,19 +558,19 @@ export async function initFormLogic() {
       if (!isConfirmed) return;
 
       const allBtns = document.querySelectorAll('.lz-send-btn');
-      allBtns.forEach(btn => { btn.disabled = true; btn.textContent = i18n.common.sending; btn.style.opacity = '0.6'; });
+      allBtns.forEach(btn => { btn.disabled = true; btn.textContent = i18n.ui.buttons.sending; btn.style.opacity = '0.6'; });
 
       try {
-        days.forEach((d,i) => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { const k = `c_${s}_${i}`; if (!payload[k]) payload[k] = ""; }); });
+        days.forEach((d, i) => { ['s_h', 's_m', 'e_h', 'e_m'].forEach(s => { const k = `c_${s}_${i}`; if (!payload[k]) payload[k] = ""; }); });
 
         if (uploadedFiles.length > 0) {
           payload.images = await Promise.all(uploadedFiles.map(file => new Promise(res => {
             const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(file);
           })));
         }
-        
+
         if (docFile) {
-          payload.art_file_name = docFile.name.replace(/\s+/g, '_'); 
+          payload.art_file_name = docFile.name.replace(/\s+/g, '_');
           payload.art_file_data = await new Promise(res => {
             const r = new FileReader(); r.onload = (ev) => res(ev.target.result); r.readAsDataURL(docFile);
           });
@@ -625,12 +579,12 @@ export async function initFormLogic() {
         const res = await fetch(ENDPOINT, { method: "POST", body: JSON.stringify(payload) });
         const result = await res.json();
         if (result.ok) {
-          alert((i18n.types[payload.art_type]?.label || 'フォーム') + "の送信に成功しました！"); 
+          alert((i18n.types[payload.art_type]?.label || 'フォーム') + "の送信に成功しました！");
           window.location.reload();
         } else { throw new Error(result.error); }
       } catch (err) {
-        alert(i18n.alerts.send_error + "\\n理由: " + err.message);
-        allBtns.forEach(btn => { btn.disabled = false; btn.textContent = i18n.common.sendBtn; btn.style.opacity = '1'; });
+        alert(i18n.ui.alerts.send_error + "\\n理由: " + err.message);
+        allBtns.forEach(btn => { btn.disabled = false; btn.textContent = i18n.ui.buttons.send; btn.style.opacity = '1'; });
       }
     };
   }
@@ -642,7 +596,7 @@ export async function initFormLogic() {
   if (typeSelect && typeFromUrl) {
     typeSelect.value = typeFromUrl;
   }
-  
+
   if (typeSelect) {
     typeSelect.onchange = updateTypeView;
   }
