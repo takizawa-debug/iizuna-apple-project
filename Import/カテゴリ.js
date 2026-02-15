@@ -1,171 +1,174 @@
-/********** 対象シート **********/
+/**
+ * カテゴリ連動プルダウン最適化版
+ * 
+ * 下記のロジックで動作します：
+ * 1. ユーザーが対象シートの「大カテゴリ(E列)」または「中カテゴリ(F列)」を変更する。
+ * 2. プログラムが「カテゴリ」シート（マスタ）を読み取る。
+ * 3. 選択された親カテゴリに基づいて、子カテゴリの候補リストを生成する。
+ * 4. 子カテゴリのセル（F列またはG列）に、「入力規則（プルダウン）」を直接セットする。
+ * 
+ * これにより、計算用シート（Helper Sheet）やFILTER関数が不要になり、動作が高速化します。
+ */
+
+const CATEGORIES_SHEET_NAME = 'カテゴリ';
 const TARGET_SHEETS = ['知る', '味わう', '体験する', '働く・住む', '販売・発信する'];
 
-/********** 設定 **********/
-const START_ROW = 4;                               // データ開始行
-const COL_E = 5;                                   // E列=大カテゴリ
-const COL_F = 6;                                   // F列=中カテゴリ
-const COL_G = 7;                                   // G列=小カテゴリ
-
-const CATEGORIES_SHEET_NAME = 'カテゴリ';            // 大/中/小カテゴリのマスタ
-const HELPER_MID_BASE   = '_dv_中カテゴリ__';         // 例）_dv_中カテゴリ__知る
-const HELPER_SMALL_BASE = '_dv_小カテゴリ__';         // 例）_dv_小カテゴリ__知る
-
-const MAX_OPTIONS_MID   = 200;                     // 中カテゴリ候補の最大想定数
-const MAX_OPTIONS_SMALL = 200;                     // 小カテゴリ候補の最大想定数
-
-/********** 自動同期（メニュー無し） **********/
-function onOpen() { /* 何もしない */ }
+const START_ROW = 4; // データ開始行
+const COL_E = 5;     // 大カテゴリ (L1)
+const COL_F = 6;     // 中カテゴリ (L2)
+const COL_G = 7;     // 小カテゴリ (L3)
 
 /**
- * どんな編集でも呼ばれる。
- * - E/F の差分を検知して必要行だけ F/G のデータ検証を張り直し
+ * 編集時トリガー
  */
 function onEdit(e) {
-  try {
-    if (!e || !e.range) return;
-    const sheet = e.range.getSheet();
-    const sheetName = String(sheet.getName()).trim();
+  // トリガーオブジェクトの基本的なチェック
+  if (!e || !e.range) return;
 
-    // 対象シートのみ実行 / マスタや補助は無視
-    if (!TARGET_SHEETS.includes(sheetName)) return;
-    if (sheetName === CATEGORIES_SHEET_NAME) return;
-    if (sheetName.startsWith(HELPER_MID_BASE) || sheetName.startsWith(HELPER_SMALL_BASE)) return;
+  const sheet = e.range.getSheet();
+  const sheetName = sheet.getName();
 
-    const HELPER_MID_NAME   = HELPER_MID_BASE   + sheetName;
-    const HELPER_SMALL_NAME = HELPER_SMALL_BASE + sheetName;
+  // 対象シート以外は無視
+  if (!TARGET_SHEETS.includes(sheetName)) return;
 
-    syncDueToEFChanges_(sheet, HELPER_MID_NAME, HELPER_SMALL_NAME);
-  } catch (err) {
-    console.error(err);
+  const range = e.range;
+  const rowStart = range.getRow();
+  const rowEnd = range.getLastRow();
+  const colStart = range.getColumn();
+  const colEnd = range.getLastColumn();
+
+  // ヘッダー行以前の編集は無視
+  if (rowEnd < START_ROW) return;
+
+  // E列(5) または F列(6) が編集範囲に含まれているかチェック
+  // 含まれていなければ何もしない
+  const isL1Edited = (colStart <= COL_E && colEnd >= COL_E);
+  const isL2Edited = (colStart <= COL_F && colEnd >= COL_F);
+
+  if (!isL1Edited && !isL2Edited) return;
+
+  // マスタデータの取得 (キャッシュ推奨だが、onEdit内で都度取得でも通常は十分高速)
+  // [A列(大), B列(中), C列(小)]
+  const masterSheet = e.source.getSheetByName(CATEGORIES_SHEET_NAME);
+  if (!masterSheet) return;
+
+  // マスタデータ全取得 (A2:C)
+  const masterLastRow = masterSheet.getLastRow();
+  if (masterLastRow < 2) return;
+  const masterValues = masterSheet.getRange(2, 1, masterLastRow - 1, 3).getValues();
+
+  // 編集された行を1行ずつ処理 (コピペで複数行変更された場合に対応)
+  for (let r = rowStart; r <= rowEnd; r++) {
+    if (r < START_ROW) continue;
+
+    // --- Case 1: E列 (大カテゴリ) が変更された場合 ---
+    if (isL1Edited) {
+      updateL2Validation_(sheet, r, masterValues);
+    }
+
+    // --- Case 2: F列 (中カテゴリ) が変更された場合 ---
+    if (isL2Edited) {
+      updateL3Validation_(sheet, r, masterValues);
+    }
   }
 }
 
-/********** 中核：E/Fの差分検知→F/Gの検証を必要行だけ更新（シート別補助シート） **********/
-function syncDueToEFChanges_(sheet, HELPER_MID_NAME, HELPER_SMALL_NAME) {
-  const ss = sheet.getParent();
+/**
+ * L1(E列)の値に基づいて、L2(F列)のプルダウンを更新し、L3(G列)をクリアする
+ */
+function updateL2Validation_(sheet, row, masterValues) {
+  const l1Val = String(sheet.getRange(row, COL_E).getValue()).trim();
+  const cellL2 = sheet.getRange(row, COL_F);
+  const cellL3 = sheet.getRange(row, COL_G);
 
-  ensureHelperSheet_(ss, HELPER_MID_NAME);
-  ensureHelperSheet_(ss, HELPER_SMALL_NAME);
-
-  const lastRow = Math.max(sheet.getLastRow(), START_ROW);
-  const rows = lastRow - START_ROW + 1;
-  if (rows < 1) return;
-
-  // 現在のE/Fを取得
-  const eVals = sheet.getRange(START_ROW, COL_E, rows, 1).getValues().map(r => valueOrNull_(r[0]));
-  const fVals = sheet.getRange(START_ROW, COL_F, rows, 1).getValues().map(r => valueOrNull_(r[0]));
-
-  // 直前スナップショット（シートごとにキーを分離）
-  const props = PropertiesService.getDocumentProperties();
-  const keyE = `E_CACHE_JSON__${sheet.getSheetId()}`;
-  const keyF = `F_CACHE_JSON__${sheet.getSheetId()}`;
-  const prevE = jsonOrEmpty_(props.getProperty(keyE));
-  const prevF = jsonOrEmpty_(props.getProperty(keyF));
-
-  // 変化行を抽出
-  const eChangedRows = [];
-  const fChangedRows = [];
-  for (let i = 0; i < rows; i++) {
-    const rowIndex = START_ROW + i;
-    if ((prevE[i] ?? null) !== (eVals[i] ?? null)) eChangedRows.push(rowIndex);
-    if ((prevF[i] ?? null) !== (fVals[i] ?? null)) fChangedRows.push(rowIndex);
+  // L1が空なら、L2, L3もクリアして入力規則削除
+  if (!l1Val) {
+    cellL2.clearContent().clearDataValidations();
+    cellL3.clearContent().clearDataValidations();
+    return;
   }
 
-  // Eが変わった行：Fの候補を再構築し、整合性処理
-  eChangedRows.forEach(r => {
-    applyMiddleValidationRow_(sheet, r, HELPER_MID_NAME);
-
-    const eVal = valueOrNull_(sheet.getRange(r, COL_E).getValue());
-    if (!eVal) {
-      sheet.getRange(r, COL_F).clearContent().clearDataValidations();
-      sheet.getRange(r, COL_G).clearContent().clearDataValidations();
-    } else {
-      applySmallValidationRow_(sheet, r, HELPER_SMALL_NAME);
-      const fVal = valueOrNull_(sheet.getRange(r, COL_F).getValue());
-      if (!fVal) sheet.getRange(r, COL_G).clearContent().clearDataValidations();
+  // マスタから L1 に一致する L2 のリストを作成 (B列)
+  // 重複排除 (Set使用)
+  const l2Options = new Set();
+  masterValues.forEach(rowVal => {
+    // rowVal = [L1, L2, L3]
+    const mL1 = String(rowVal[0]).trim();
+    const mL2 = String(rowVal[1]).trim();
+    if (mL1 === l1Val && mL2) {
+      l2Options.add(mL2);
     }
   });
 
-  // Fが変わった行：Gの候補を再構築
-  fChangedRows.forEach(r => {
-    applySmallValidationRow_(sheet, r, HELPER_SMALL_NAME);
-    const fVal = valueOrNull_(sheet.getRange(r, COL_F).getValue());
-    if (!fVal) sheet.getRange(r, COL_G).clearContent().clearDataValidations();
+  const optionsArr = Array.from(l2Options);
+
+  // 候補がある場合のみプルダウン設定
+  if (optionsArr.length > 0) {
+    const rule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(optionsArr, true)
+      .setAllowInvalid(false) // 違反値は拒否（または警告のみにするなら setAllowInvalid(true)）
+      .build();
+    cellL2.setDataValidation(rule);
+  } else {
+    // 候補がない場合は入力規則削除（自由入力にするか、クリアするかは要件次第だが一旦クリア）
+    cellL2.clearDataValidations();
+  }
+
+  // L1が変わったら、既存のL2値は不整合になる可能性が高いのでクリアするのが一般的だが、
+  // ユーザーの誤操作防止のため「値がリストになければクリア」等の親切設計も可能。
+  // ここではシンプルに「常に中身はクリア」とする（新しい親を選んだのだから子はリセット）
+  // ただし、すでに正しい値が入っている場合（コピペ時など）を考慮し、
+  // 「現在の値が新リストに含まれていなければクリア」とするのがベスト。
+  const currentL2 = String(cellL2.getValue()).trim();
+  if (currentL2 && !l2Options.has(currentL2)) {
+    cellL2.setValue(null);
+  }
+
+  // L3はL1変更に伴い文脈が変わるため無条件クリア＆規則削除
+  cellL3.clearContent().clearDataValidations();
+}
+
+/**
+ * L1(E列) と L2(F列) の値に基づいて、L3(G列)のプルダウンを更新する
+ */
+function updateL3Validation_(sheet, row, masterValues) {
+  const l1Val = String(sheet.getRange(row, COL_E).getValue()).trim();
+  const l2Val = String(sheet.getRange(row, COL_F).getValue()).trim();
+  const cellL3 = sheet.getRange(row, COL_G);
+
+  // 親が指定されていなければクリア
+  if (!l1Val || !l2Val) {
+    cellL3.clearContent().clearDataValidations();
+    return;
+  }
+
+  // マスタから L1 かつ L2 に一致する L3 のリストを作成 (C列)
+  const l3Options = new Set();
+  masterValues.forEach(rowVal => {
+    const mL1 = String(rowVal[0]).trim();
+    const mL2 = String(rowVal[1]).trim();
+    const mL3 = String(rowVal[2]).trim(); // 小カテゴリ
+    if (mL1 === l1Val && mL2 === l2Val && mL3) {
+      l3Options.add(mL3);
+    }
   });
 
-  // スナップショットを更新（シート別）
-  props.setProperty(keyE, JSON.stringify(eVals));
-  props.setProperty(keyF, JSON.stringify(fVals));
+  const optionsArr = Array.from(l3Options);
+
+  if (optionsArr.length > 0) {
+    const rule = SpreadsheetApp.newDataValidation()
+      .requireValueInList(optionsArr, true)
+      .setAllowInvalid(false)
+      .build();
+    cellL3.setDataValidation(rule);
+  } else {
+    cellL3.clearDataValidations();
+  }
+
+  // 値の整合性チェック
+  const currentL3 = String(cellL3.getValue()).trim();
+  if (currentL3 && !l3Options.has(currentL3)) {
+    cellL3.setValue(null);
+  }
 }
 
-/********** 行単位：F（中カテゴリ）のプルダン設定 **********/
-function applyMiddleValidationRow_(dataSheet, row, HELPER_MID_NAME) {
-  const ss = dataSheet.getParent();
-  const helper = ensureHelperSheet_(ss, HELPER_MID_NAME);
-
-  const colInHelper = row - START_ROW + 1; // 行→補助シートの列に割当
-  ensureHelperCapacity_(helper, colInHelper, MAX_OPTIONS_MID);
-
-  const eA1 = `${dataSheet.getName()}!E${row}`;
-  // =IF(Erow="","",UNIQUE(FILTER(カテゴリ!B2:B, カテゴリ!A2:A=Erow)))
-  const formula = `=IF(${eA1}="","",UNIQUE(FILTER('${CATEGORIES_SHEET_NAME}'!$B$2:$B, '${CATEGORIES_SHEET_NAME}'!$A$2:$A=${eA1})))`;
-  helper.getRange(1, colInHelper).setFormula(formula);
-  if (MAX_OPTIONS_MID > 1) helper.getRange(2, colInHelper, MAX_OPTIONS_MID - 1, 1).clearContent();
-
-  const candidatesRange = helper.getRange(1, colInHelper, MAX_OPTIONS_MID, 1);
-  const rule = SpreadsheetApp.newDataValidation()
-    .requireValueInRange(candidatesRange, true)  // プルダン表示
-    .setAllowInvalid(false)                      // 候補外の入力は不可
-    .build();
-  dataSheet.getRange(row, COL_F).setDataValidation(rule);
-}
-
-/********** 行単位：G（小カテゴリ）のプルダン設定 **********/
-function applySmallValidationRow_(dataSheet, row, HELPER_SMALL_NAME) {
-  const ss = dataSheet.getParent();
-  const helper = ensureHelperSheet_(ss, HELPER_SMALL_NAME);
-
-  const colInHelper = row - START_ROW + 1; // 行→補助シートの列に割当
-  ensureHelperCapacity_(helper, colInHelper, MAX_OPTIONS_SMALL);
-
-  const fA1 = `${dataSheet.getName()}!F${row}`;
-  // =IF(Frow="","",UNIQUE(FILTER(カテゴリ!C2:C, カテゴリ!B2:B=Frow)))
-  const formula = `=IF(${fA1}="","",UNIQUE(FILTER('${CATEGORIES_SHEET_NAME}'!$C$2:$C, '${CATEGORIES_SHEET_NAME}'!$B$2:$B=${fA1})))`;
-  helper.getRange(1, colInHelper).setFormula(formula);
-  if (MAX_OPTIONS_SMALL > 1) helper.getRange(2, colInHelper, MAX_OPTIONS_SMALL - 1, 1).clearContent();
-
-  const candidatesRange = helper.getRange(1, colInHelper, MAX_OPTIONS_SMALL, 1);
-  const rule = SpreadsheetApp.newDataValidation()
-    .requireValueInRange(candidatesRange, true)
-    .setAllowInvalid(false)
-    .build();
-  dataSheet.getRange(row, COL_G).setDataValidation(rule);
-}
-
-/********** 補助：補助シートの存在保証＆非表示化 **********/
-function ensureHelperSheet_(ss, name) {
-  let sh = ss.getSheetByName(name);
-  if (!sh) sh = ss.insertSheet(name);
-  sh.hideSheet();
-  return sh;
-}
-
-/********** 補助：補助シートのサイズ自動拡張 **********/
-function ensureHelperCapacity_(sh, needCols, needRows){
-  const curCols = sh.getMaxColumns();
-  const curRows = sh.getMaxRows();
-  if (curCols < needCols) sh.insertColumnsAfter(curCols, needCols - curCols);
-  if (curRows < needRows) sh.insertRowsAfter(curRows, needRows - curRows);
-}
-
-/********** 補助：値正規化・JSONパース **********/
-function valueOrNull_(v) {
-  if (v === '' || v === null || typeof v === 'undefined') return null;
-  if (typeof v === 'string' && v.trim() === '') return null;
-  return v;
-}
-function jsonOrEmpty_(txt) {
-  try { return txt ? JSON.parse(txt) : []; }
-  catch (e) { return []; }
-}
