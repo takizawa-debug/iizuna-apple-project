@@ -232,7 +232,20 @@
        5. ライフサイクルイベント
        ========================================== */
     loadGeo().finally(() => {
-      setTimeout(() => sendEvent("page_view"), 500);
+      setTimeout(() => {
+        sendEvent("page_view");
+
+        // 🍎 URLクリーンアップ (utm_source 等をアドレスバーから削除)
+        if (W.history.replaceState) {
+          const url = new URL(L.href);
+          const targets = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+          let changed = false;
+          targets.forEach(k => { if (url.searchParams.has(k)) { url.searchParams.delete(k); changed = true; } });
+          if (changed) {
+            W.history.replaceState(null, "", url.pathname + url.search + url.hash);
+          }
+        }
+      }, 500);
     });
 
     let isClosed = false;

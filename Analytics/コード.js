@@ -31,6 +31,12 @@ function ensureLogsSheet_() {
     sh = ss.insertSheet(SHEET_NAME);
     sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]).setBackground('#eeeeee').setFontWeight('bold');
     sh.setFrozenRows(1);
+  } else {
+    // 🍎 ヘッダーの同期チェック（追加されたカラムを反映）
+    const currentHeaders = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+    if (currentHeaders.length < HEADER.length) {
+      sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]);
+    }
   }
   return sh;
 }
@@ -321,12 +327,13 @@ function getDashboardStats() {
     const ref = String(row[colReferrer] || "").trim();
     const utmSource = String(row[colUtmSource] || "").trim();
     const internalDomain = 'appletown-iizuna.com';
+    const isInternal = ref.includes(internalDomain);
 
-    if (utmSource === 'share') {
+    if (utmSource === 'share' && !isInternal) {
       stats.referrerRanking["SNS共有経由"] = (stats.referrerRanking["SNS共有経由"] || 0) + 1;
-    } else if (utmSource === 'pdf_qr') {
+    } else if (utmSource === 'pdf_qr' && !isInternal) {
       stats.referrerRanking["印刷チラシQR経由"] = (stats.referrerRanking["印刷チラシQR経由"] || 0) + 1;
-    } else if (ref && !ref.includes(internalDomain)) {
+    } else if (ref && !isInternal) {
       const refDomain = ref.split('/')[2] || "直接アクセス/不明";
       stats.referrerRanking[refDomain] = (stats.referrerRanking[refDomain] || 0) + 1;
     } else if (!ref) {
