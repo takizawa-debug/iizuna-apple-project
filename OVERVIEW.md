@@ -41,6 +41,12 @@ graph LR
 - **多言語UI**: 開発者や国際的な訪問者を支援するため、ラベルやプレースホルダーも完全に多言語化。
 - **スプレッドシートへの直接書き込み**: 投稿内容は即座にバリデーション（検証）され、スプレッドシートに挿入されます。
 
+### 4. 高度なアクセス分析システム (`Analytics/`)
+単なるPV計測に留まらず、ユーザーの「興味の遷移」を可視化します：
+- **[Web版ダッシュボード](https://script.google.com/macros/s/AKfycbzVgqg88cwuiWF1Up3MudUbosY5N3TIUCYI9hcV-42K2ZdHwN94YVVrAIECq5IRCUq_7g/exec?mode=dashboard)**: パラメータを正規化したページ別集計に加え、個別モーダル（むーちゃん等の記事）の人気度を階層別に分析可能。
+- **キーワードジャーニー追跡**: 検索フォームからの入力と、記事内キーワードクリックを統合して「何が今注目されているか」をリアルタイムで把握。
+- **スプレッドシート連動**: 解析結果はスプレッドシート内の「📊 Dashboard」シートにも自動集計されます。
+
 ---
 
 ## 📂 チーム向けプロジェクト構造
@@ -50,7 +56,7 @@ graph LR
 | `web/` | フロントエンドのコアロジック | UI/UXエンジニア (CSS/JS) |
 | `Form/` | 情報投稿フォームのロジック | 統合開発者 |
 | `Import/` | GASロジック (バックエンド) | バックエンド / GAS開発者 |
-| `Analytics/` | 分析ロジック | データアナリスト |
+| `Analytics/` | 分析ロジック & [管理画面](https://script.google.com/macros/s/AKfycbzVgqg88cwuiWF1Up3MudUbosY5N3TIUCYI9hcV-42K2ZdHwN94YVVrAIECq5IRCUq_7g/exec?mode=dashboard) | データアナリスト |
 | **スプレッドシート** | データベース / コンテンツ | **運用・コンテンツ管理担当** |
 
 ### コンテンツを更新するには？

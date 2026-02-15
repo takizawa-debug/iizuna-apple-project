@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <base target="_top">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@500;700&family=Noto+Sans+JP:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FF3B30;
+            --primary-grad: linear-gradient(135deg, #FF3B30 0%, #FF9500 100%);
+            --bg: #f8f9fc;
+            --card-bg: #fff;
+            --text: #1d1d1f;
+            --text-muted: #86868b;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .badge {
+            background: var(--primary-grad);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .card-value {
+            font-size: 36px;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .table-card {
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .table-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            font-family: 'Outfit', 'Noto Sans JP';
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .table-title i {
+            font-style: normal;
+            background: #eee;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            padding-bottom: 12px;
+            border-bottom: 1px solid #efeff4;
+        }
+
+        td {
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f7;
+            font-size: 14px;
+        }
+
+        .rank-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .rank-fill {
+            height: 100%;
+            background: var(--primary-grad);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            font-weight: 700;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #eee;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+        <div>アクセスログを解析中...</div>
+    </div>
+
+    <div class="container">
+        <header>
+            <div>
+                <span class="badge">Live Analytics</span>
+                <h1>アクセス解析ダッシュボード</h1>
+            </div>
+            <div style="text-align: right; color: var(--text-muted); font-size: 14px;">
+                直近7日間のインサイト<br>
+                <span id="date-now"></span>
+            </div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-title">累計ログ数</div>
+                <div class="card-value" id="total-pv">-</div>
+            </div>
+            <div class="card">
+                <div class="card-title">直近7日間の累計PV</div>
+                <div class="card-value" id="recent-pv">-</div>
+            </div>
+            <div class="card">
+                <div class="card-title">最多利用言語</div>
+                <div class="card-value" id="top-lang">-</div>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="table-card">
+                <div class="table-title">人気ページ <i>集計済パス</i></div>
+                <table id="base-rank-table">
+                    <thead>
+                        <tr>
+                            <th>ページ</th>
+                            <th style="text-align: right;">PV数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="table-card">
+                <div class="table-title">人気アイテム <i>詳細モーダル</i></div>
+                <table id="item-rank-table">
+                    <thead>
+                        <tr>
+                            <th>項目ID</th>
+                            <th style="text-align: right;">閲覧数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="table-card">
+                <div class="table-title">流入元ランキング <i>参照元サイト</i></div>
+                <table id="ref-rank-table">
+                    <thead>
+                        <tr>
+                            <th>ドメイン</th>
+                            <th style="text-align: right;">流入数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="table-card">
+                <div class="table-title">外部リンク遷移 <i>離脱アクション</i></div>
+                <table id="exit-rank-table">
+                    <thead>
+                        <tr>
+                            <th>遷移先URL / ドメイン</th>
+                            <th style="text-align: right;">クリック数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-card" style="margin-top: 20px;">
+            <div class="table-title">注目キーワード <i>検索・自動リンク</i></div>
+            <table id="kw-rank-table">
+                <thead>
+                    <tr>
+                        <th>単語</th>
+                        <th style="text-align: right;">ヒット数</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+    window.onload = function() {
+      google.script.run
+        .withSuccessHandler(showStats)
+        .withFailureHandler(handleError)
+        .getDashboardStats();
+      
+      document.getElementById('date-now').innerText = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+    };
+
+    function showStats(stats) {
+      document.getElementById('loading').style.display = 'none';
+      if (stats.error) {
+        alert(stats.error);
+        return;
+      }
+
+      document.getElementById('total-pv').innerText = stats.totalPv.toLocaleString();
+      document.getElementById('recent-pv').innerText = stats.recentPv.toLocaleString();
+      
+      // Top Language
+      const langMap = { ja: '日本語', en: '英語', zh: '中国語', other: 'その他' };
+      const sortedLangs = Object.entries(stats.langDistribution).sort((a,b) => b[1]-a[1]);
+      const topLangKey = sortedLangs[0][0];
+      document.getElementById('top-lang').innerText = langMap[topLangKey] || topLangKey.toUpperCase();
+
+      // 各種ランキングの描画
+      renderTable('base-rank-table', stats.basePageRanking);
+      renderTable('item-rank-table', stats.itemRanking);
+      renderTable('kw-rank-table', stats.keywordRanking);
+      renderTable('ref-rank-table', stats.referrerRanking);
+      renderTable('exit-rank-table', stats.exitRanking);
+    }
+
+    function renderTable(id, data) {
+      const tbody = document.querySelector('#' + id + ' tbody');
+      if (!data || data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#ccc; padding:20px;">データなし</td></tr>';
+          return;
+      }
+      const maxCount = data[0]?.count || 1;
+      
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        const percent = (item.count / maxCount) * 100;
+        row.innerHTML = `
+          <td>
+            <div style="margin-bottom:4px; font-weight: 500; word-break: break-all;">${item.name}</div>
+            <div class="rank-bar"><div class="rank-fill" style="width: ${percent}%"></div></div>
+          </td>
+          <td style="text-align: right; font-weight: 700; vertical-align: top; padding-top: 12px;">${item.count.toLocaleString()}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    function handleError(e) {
+      document.getElementById('loading').innerHTML = '<div style="color:var(--primary); text-align:center;">エラーが発生しました:<br>' + e.message + '</div>';
+    }
+    </script>
+</body>
+
+</html>

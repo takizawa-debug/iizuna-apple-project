@@ -156,11 +156,30 @@ function _write(sh, rows) {
 }
 
 /**
- * GETリクエスト処理 (Pixel fallback用)
+ * GETリクエスト処理
+ * - ?mode=dashboard: アドミンダッシュボードを表示
+ * - ?d={json}: 従来通りのPixelログ収集
  */
 function doGet(e) {
   try {
-    const d = e?.parameter?.d;
+    const p = e?.parameter || {};
+
+    // 🍎 ダッシュボード表示モード
+    if (p.mode === 'dashboard') {
+      return HtmlService.createTemplateFromFile('dashboard')
+        .evaluate()
+        .setTitle('Appletown Analytics Dashboard')
+        .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    }
+
+    // 🍎 スプレッドシート側のセットアップ実行モード
+    if (p.mode === 'setup') {
+      setupSpreadsheetDashboard();
+      return textOut_('Spreadsheet Dashboard has been setup/updated.');
+    }
+
+    const d = p.d;
     if (d) {
       const data = JSON.parse(d);
       appendLogRows_([data], toJSTString(new Date()));
@@ -171,6 +190,133 @@ function doGet(e) {
     return textOut_('NG');
   }
   return textOut_('Appletown Analytics is running.');
+}
+
+/**
+ * ダッシュボード用の統計データを取得（HtmlTemplateから呼び出し）
+ */
+function getDashboardStats() {
+  const sh = ensureLogsSheet_();
+  const data = sh.getDataRange().getValues();
+  if (data.length <= 1) return { error: "No data yet" };
+
+  const headers = data[0];
+  const rows = data.slice(1);
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  // インデックス取得
+  const idx = (name) => headers.indexOf(name);
+  const colTs = idx('timestamp_jst');
+  const colUrl = idx('page_url');
+  const colLang = idx('language');
+  const colEvent = idx('event_name');
+  const colCardId = idx('card_id');
+  const colSearchTerm = idx('search_term');
+  const colKeyword = idx('keyword');
+  const colReferrer = idx('referrer');
+  const colHref = idx('href');
+  const colLinkDomain = idx('link_domain');
+
+  const stats = {
+    totalPv: rows.length,
+    recentPv: 0,
+    basePageRanking: {}, // /savor, /discover etc.
+    itemRanking: {},     // Card IDs / Details
+    keywordRanking: {},  // search_term + keyword
+    referrerRanking: {}, // 流入元ドメイン
+    exitRanking: {},     // 離脱先（外部リンク）
+    langDistribution: { ja: 0, en: 0, zh: 0, other: 0 }
+  };
+
+  rows.forEach(row => {
+    const tsStr = row[colTs];
+    const ts = new Date(tsStr);
+    if (ts >= sevenDaysAgo) stats.recentPv++;
+
+    // URLの正規化 (?以降や#を削る)
+    let rawUrl = String(row[colUrl] || 'unknown');
+    let cleanUrl = rawUrl.split('?')[0].split('#')[0].replace(/\/$/, "");
+
+    // 🍎 トップページ（ドメインのみ）を / と同等に扱う
+    if (!cleanUrl.includes('/') || cleanUrl.split('/').length <= 3) {
+      if (cleanUrl.includes('appletown-iizuna.com')) {
+        cleanUrl = '/';
+      }
+    }
+    if (!cleanUrl.startsWith('http')) {
+      cleanUrl = '/' + cleanUrl.split('/').pop().replace("index.html", "");
+      if (cleanUrl === '//') cleanUrl = '/';
+    }
+
+    // ベースページの集計 (主要なパスのみ)
+    const basePaths = ['savor', 'discover', 'experience', 'live', 'business'];
+    const isBasePath = basePaths.some(p => cleanUrl.includes(p)) || cleanUrl === '/' || cleanUrl.endsWith('index.html');
+
+    if (isBasePath) {
+      let key = cleanUrl;
+      if (cleanUrl !== '/') {
+        key = '/' + cleanUrl.split('/').pop().replace("index.html", "");
+      }
+      stats.basePageRanking[key] = (stats.basePageRanking[key] || 0) + 1;
+    }
+
+    // アイテム（モーダル/詳細）の集計
+    let cardId = row[colCardId];
+    if (!cardId && rawUrl.includes('?')) {
+      const m = rawUrl.match(/[\?&]id=([^&#]+)/);
+      if (m) cardId = decodeURIComponent(m[1]);
+    }
+    if (cardId) {
+      stats.itemRanking[cardId] = (stats.itemRanking[cardId] || 0) + 1;
+    }
+
+    // 流入元（リファラ）の集計
+    const ref = String(row[colReferrer] || "").trim();
+    const internalDomain = 'appletown-iizuna.com';
+
+    if (ref && !ref.includes(internalDomain)) {
+      const refDomain = ref.split('/')[2] || "直接アクセス/不明";
+      stats.referrerRanking[refDomain] = (stats.referrerRanking[refDomain] || 0) + 1;
+    } else if (!ref) {
+      stats.referrerRanking["直接アクセス/不明"] = (stats.referrerRanking["直接アクセス/不明"] || 0) + 1;
+    }
+    // 🍎 内部ドメインの場合はスキップ（ランキングを汚さない）
+
+    // 離脱先（外部リンク）の集計
+    const ev = row[colEvent];
+    if (ev === 'outbound_click' || ev === 'sns_link_click' || ev === 'related_article_click') {
+      const exitUrl = row[colHref] || row[colLinkDomain] || "unknown";
+      stats.exitRanking[exitUrl] = (stats.exitRanking[exitUrl] || 0) + 1;
+    }
+
+    // 言語
+    const lang = (row[colLang] || '').toLowerCase();
+    if (lang.includes('ja')) stats.langDistribution.ja++;
+    else if (lang.includes('en')) stats.langDistribution.en++;
+    else if (lang.includes('zh')) stats.langDistribution.zh++;
+    else stats.langDistribution.other++;
+
+    // キーワード合算
+    const kw = (row[colSearchTerm] || row[colKeyword] || "").trim();
+    if (kw) {
+      stats.keywordRanking[kw] = (stats.keywordRanking[kw] || 0) + 1;
+    }
+  });
+
+  // ランキングを配列化してソート
+  const sortRank = (obj) => Object.entries(obj)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 15);
+
+  stats.basePageRanking = sortRank(stats.basePageRanking);
+  stats.itemRanking = sortRank(stats.itemRanking);
+  stats.keywordRanking = sortRank(stats.keywordRanking);
+  stats.referrerRanking = sortRank(stats.referrerRanking);
+  stats.exitRanking = sortRank(stats.exitRanking);
+
+  return stats;
 }
 
 /**
@@ -195,6 +341,60 @@ function logError_(err, raw) {
     const es = ensureErrorSheet_();
     es.appendRow([toJSTString(new Date()), String(err && err.stack || err), String(raw || '')]);
   } catch (_) { }
+}
+
+/**
+ * スプレッドシート上に「📊 Dashboard」シートを作成し、集計用QUERY関数を埋め込む
+ */
+function setupSpreadsheetDashboard() {
+  const ss = ss_();
+  let sh = ss.getSheetByName('📊 Dashboard');
+  if (!sh) {
+    sh = ss.insertSheet('📊 Dashboard', 0); // 先頭に作成
+  } else {
+    sh.clear();
+  }
+
+  // デザイン調整
+  sh.setTabColor('#FF3B30');
+
+  // タイトルと説明
+  sh.getRange('A1').setValue('Appletown Analytics - Live Dashboard').setFontSize(18).setFontWeight('bold').setFontColor('#FF3B30');
+  sh.getRange('A2').setValue('※このシートは自動集計されています。直接編集しないでください。').setFontColor('#86868b');
+
+  // セクション1: 主要な数字
+  sh.getRange('A4').setValue('主要指標 (全体計)').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('A5').setValue('累計PV数').setFontWeight('bold');
+  sh.getRange('B5').setFormula(`=COUNTA(Logs!A:A)-1`);
+
+  sh.getRange('A6').setValue('ユニーク訪問者数').setFontWeight('bold');
+  sh.getRange('B6').setFormula(`=COUNTUNIQUE(Logs!B:B)`);
+
+  sh.getRange('D4').setValue('デバイス言語分布').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('D5').setFormula(`=QUERY(Logs!A:U, "SELECT U, COUNT(A) WHERE U IS NOT NULL GROUP BY U LABEL COUNT(A) 'PV数'", 1)`);
+
+  // セクション2: 流入元と離脱先
+  sh.getRange('G4').setValue('直近の流入元 (上位)').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('G5').setFormula(`=QUERY(Logs!A:H, "SELECT H, COUNT(A) WHERE H IS NOT NULL GROUP BY H ORDER BY COUNT(A) DESC LIMIT 10 LABEL COUNT(A) '訪問数', H '参照元ドメイン'", 1)`);
+
+  // セクション3: ページビューランキング
+  sh.getRange('A10').setValue('人気ページ (パス別合計)').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('A11').setFormula(`=QUERY(Logs!A:G, "SELECT F, COUNT(A) WHERE F IS NOT NULL GROUP BY F ORDER BY COUNT(A) DESC LIMIT 20 LABEL COUNT(A) 'PV', F 'ページパス'", 1)`);
+
+  // セクション4: アイテム・詳細ランキング
+  sh.getRange('D10').setValue('個別コンテンツ (詳細表示) 人気順').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('D11').setFormula(`=QUERY(Logs!A:BC, "SELECT Z, COUNT(A) WHERE Z IS NOT NULL GROUP BY Z ORDER BY COUNT(A) DESC LIMIT 20 LABEL COUNT(A) '表示数', Z '項目ID'", 1)`);
+
+  // セクション5: 検索キーワード (合算)
+  sh.getRange('A35').setValue('注目ワード (検索・リンク) 合計ランキング').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('A36').setFormula(`={QUERY(Logs!A:AZ, "SELECT AZ, COUNT(A) WHERE AZ IS NOT NULL GROUP BY AZ LABEL COUNT(A) 'ヒッツ'", 1); QUERY(Logs!A:AF, "SELECT AF, COUNT(A) WHERE AF IS NOT NULL GROUP BY AF LABEL COUNT(A) 'ヒッツ'", 0)}`);
+  sh.getRange('A36').setValue('注目キーワード (合算)'); // ヘッダーを上書きしてラベルを日本語化
+  sh.getRange('A36').setFontWeight('bold').setBackground('#f5f5f7');
+  sh.getRange('C36').setValue('※正確な合算結果とグラフはWebダッシュボードをご利用ください。').setFontColor('#86868b');
+
+  // フォーマット調整
+  sh.autoResizeColumns(1, 10);
+  sh.getRange('A4:D4').setBorder(true, true, true, true, false, false);
 }
 
 function textOut_(body) {

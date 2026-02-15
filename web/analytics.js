@@ -143,6 +143,15 @@
         });
       }
 
+      // 🍎 FAB検索結果 (search.js)
+      const fabBtn = t.closest('.apz-item-btn');
+      if (fabBtn) {
+        // search.js 側で sendEvent を呼ぶため、ここは不要かもしれないが、
+        // 二重送信を避けるため search.js 側の実装を確認済み (location.href 前に呼んでいる)
+        // 万が一 search.js 側で漏れたときのためのフォールバックとして残すが、基本はあちらで完結。
+        return;
+      }
+
       // --- モーダル本文 自動リンク（キーワード / ダイレクト）クリック ---
       const autoLink = t.closest('.lz-auto-link');
       if (autoLink) {

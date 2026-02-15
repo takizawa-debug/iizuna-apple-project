@@ -192,11 +192,11 @@ window.lzSearchEngine = (function () {
 
         // 🍎 Analytics: 検索実行
         var sourceCardId = currentId || '';
-        track('search_execute', { keyword: keyword, source: 'keyword_link', source_card_id: sourceCardId, result_count: results.length });
+        track('search_execute', { search_term: keyword, source: 'keyword_link', source_card_id: sourceCardId, result_count: results.length });
 
         // 🍎 Analytics: 0件の場合
         if (results.length === 0) {
-          track('search_no_results', { keyword: keyword });
+          track('search_no_results', { search_term: keyword });
         }
 
         var hl = function (text) {

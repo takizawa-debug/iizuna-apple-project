@@ -94,7 +94,7 @@
   `;
   document.body.insertAdjacentHTML('beforeend', searchHTML);
 
-  const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[m]));
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;" }[m]));
 
   function highlight(text, query) {
     if (!query) return esc(text);
@@ -145,18 +145,18 @@
         dynamicKeywords = json.items || [];
         if (float.classList.contains('is-open')) refreshRecommendations();
       }
-    } catch(e) { console.error("Dynamic keywords fetch failed", e); }
+    } catch (e) { console.error("Dynamic keywords fetch failed", e); }
   }
   loadDynamicKeywords();
 
-  function renderResults(results, query){
-    lastResults = results || []; 
+  function renderResults(results, query) {
+    lastResults = results || [];
     listEl.innerHTML = "";
-    searchingEl.classList.remove("is-active"); 
+    searchingEl.classList.remove("is-active");
     if (!query.trim()) { suggestEl.style.display = "block"; emptyEl.style.display = "none"; return; }
     suggestEl.style.display = "none";
-    if (!results || !results.length){ emptyEl.style.display = "block"; return; }
-    
+    if (!results || !results.length) { emptyEl.style.display = "block"; return; }
+
     emptyEl.style.display = "none";
     listEl.innerHTML = results.map((it, idx) => {
       const l1 = C.L(it, 'l1'), l2 = C.L(it, 'l2'), title = C.L(it, 'title');
@@ -175,7 +175,7 @@
     }).join("");
   }
 
-  async function runSearch(query){
+  async function runSearch(query) {
     const q = query.trim();
     clearBt.style.display = q ? "flex" : "none";
     if (!q) { renderResults([], ""); return; }
@@ -184,21 +184,24 @@
     suggestEl.style.display = "none";
     searchingEl.classList.add("is-active");
     try {
+      if (typeof window.mzTrack === 'function') {
+        window.mzTrack('search_submit', { search_term: q });
+      }
       const res = await fetch(`${SEARCH_ENDPOINT}?q=${encodeURIComponent(q)}&limit=50`);
       const json = await res.json();
       renderResults(json.items || [], q);
-    } catch(_) { renderResults([], q); }
+    } catch (_) { renderResults([], q); }
   }
 
   const openFloat = () => { float.classList.add("is-open"); refreshRecommendations(); setTimeout(() => input.focus(), 10); };
   fab.onclick = openFloat;
   D.getElementById("apzSearchClose").onclick = () => float.classList.remove("is-open");
   clearBt.onclick = () => { input.value = ""; refreshRecommendations(); runSearch(""); input.focus(); };
-  
+
   let timer = null;
-  input.oninput = () => { 
-    clearTimeout(timer); 
-    if (!input.value.trim()) { refreshRecommendations(); renderResults([], ""); } 
+  input.oninput = () => {
+    clearTimeout(timer);
+    if (!input.value.trim()) { refreshRecommendations(); renderResults([], ""); }
     else { timer = setTimeout(() => runSearch(input.value), 400); }
   };
 
@@ -210,8 +213,18 @@
     // 🍎 重要：?id= パラメータには、翻訳後のタイトルではなく
     // スプレッドシートの「タイトル」列（日本語オリジナル）を常に使用します。
     // これにより modal.js の checkDeepLink が正しくヒットします。
-    const targetDeepLinkId = hit.title; 
-    
+    const targetDeepLinkId = hit.title;
+
+    // 🍎 Analytics: 検索結果クリック
+    if (typeof window.mzTrack === 'function') {
+      window.mzTrack('search_result_click', {
+        search_term: input.value,
+        result_card_id: targetDeepLinkId,
+        label: hit.title,
+        source: 'fab_search'
+      });
+    }
+
     location.href = `${MENU_URL[hit.l1] || location.origin}?lang=${window.LZ_CURRENT_LANG}&id=${encodeURIComponent(targetDeepLinkId)}`;
   };
   D.addEventListener("click", (e) => { if (!e.target.closest(".apz-search-card") && !e.target.closest("#apzSearchFab")) float.classList.remove("is-open"); });
