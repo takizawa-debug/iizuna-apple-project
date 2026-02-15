@@ -10,11 +10,12 @@
         :root {
             --primary: #FF3B30;
             --primary-grad: linear-gradient(135deg, #FF3B30 0%, #FF9500 100%);
-            --bg: #f8f9fc;
+            --bg: #fffbfb;
             --card-bg: #fff;
-            --text: #1d1d1f;
-            --text-muted: #86868b;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            --text: #3a1a1a;
+            --text-muted: #a08080;
+            --shadow: 0 12px 40px rgba(255, 59, 48, 0.08);
+            --accent: #FF9500;
         }
 
         body {
@@ -38,11 +39,12 @@
         }
 
         h1 {
-            font-family: 'Outfit', sans-serif;
-            font-size: 32px;
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 28px;
             font-weight: 800;
-            margin: 0;
-            letter-spacing: -0.02em;
+            margin: 4px 0 0 0;
+            letter-spacing: -0.01em;
+            color: var(--primary);
         }
 
         .badge {
@@ -241,8 +243,9 @@
     <div class="container">
         <header>
             <div>
-                <span class="badge">Live Analytics</span>
-                <h1>アクセス解析ダッシュボード</h1>
+                <span class="badge" style="background: var(--text); padding: 4px 14px; font-size: 11px;">Iizuna Apple
+                    Town Analytics</span>
+                <h1>りんごのまちいいづな<br><span style="color:var(--text); font-size: 0.8em;">アクセス解析ダッシュボード</span></h1>
             </div>
             <div class="header-actions">
                 <div class="date-range-selector">
@@ -406,21 +409,45 @@
     </div>
 
     <script>
+        function onPresetChange() {
+            const preset = document.getElementById('range-preset').value;
+            const customUi = document.getElementById('custom-range-ui');
+            customUi.style.display = (preset === 'custom') ? 'flex' : 'none';
+
+            if (preset !== 'custom') {
+                const now = new Date();
+                let start = new Date();
+                if (preset === '7d') start.setDate(now.getDate() - 7);
+                else if (preset === '1m') start.setMonth(now.getMonth() - 1);
+                else if (preset === '3m') start.setMonth(now.getMonth() - 3);
+                else if (preset === '6m') start.setMonth(now.getMonth() - 6);
+                else if (preset === '1y') start.setFullYear(now.getFullYear() - 1);
+
+                const toStr = d => {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
+                };
+                document.getElementById('start-date').value = toStr(start);
+                document.getElementById('end-date').value = toStr(now);
+                refresh();
+            }
+        }
+
         window.onload = function () {
-            // 🍎 初期値（直近7日間）
-            const now = new Date();
-            const last7 = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-            const toStr = d => d.toISOString().split('T')[0];
-
-            document.getElementById('start-date').value = toStr(last7);
-            document.getElementById('end-date').value = toStr(now);
-
-            refresh();
+            // 🍎 初期セットアップ
+            const presetSel = document.getElementById('range-preset');
+            presetSel.value = '7d';
+            onPresetChange();
         };
 
         function refresh() {
             const start = document.getElementById('start-date').value;
             const end = document.getElementById('end-date').value;
+
+            // 🍎 簡易バリデーション
+            if (!start || !end) return;
 
             document.getElementById('loading').style.display = 'flex';
             // 各テーブルを一旦クリア
