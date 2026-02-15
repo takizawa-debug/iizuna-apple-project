@@ -7,7 +7,9 @@ window.lzSearchEngine = (function () {
   "use strict";
   var C = window.LZ_COMMON;
   var DYNAMIC_KEYWORDS = [];
-  var isKeywordsReady = false; // 🍎 キーワード準備完了フラグ
+  var isKeywordsReady = false;
+
+  var track = function (name, params) { if (window.mzTrack) window.mzTrack(name, params); };
 
   // スタイル注入
   var injectSearchStyles = function () {
@@ -188,6 +190,15 @@ window.lzSearchEngine = (function () {
         var currentId = new URLSearchParams(location.search).get('id');
         var results = (json.items || []).filter(function (it) { return it.title !== currentId; });
 
+        // 🍎 Analytics: 検索実行
+        var sourceCardId = currentId || '';
+        track('search_execute', { keyword: keyword, source: 'keyword_link', source_card_id: sourceCardId, result_count: results.length });
+
+        // 🍎 Analytics: 0件の場合
+        if (results.length === 0) {
+          track('search_no_results', { keyword: keyword });
+        }
+
         var hl = function (text) {
           if (!displayWord) return text;
           var r = new RegExp(displayWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
@@ -234,9 +245,17 @@ window.lzSearchEngine = (function () {
         modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
         modalEl.querySelector('#lzSearchStickyClose').onclick = backFunc;
 
-        modalEl.querySelectorAll('.lz-s-item').forEach(function (item) {
+        modalEl.querySelectorAll('.lz-s-item').forEach(function (item, itemIndex) {
           item.onclick = function () {
             var targetId = item.dataset.gotoId;
+            // 🍎 Analytics: 検索結果クリック（位置付き）
+            track('search_result_click', {
+              search_term: keyword,
+              result_card_id: targetId,
+              label: item.querySelector('.lz-s-name')?.textContent,
+              result_position: itemIndex + 1,
+              result_count: results.length
+            });
             var cardInDom = document.querySelector('.lz-card[data-id="' + targetId + '"]');
             if (cardInDom) window.lzModal.open(cardInDom);
             else location.href = (window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin) + "?lang=" + targetLang + "&id=" + encodeURIComponent(targetId);

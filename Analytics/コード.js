@@ -12,7 +12,11 @@ const HEADER = [
   'screen_w', 'screen_h', 'ua', 'geo_ip', 'geo_country', 'geo_region', 'geo_city',
   'geo_lat', 'geo_lon', 'language',
   'engaged_ms', 'element', 'label', 'href', 'modal_name', 'card_id', 'group',
-  'platform', 'action', 'idx', 'search_term', 'link_domain', 'scroll_depth'
+  'platform', 'action', 'idx', 'search_term', 'link_domain', 'scroll_depth',
+  'source', 'source_card_id', 'from_card_id', 'to_card_id', 'direction',
+  'from_lang', 'to_lang', 'image_index', 'method',
+  'result_position', 'result_count', 'result_card_id',
+  'related_url', 'related_title', 'dwell_ms', 'link_type', 'display_text', 'keyword'
 ];
 
 const ss_ = () => SpreadsheetApp.openById(SPREADSHEET_ID);
@@ -82,7 +86,7 @@ function formatRow_(data, timestampJST) {
     pick_(params, 'element') || pick_(params, 'element_id'),
     pick_(params, 'label'),
     pick_(params, 'href'),
-    pick_(params, 'modal_name'),
+    pick_(params, 'modal_name') || pick_(params, 'modal_title'),
     pick_(params, 'card_id'),
     pick_(params, 'group'),
     pick_(params, 'platform'),
@@ -90,7 +94,25 @@ function formatRow_(data, timestampJST) {
     pick_(params, 'idx'),
     pick_(params, 'search_term'),
     pick_(params, 'link_domain'),
-    pick_(params, 'scroll_depth')
+    pick_(params, 'scroll_depth'),
+    pick_(params, 'source'),
+    pick_(params, 'source_card_id'),
+    pick_(params, 'from_card_id'),
+    pick_(params, 'to_card_id'),
+    pick_(params, 'direction'),
+    pick_(params, 'from_lang'),
+    pick_(params, 'to_lang'),
+    pick_(params, 'image_index'),
+    pick_(params, 'method'),
+    pick_(params, 'result_position'),
+    pick_(params, 'result_count'),
+    pick_(params, 'result_card_id'),
+    pick_(params, 'related_url'),
+    pick_(params, 'related_title'),
+    pick_(params, 'dwell_ms'),
+    pick_(params, 'link_type'),
+    pick_(params, 'display_text'),
+    pick_(params, 'keyword')
   ];
 }
 
