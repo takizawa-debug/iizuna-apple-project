@@ -117,7 +117,7 @@ window.lzModal = (function () {
       if (!window.jspdf) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
       if (!window.html2canvas) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
       if (!window.QRCode) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
-      var qrUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(cardId);
+      var qrUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(cardId) + "&utm_source=pdf_qr";
       var clone = element.cloneNode(true);
       clone.querySelector(".lz-actions").remove();
       if (clone.querySelector(".lz-m-lang-tabs")) clone.querySelector(".lz-m-lang-tabs").remove();
@@ -306,9 +306,10 @@ window.lzModal = (function () {
     MODAL.querySelector(".lz-share").onclick = function () {
       var detailsLabel = getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG);
       var hashtags = getTranslation('hashtags', MODAL_ACTIVE_LANG);
+      var shareUrl = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'utm_source=share';
       var parts = [
         window.LZ_COMMON.RED_APPLE + title + window.LZ_COMMON.GREEN_APPLE,
-        lead, "ーーー", detailsLabel, window.location.href, "", hashtags
+        lead, "ーーー", detailsLabel, shareUrl, "", hashtags
       ];
       var payload = parts.filter(function (v) { return v && String(v).trim() !== ""; }).join("\n");
 

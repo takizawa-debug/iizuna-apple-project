@@ -201,7 +201,7 @@ const PAGE_NAME_MAP = {
   '/discover': '知る',
   '/experience': '体験する',
   '/live': '暮らす',
-  '/business': 'ビジネス',
+  '/business': '営む',
   'index.html': 'トップページ'
 };
 
@@ -231,6 +231,7 @@ function getDashboardStats() {
   const colGeoCity = idx('geo_city');
   const colDwellMs = idx('dwell_ms');
   const colModalTitle = idx('modal_name');
+  const colUtmSource = idx('utm_source');
 
   const stats = {
     totalPv: rows.length,
@@ -318,9 +319,14 @@ function getDashboardStats() {
 
     // 流入元（リファラ）の集計
     const ref = String(row[colReferrer] || "").trim();
+    const utmSource = String(row[colUtmSource] || "").trim();
     const internalDomain = 'appletown-iizuna.com';
 
-    if (ref && !ref.includes(internalDomain)) {
+    if (utmSource === 'share') {
+      stats.referrerRanking["SNS共有経由"] = (stats.referrerRanking["SNS共有経由"] || 0) + 1;
+    } else if (utmSource === 'pdf_qr') {
+      stats.referrerRanking["印刷チラシQR経由"] = (stats.referrerRanking["印刷チラシQR経由"] || 0) + 1;
+    } else if (ref && !ref.includes(internalDomain)) {
       const refDomain = ref.split('/')[2] || "直接アクセス/不明";
       stats.referrerRanking[refDomain] = (stats.referrerRanking[refDomain] || 0) + 1;
     } else if (!ref) {
