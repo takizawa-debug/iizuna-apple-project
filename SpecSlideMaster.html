@@ -3,219 +3,548 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Appletown Iizuna - Executive System Specification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appletown Iizuna - Executive Specification & Marketing Vision</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&family=Noto+Sans+JP:wght@400;700;900&display=swap"
+        rel="stylesheet">
     <style>
         :root {
             --brand-red: #D71920;
-            --bg-gray: #f8f9fa;
-            --text-dark: #1a1a1a;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --brand-green: #27ae60;
+            --dark: #1a1a1a;
+            --gray: #666;
+            --light-bg: #fdfaf8;
+            --slide-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
+            --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
-            background: var(--bg-gray);
             margin: 0;
-            padding: 40px;
-            color: var(--text-dark);
+            padding: 40px 20px;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: #eee;
+            color: var(--dark);
             line-height: 1.6;
         }
 
-        .presentation-container {
-            max-width: 1000px;
+        .presentation {
+            max-width: 1100px;
             margin: 0 auto;
         }
 
+        /* Slide Container */
         .slide {
             background: white;
-            padding: 60px;
-            margin-bottom: 60px;
-            border-radius: 20px;
-            box-shadow: var(--shadow);
+            margin-bottom: 80px;
+            border-radius: 24px;
+            box-shadow: var(--slide-shadow);
             position: relative;
             overflow: hidden;
-            min-height: 500px;
+            min-height: 620px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .slide-inner {
+            padding: 60px;
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
         }
 
-        .slide-header {
-            border-left: 8px solid var(--brand-red);
-            padding-left: 20px;
-            margin-bottom: 30px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin: 0;
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            color: var(--brand-red);
-            margin: 0;
-        }
-
-        .content {
-            font-size: 1.1rem;
-        }
-
-        .visual-container {
-            margin-top: 30px;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid #ddd;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #eee;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        /* Specific Slide Styles */
+        /* Title Slide */
         .title-slide {
             background: var(--brand-red);
             color: white;
-            justify-content: center;
-            align-items: center;
             text-align: center;
+            justify-content: center;
         }
 
         .title-slide h1 {
-            font-size: 3.5rem;
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -0.02em;
         }
 
         .title-slide p {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            font-weight: 400;
             opacity: 0.9;
+            margin: 20px 0 0;
         }
 
-        .feature-grid {
+        .title-slide .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 24px;
+            border-radius: 40px;
+            font-weight: 700;
+            margin-top: 50px;
+        }
+
+        /* Slide Header */
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .slide-num {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--brand-red);
+            background: #fff5f5;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 20px;
+        }
+
+        .slide-title {
+            font-size: 2.2rem;
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -0.01em;
+        }
+
+        /* Content Blocks */
+        .columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            flex-grow: 1;
+        }
+
+        .text-content h3 {
+            color: var(--brand-red);
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        .visual-content {
+            background: #f9f9f9;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #eee;
+            position: relative;
+        }
+
+        .visual-content img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Brand Elements */
+        .pillar-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
+        }
+
+        .pillar {
+            background: #fff5f5;
+            padding: 30px;
+            border-radius: 16px;
+            border-top: 6px solid var(--brand-red);
+        }
+
+        .pillar h4 {
+            margin-top: 0;
+            font-size: 1.2rem;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            background: #eee;
+            padding: 4px 12px;
+            border-radius: 6px;
+            margin: 0 5px 5px 0;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .marketing-box {
+            background: var(--light-bg);
+            border: 2px dashed #dcd0c9;
+            padding: 24px;
+            border-radius: 16px;
             margin-top: 20px;
         }
 
-        .feature-item {
-            background: #fff5f5;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid var(--brand-red);
+        .status-footer {
+            background: #f9f9f9;
+            padding: 20px 60px;
+            font-size: 0.9rem;
+            color: #888;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
         }
 
-        .tag {
-            display: inline-block;
-            background: var(--brand-red);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-bottom: 10px;
+        code {
+            background: #2d2d2d;
+            color: #61afef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="presentation-container">
+    <div class="presentation">
 
-        <!-- SLIDE 1: TITLE -->
+        <!-- 0. COVER -->
         <div class="slide title-slide">
-            <h1>Appletown Iizuna</h1>
-            <p>システム概要・アクセス分析仕様書 (納品資料)</p>
-            <div style="margin-top:40px; font-weight:bold;">飯綱町 産業振興・観光推進プロジェクト</div>
+            <div class="badge">SYSTEM SPECIFICATION V2.0</div>
+            <h1>りんごのまち いいづな</h1>
+            <p>情報プラットフォーム・システム概要仕様書</p>
+            <div style="margin-top:60px; font-weight:800; font-size:1.2rem; color:rgba(255,255,255,0.8)">
+                飯綱町 産業振興・観光推進プロジェクト<br>
+                Living Information Platform Project
+            </div>
         </div>
 
-        <!-- SLIDE 2: BRANDING & SEARCH -->
+        <!-- 1. VISION -->
         <div class="slide">
-            <div class="slide-header">
-                <div class="tag">UX/UI DESIGN</div>
-                <h2>1. ビジュアルと検索の融合</h2>
-            </div>
-            <div class="content">
-                <p>飯綱町の「りんご」という強力なブランド資源を際立たせるミニマリズムと、ユーザーの知りたい情報へ即座にリーチできる統合検索システムを構築しました。</p>
-                <div class="feature-grid">
-                    <div class="feature-item"><b>ブランディング</b>: 現代的なタイポグラフィと高画質素材の活用</div>
-                    <div class="feature-item"><b>統合検索</b>: 物理ボタンとデジタル検索のシームレスな体験</div>
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">01</div>
+                    <h2 class="slide-title">ビジョン：まちづくりの基盤となる「入り口」</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>飯綱町が誇る「りんご」の物語は、今まで個々の農家や事業者の中に分散していました。本プラットフォームは、それらを一つに繋ぎ、町内外へ開かれた<b>「デジタル・ゲートウェイ」</b>を目指します。
+                        </p>
+                        <div class="marketing-box">
+                            <strong>🍎 解決する課題</strong>
+                            <ul style="padding-left:20px; margin-top:10px;">
+                                <li>情報の分散による魅力の希薄化</li>
+                                <li>「りんご」という点から「町」という面への回遊不足</li>
+                                <li>小規模事業者単体では難しいデジタル発信の補完</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="visual-content">
+                        <img
+                            src="file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/top_page_annotated_1771157075904.png">
+                    </div>
                 </div>
             </div>
-            <div class="visual-container">
-                <img src="file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/top_page_annotated_1771157075904.png"
-                    alt="Top Page">
+            <div class="status-footer">
+                <span>Concept: Information Infrastructure for Town Revitalization</span>
+                <span>Slide 1/11</span>
             </div>
         </div>
 
-        <!-- SLIDE 3: MULTI-LANGUAGE MODAL -->
+        <!-- 2. PILLARS -->
         <div class="slide">
-            <div class="slide-header">
-                <div class="tag">GLOBAL STANDARDS</div>
-                <h2>2. 待機なしの多言語体験</h2>
-            </div>
-            <div class="content">
-                <p>インバウンド対応を強化するため、3言語（日・英・繁）の即時切り替えを実装。ページ遷移のストレスを排除したモーダル形式を採用しています。</p>
-                <div class="feature-grid">
-                    <div class="feature-item"><b>パンフレット発行</b>: 閲覧中の情報を即座にPDF化</div>
-                    <div class="feature-item"><b>SNS連携</b>: 魅力的な情報のバイラル性を最大化</div>
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">02</div>
+                    <h2 class="slide-title">価値の3本柱：ユーザーを導き、情報を育てる</h2>
+                </div>
+                <div class="pillar-grid" style="margin-top:40px;">
+                    <div class="pillar">
+                        <h4>01. 体系的に知る</h4>
+                        <p>品種、販売店、加工品を迷わず発見。初めての人でも町のりんご文化をスムーズに理解できる入口です。</p>
+                        <div class="feature-tag">Apple Dictionary</div>
+                    </div>
+                    <div class="pillar">
+                        <h4>02. 町を楽しむ</h4>
+                        <p>「味わう・体験する・訪れる」の行動を自然に繋げ、観光や滞在、多様な出会いをサポートする道しるべです。</p>
+                        <div class="feature-tag">Action-Driven Design</div>
+                    </div>
+                    <div class="pillar" style="border-top-color:var(--brand-green)">
+                        <h4>03. みんなで育てる</h4>
+                        <p>生産者や地域の方々と共に情報をアップデート。使うほどに町が身近になる共創型プラットフォームです。</p>
+                        <div class="feature-tag">Community CMS</div>
+                    </div>
                 </div>
             </div>
-            <div class="visual-container">
-                <img src="file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/article_modal_annotated_1771157315594.png"
-                    alt="Modal Feature">
+            <div class="status-footer">
+                <span>Core Values: Systematic Discovery, Strategic Action, Co-Creation</span>
+                <span>Slide 2/11</span>
             </div>
         </div>
 
-        <!-- SLIDE 4: ANALYTICS CORE -->
+        <!-- 3. UX STRATEGY -->
         <div class="slide">
-            <div class="slide-header">
-                <div class="tag">DATA DRIVEN</div>
-                <h2>3. 次世代型アクセス分析</h2>
-            </div>
-            <div class="content">
-                <p>GA4の複雑さを排除し、現場が「今、何が必要か」を即断できる専用ダッシュボードを構築。前期間比較による施策検証が容易です。</p>
-            </div>
-            <div class="visual-container">
-                <img src="file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/analytics_dashboard_annotated_1771157575769.png"
-                    alt="Analytics Dashboard">
-            </div>
-        </div>
-
-        <!-- SLIDE 5: ENGAGEMENT LOGIC -->
-        <div class="slide">
-            <div class="slide-header">
-                <div class="tag">ALGORITHM</div>
-                <h2>4. 「真の滞在時間」の可視化</h2>
-            </div>
-            <div class="content">
-                <p>タブの切り替えやバックグラウンド状態を除外し、Page Visibility API を活用した<b>アクティブ精読時間</b>のみを計測。コンテンツの真の価値を浮き彫りにします。</p>
-                <div style="background:#eee; padding:20px; border-radius:10px; margin-top:20px;">
-                    <code>ActiveTime = TotalTime - BackgroundHiddenTime</code>
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">03</div>
+                    <h2 class="slide-title">UX戦略：情報を「小さな記事」で整理する</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>情報の洪水にさせないため、1つのコンテンツを「小さな記事単位」で構成。辞書のような読みやすさを実現しました。</p>
+                        <h3>💡 特徴的なロジック</h3>
+                        <ul style="padding-left:20px;">
+                            <li><b>独立URL</b>: 全ての記事が個別のURLを持ち、特定の情報だけを他者に伝えやすい「シェア性」を重視。</li>
+                            <li><b>アクション誘導</b>: 記事内から「予約・公式サイト・店舗情報」へシームレスにリンク。</li>
+                            <li><b>キーワード回遊</b>: 記事内の単語から関連情報を芋づる式に発見できる動線。</li>
+                        </ul>
+                    </div>
+                    <div class="visual-content">
+                        <img
+                            src="file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/article_modal_annotated_1771157315594.png">
+                    </div>
                 </div>
             </div>
+            <div class="status-footer">
+                <span>Architecture: Micro-Article Strategy for Maximum Shareability</span>
+                <span>Slide 3/11</span>
+            </div>
         </div>
 
-        <!-- SLIDE 6: DATA RECONCILIATION -->
+        <!-- 4. O2O INTEGRATION -->
         <div class="slide">
-            <div class="slide-header">
-                <div class="tag">RELIABILITY</div>
-                <h2>5. データの整合性・地域分析</h2>
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">04</div>
+                    <h2 class="slide-title">O2O連携：オンラインからオフラインの現場へ</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>WEBを画面の中だけに閉じ込めない、強力なオフライン支援機能を搭載しています。</p>
+                        <div class="marketing-box">
+                            <strong>🖨️ A4プリント・デジタルパンフレット</strong>
+                            <p>「印刷」ボタン一つで、記事内容をA4サイズに最適化して出力。イベント会場や店頭の案内POPとして即座に活用可能です。</p>
+                            <strong>📱 QRコード自動付帯</strong>
+                            <p>印刷物には元記事へのQRコードが自動挿入され、紙から最新のデジタル情報（予約サイト等）へユーザーを連れ戻します。</p>
+                        </div>
+                    </div>
+                    <div class="visual-content">
+                        <div style="padding:40px; text-align:center;">
+                            <div
+                                style="width:200px; height:280px; border:4px solid #333; margin:auto; position:relative; background:white; display:flex; flex-direction:column; padding:10px; box-shadow: 10px 10px 0 var(--brand-red);">
+                                <div style="height:20px; background:#cf3a3a; margin-bottom:10px;"></div>
+                                <div style="height:120px; background:#eee; margin-bottom:10px;"></div>
+                                <div style="height:10px; background:#ddd; width:80%; margin-bottom:5px;"></div>
+                                <div style="height:10px; background:#ddd; width:60%; margin-bottom:20px;"></div>
+                                <div style="width:40px; height:40px; border:2px solid #333; margin-left:auto;"></div>
+                            </div>
+                            <p style="margin-top:20px; font-weight:bold;">現場で使える「動くPOP」へ</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="content">
-                <p>セッション単位ではなくユーザー単位での地域集計に刷新。全ての地域別ランキングの合計がトータルUU数と完全に一致する高い精度を実現しました。</p>
+            <div class="status-footer">
+                <span>Feature: High-Fidelity Printing & QR Integration for Physical Experience</span>
+                <span>Slide 4/11</span>
             </div>
         </div>
 
-        <!-- SLIDE 7: THANK YOU -->
-        <div class="slide title-slide" style="min-height:300px;">
-            <h2>本資料の出力方法</h2>
-            <p style="font-size:1.1rem;">Googleドキュメント/スライドへの出力は、同梱の <b>DeliveryExporter.gs</b> をGoogle Apps
-                Scriptで実行してください。</p>
+        <!-- 5. COMMUNITY CMS -->
+        <div class="slide">
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">05</div>
+                    <h2 class="slide-title">持続性：みんなで育てる「Google Sheets CMS」</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>高度なシステム知識は不要。農家さんや地域の方が日々使い慣れた「Googleスプレッドシート」をデータベースとして採用しました。</p>
+                        <ul style="padding-left:20px;">
+                            <li><b>リアルタイム更新</b>: シートの変更が即座に多言語サイトに反映。</li>
+                            <li><b>情報の集積</b>: 寄せられた情報がそのままデジタル資産として蓄積される。</li>
+                            <li><b>アクセシビリティ</b>: 役場職員や地域の方々が直接、愛情を持って更新できる親和性。</li>
+                        </ul>
+                    </div>
+                    <div class="visual-content"
+                        style="background:#f0f7f2; display:flex; align-items:center; justify-content:center;">
+                        <div style="font-size:3rem; font-weight:900; color:var(--brand-green);">Google Sheets ⇆ WEB
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-footer">
+                <span>Infrastructure: Community-Oriented CMS via Google Sheets</span>
+                <span>Slide 5/11</span>
+            </div>
+        </div>
+
+        <!-- 6. ANALYTICS LOGIC -->
+        <div class="slide">
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">06</div>
+                    <h2 class="slide-title">解析機能：数字の裏にある「熱量」を測る</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>単なるページ遷移数(PV)に惑わされない、独自のインテリジェント解析を実装しました。</p>
+                        <h3>📈 アクティブ滞在時間 (Precision Analytics)</h3>
+                        <p><code>Page Visibility API</code>を活用。ブラウザを裏側に隠している時間は除外。<b>「ユーザーが本当に画面を読んでいた実時間」</b>のみを測定します。
+                        </p>
+                        <p>これにより、どの記事が「本当に深く読まれているか」という、農家さんにとっても価値あるフィードバックを提供可能です。</p>
+                    </div>
+                    <div class="visual-content">
+                        <img
+                            src="file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/analytics_dashboard_annotated_1771157575769.png">
+                    </div>
+                </div>
+            </div>
+            <div class="status-footer">
+                <span>Analytics: Active Engagement Measurement using Page Visibility API</span>
+                <span>Slide 6/11</span>
+            </div>
+        </div>
+
+        <!-- 7. REGIONAL ALIGNMENT -->
+        <div class="slide">
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">07</div>
+                    <h2 class="slide-title">データの透明性：UU単位での地域分析</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>「どこの地域の人が、どれだけ訪れているか」という問いに対して、マーケティング判断を誤らせない精度を実現しました。</p>
+                        <div class="marketing-box">
+                            <strong>🔍 ユーザー単位の整合性</strong>
+                            <p>従来の「セッション(訪問)」ベースではなく「ユーザー(UU)」ベースで地域を判定。地域別ランキングの合計がトータルユーザー数と完全に一致するロジックを搭載。データの透明性が高く、施策の意思決定を強力にサポートします。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="visual-content" style="padding:40px;">
+                        <div style="background:white; border-radius:12px; padding:20px; border:2px solid #eee;">
+                            <h4 style="margin:0;">地域別ランキング</h4>
+                            <div style="display:flex; justify-content:space-between; margin-top:10px;"><span>東京都</span>
+                                <span>452 UU</span></div>
+                            <div style="height:8px; background:var(--brand-red); width:80%; border-radius:4px;"></div>
+                            <div style="display:flex; justify-content:space-between; margin-top:10px;"><span>長野県</span>
+                                <span>310 UU</span></div>
+                            <div style="height:8px; background:var(--brand-red); width:50%; border-radius:4px;"></div>
+                            <div
+                                style="margin-top:20px; border-top:1px solid #ddd; padding-top:10px; text-align:right;">
+                                <b>Total: 762 UU = Dashboard UU</b></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-footer">
+                <span>Marketing: Visitor-Based Regional Analysis for Decision Making</span>
+                <span>Slide 7/11</span>
+            </div>
+        </div>
+
+        <!-- 8. GLOBAL STANDARDS -->
+        <div class="slide">
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">08</div>
+                    <h2 class="slide-title">拡張性：グローバル基準とサーバーレス構成</h2>
+                </div>
+                <div class="pillar-grid" style="margin-top:40px;">
+                    <div class="pillar" style="border-top-color:#3498db">
+                        <h4>多言語基盤</h4>
+                        <p>日・英・繁にネイティブ対応。単なる翻訳ではなく、言語ごとに最適なURL構造とSEOメタデータを生成。</p>
+                    </div>
+                    <div class="pillar" style="border-top-color:#3498db">
+                        <h4>サーバーレス設計</h4>
+                        <p>Google Apps Script (GAS)をエンジンに採用。サーバー維持費ゼロを実現しながら、数万PVにも耐えうるスケーラビリティ。</p>
+                    </div>
+                    <div class="pillar" style="border-top-color:#3498db">
+                        <h4>高速ページめくり</h4>
+                        <p>SPA（Single Page Application）的なモーダル画面遷移。ストレスフリーな閲覧体験を提供します。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="status-footer">
+                <span>Technology: Scalable Serverless Infrastructure & Multi-Language Core</span>
+                <span>Slide 8/11</span>
+            </div>
+        </div>
+
+        <!-- 9. CO-CREATION -->
+        <div class="slide">
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">09</div>
+                    <h2 class="slide-title">情報の「未来」：寄せられる声で豊かになる</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>現在の内容は、あくまで“はじまり”の段階。これから寄せられる情報をもとに、より豊かで立体的な姿へと広がっていきます。</p>
+                        <div
+                            style="background:#fff5f5; padding:20px; border-radius:12px; border-left:4px solid var(--brand-red);">
+                            <strong>目指す未来</strong>
+                            <ul style="padding-left:20px; margin-top:10px;">
+                                <li>個別農家では難しい移動・宿泊情報の補完</li>
+                                <li>いいづなりんごをきっかけにした新たな関係人口の創出</li>
+                                <li>地域に関わる皆さまの「声」による、生きたアーカイブの形成</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="visual-content"
+                        style="display:flex; align-items:center; justify-content:center; text-align:center;">
+                        <div style="font-size:1.5rem; font-weight:800;">
+                            小さな一歩が、<br>町内外をつなぐ大きな力になります。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="status-footer">
+                <span>Philosophy: The Start of a Living Platform through Collaboration</span>
+                <span>Slide 9/11</span>
+            </div>
+        </div>
+
+        <!-- 10. SYSTEM MAINTENANCE -->
+        <div class="slide">
+            <div class="slide-inner">
+                <div class="header">
+                    <div class="slide-num">10</div>
+                    <h2 class="slide-title">保守・運用：信頼性のための自動監視</h2>
+                </div>
+                <div class="columns">
+                    <div class="text-content">
+                        <p>安定稼働のため、目に見えない部分でのエンジニアリングを徹底しています。</p>
+                        <div class="marketing-box" style="border-style:solid; border-color:#eee; background:white;">
+                            <strong>🛠️ 開発・運用エコシステム</strong>
+                            <ul style="padding-left:20px;">
+                                <li><b>clasp</b>: バージョン管理されたコードベースと継続的デプロイメント。</li>
+                                <li><b>Error Tracking</b>: GAS内での実行エラーをスプレッドシートへ自動ログ収集。</li>
+                                <li><b>CDN Asset Management</b>: 画像やライブラリの読み込みを最適化し、表示速度を最大化。</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="visual-content"
+                        style="background:#2d2d2d; color:#fff; padding:30px; font-family:monospace; font-size:0.9rem;">
+                        $ clasp push<br>
+                        > Pushing code to Google Apps Script...<br>
+                        > Updated 12 files.<br>
+                        > Deployment successful. Version @53
+                    </div>
+                </div>
+            </div>
+            <div class="status-footer">
+                <span>Stability: Version Controlled Codebase & Automated Error Tracking</span>
+                <span>Slide 10/11</span>
+            </div>
+        </div>
+
+        <!-- 11. CLOSING -->
+        <div class="slide title-slide" style="min-height:400px;">
+            <h2 style="color:white; font-size:3rem; margin-bottom:20px;">Thank You</h2>
+            <p style="font-size:1.4rem;">飯綱町りんごポータルサイト<br>「りんごのまち いいづな」システム納品仕様書</p>
+            <div style="margin-top:60px; font-size:1rem; opacity:0.7;">
+                Created for Iizuna Town Appletown Project<br>
+                © 2026 Iizuna Town & Appletown Developers
+            </div>
         </div>
 
     </div>
