@@ -36,7 +36,12 @@ const resources = {
         day_suffix: "曜日"
       },
       status: { loading_cat: "カテゴリーを取得中...", error_cat: "カテゴリーの取得に失敗しました。" },
-      alerts: { zip_empty: "郵便番号を入力してください", send_error: "送信に失敗しました" },
+      alerts: {
+        zip_empty: "郵便番号を入力してください",
+        zip_invalid: "郵便番号を7桁で入力してください",
+        address_not_found: "住所が見つかりませんでした",
+        send_error: "送信に失敗しました"
+      },
     },
     // Input Fields (name attributes mapped to labels)
     fields: {
@@ -166,7 +171,9 @@ const resources = {
       std_biz_hours: "標準営業時間", open_time: "営業開始", close_time: "営業終了",
       day: "曜日", closed: "休業",
       genre_suffix: "のジャンル",
-      other_venue_name: "関連する場所の名称"
+      other_venue_name: "関連する場所の名称",
+      hour: "時",
+      minute: "分"
     }
   },
   en: {
@@ -199,7 +206,12 @@ const resources = {
         day_suffix: ""
       },
       status: { loading_cat: "Loading categories...", error_cat: "Failed to load categories." },
-      alerts: { zip_empty: "Please enter a zip code", send_error: "Failed to send" },
+      alerts: {
+        zip_empty: "Please enter a zip code",
+        zip_invalid: "Please enter a 7-digit zip code",
+        address_not_found: "Address not found",
+        send_error: "Failed to send"
+      },
     },
     fields: {
       rep_name: "Name", rep_content: "Content",
@@ -318,7 +330,9 @@ const resources = {
       std_biz_hours: "Standard Hours", open_time: "Open", close_time: "Close",
       day: "Day", closed: "Closed",
       genre_suffix: " Genres",
-      other_venue_name: "Related Location Name"
+      other_venue_name: "Related Location Name",
+      hour: "hr",
+      minute: "min"
     }
   },
   zh: {
@@ -351,7 +365,12 @@ const resources = {
         day_suffix: ""
       },
       status: { loading_cat: "正在获取类别...", error_cat: "获取类别失败。" },
-      alerts: { zip_empty: "请输入邮政编码", send_error: "发送失败" },
+      alerts: {
+        zip_empty: "请输入邮政编码",
+        zip_invalid: "请输入7位邮政编码",
+        address_not_found: "未找到住址",
+        send_error: "发送失败"
+      },
     },
     fields: {
       rep_name: "姓名", rep_content: "内容",
@@ -470,7 +489,9 @@ const resources = {
       std_biz_hours: "营业时间", open_time: "开始营业", close_time: "结束营业",
       day: "星期", closed: "休息",
       genre_suffix: " 类型",
-      other_venue_name: "相关地点名称"
+      other_venue_name: "相关地点名称",
+      hour: "时",
+      minute: "分"
     }
   }
 };
