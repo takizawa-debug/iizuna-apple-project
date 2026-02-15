@@ -203,17 +203,7 @@ function _mapRowToObject(row, idx) {
   };
 }
 
-/** キャッシュクリア（GASエディタから手動実行用）*/
-function clearApiCache() {
-  CacheService.getScriptCache().removeAll([
-    // 全キャッシュを一括削除する正攻法はないが、removeAllでキーを指定しなくても
-    // put/getのTTLが6時間なので、新しいデプロイ直後にキーが衝突するときに使う
-  ]);
-  // removeAllが空配列だと無意味なので、代替手段としてダミーキーで上書き
-  Logger.log('キャッシュTTL切れを待つか、新バージョンデプロイで自動無効化されます');
-}
-
-/***** ★検索・取得メインロジック *****/
+/***** ★検索・取得メインロジック（ここが抜けていました） *****/
 function doGet(e) {
   try {
     const p = e.parameter || {};
@@ -222,7 +212,7 @@ function doGet(e) {
     // フォーム設定などの動的要素はキャッシュしない、または短くするなどの判断が必要だが、
     // 基本的にマスターデータ系なのでキャッシュして問題ない。
     const cache = CacheService.getScriptCache();
-    const cacheKey = "api_v2_" + Utilities.base64Encode(JSON.stringify(p));
+    const cacheKey = "api_v1_" + Utilities.base64Encode(JSON.stringify(p));
 
     // キャッシュがあればそれを返す (フォーム関連などキャッシュしたくないものは除外)
     if (p.mode !== 'form_genres') {
@@ -278,7 +268,7 @@ function doGet(e) {
         return {
           l1, l2, l3: _pick(row, idx, COL.L3),
           en: { l1: _pick(row, idx, COL.L1_EN), l2: _pick(row, idx, COL.L2_EN), l3: _pick(row, idx, COL.L3_EN) },
-          zh: { l1: _pick(row, idx, COL.L1_ZH), l2: _pick(row, idx, COL.L2_ZH), l3: _pick(row, idx, COL.L3_ZH) }
+          zh: { l1: _pick(row, idx, COL.L1_ZH), l2: _pick(row, idx, COL.L1_ZH), l3: _pick(row, idx, COL.L3_ZH) }
         };
       }).filter(Boolean);
       resultObj = { ok: true, items: list };
