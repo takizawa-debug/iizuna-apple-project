@@ -1,63 +1,63 @@
-# Project Overview: りんごのまちいいづな (Iizuna Apple Portal)
+# プロジェクト概要: りんごのまちいいづな (飯綱町産りんごポータル)
 
-This document describes the system architecture and the rich frontend features of the Iizuna Apple Portal site, designed to facilitate communication between the town and its residents/visitors.
+このドキュメントでは、システムの全体設計と、町民や訪問者とのコミュニケーションを促進するために設計されたリッチなフロントエンド機能について説明します。
 
-## 🌟 Core Concept: "Spreadsheet as a CMS"
-The entire website is driven by Google Sheets. This allows non-engineers (town staff, operators) to update the website content, categories, and keyword links without touching a single line of code.
+## 🌟 コアコンセプト: 「スプレッドシートをCMSとして活用」
+ウェブサイト全体のデータはGoogleスプレッドシートで管理されています。これにより、エンジニア以外の担当者（町職員、運用チーム）が、コードを一行も書かずにコンテンツ、カテゴリー、キーワードリンクを更新できるようになっています。
 
 ```mermaid
 graph LR
-    A[Town Staff] -->|Edit Sheets| B(Google Spreadsheet)
-    B -->|API via GAS| C{Google Apps Script}
-    C -->|Dynamic JSON| D[Website / Peraichi]
-    D -->|Submission Form| C
-    C -->|Auto-insert| B
+    A[運用担当者] -->|シートを編集| B(Googleスプレッドシート)
+    B -->|GASを介したAPI| C{Google Apps Script}
+    C -->|動的JSON| D[ウェブサイト / ペライチ]
+    D -->|情報投稿フォーム| C
+    C -->|自動行挿入| B
 ```
 
 ---
 
-## 🖥️ Key Frontend Features
+## 🖥️ 主要なフロントエンド機能
 
-The frontend is built to be "Rich & Responsive," providing a native-app-like experience within a web browser.
+フロントエンドは「リッチ＆レスポンシブ」を掲げ、ブラウザ上でネイティブアプリのような体験を提供します。
 
-### 1. Multi-Functional Modal System (`modal.js`)
-When a user clicks on an article card, a sophisticated modal appears with several advanced features:
-- **Real-time Translation**: Switch between Japanese, English, and Chinese instantly.
-- **Smart Image Gallery**: Handles multiple high-quality images with an interactive thumbnail system.
-- **PDF Export**: Generates a professional A4 PDF flyer of the article on-the-fly, including a QR code back to the digital page.
-- **SNS Integration**: Customized sharing blocks with localized suggested text and hashtags.
-- **Dynamic Info Tables**: Automatically formats business hours, period dates, fees, and contact info based on the entry type (Shop, Event, Farmer, etc.).
-- **Interactive Maps**: Embeds localized Google Maps accurately based on the spreadsheet data.
+### 1. 多機能モーダルシステム (`modal.js`)
+記事カードをクリックすると、高度な機能を備えたモーダルが表示されます：
+- **リアルタイム多言語切り替え**: 日本語、英語、中国語を瞬時に切り替え可能。
+- **スマート画像ギャラリー**: 複数の高画質画像をインタラクティブなサムネイル形式で表示。
+- **PDFチラシ生成**: 記事の内容をその場でプロフェッショナルなA4チラシ（PDF）として生成。デジタル版へのQRコードも自動付与されます。
+- **SNS連携・共有**: 言語ごとに最適化された紹介文とハッシュタグを含む共有ブロック。
+- **動的情報テーブル**: 投稿タイプ（店舗、イベント、生産者など）に応じて、営業時間、開催期間、参加費、連絡先などを自動で整形表示。
+- **インタラクティブマップ**: スプレッドシートの住所データに基づき、正確なGoogleマップを埋め込み表示。
 
-### 2. Intelligent Search Engine (`modal-search.js`)
-A powerful, category-aware search engine that works inside the modal:
-- **Keyword Autolinking**: The system scans article texts for specific keywords (defined in the spreadsheet) and automatically converts them into green "Search Links" or red "Direct Links."
-- **Visual Search Results**: Results include category badges, thumbnails, and highlighted text snippets for quick scanning.
-- **Integrated Experience**: Users can jump between related articles and search results without closing the main modal window.
+### 2. インテリジェント検索エンジン (`modal-search.js`)
+モーダル内で動作する、カテゴリーを考慮した強力な検索エンジンです：
+- **キーワード自動リンク**: 記事内のテキストをスキャンし、スプレッドシートで定義されたキーワードを自動的に「検索リンク（緑）」や「直接リンク（赤）」に変換します。
+- **ビジュアル検索結果**: 検索結果にはカテゴリーバッジ、サムネイル、ハイライトされたテキストスニペットが含まれ、素早い情報確認を助けます。
+- **シームレスな体験**: モーダルを閉じずに、関連記事や検索結果の間を自由に移動できます。
 
-### 3. Highly Granular Submission Form (`Form/`)
-The portal includes a professional-grade information submission system:
-- **Smart Templates**: The form fields change dynamically based on the type of submission (e.g., "Event" asks for dates, "Shop" asks for business hours).
-- **Multilingual UI**: Fully translated labels and placeholders to support international visitors and developers.
-- **Direct-to-Sheets**: Submissions are instantly validated and inserted into the spreadsheet, notifying managers for review.
+### 3. 高機能な情報投稿フォーム (`Form/`)
+プロフェッショナル仕様の情報収集システムを搭載しています：
+- **動的フィールド構成**: 投稿タイプ（例：「イベント」なら開催日、「店舗」なら営業時間）に合わせて入力項目が自動で変化します。
+- **多言語UI**: 開発者や国際的な訪問者を支援するため、ラベルやプレースホルダーも完全に多言語化。
+- **スプレッドシートへの直接書き込み**: 投稿内容は即座にバリデーション（検証）され、スプレッドシートに挿入されます。
 
 ---
 
-## 📂 Project Structure for Teams
+## 📂 チーム向けプロジェクト構造
 
-| File / Directory | Role | Team Responsibility |
+| ファイル / ディレクトリ | 役割 | 担当チーム |
 | :--- | :--- | :--- |
-| `web/` | Core Frontend Logic | UI/UX Developers (CSS/JS) |
-| `Form/` | Submission Logic | Integration Developers |
-| `Import/` | GAS Logic (Backend) | Backend Engineers / GAS Devs |
-| `Analytics/` | Analytics Logic | Data Analysts |
-| **Spreadsheet** | Database / Content | **Operators / Content Managers** |
+| `web/` | フロントエンドのコアロジック | UI/UXエンジニア (CSS/JS) |
+| `Form/` | 情報投稿フォームのロジック | 統合開発者 |
+| `Import/` | GASロジック (バックエンド) | バックエンド / GAS開発者 |
+| `Analytics/` | 分析ロジック | データアナリスト |
+| **スプレッドシート** | データベース / コンテンツ | **運用・コンテンツ管理担当** |
 
-### How to update content?
-1. **Change Text**: Simply edit the `body` or `title` columns in the spreadsheet. The website reflects changes on the next refresh (or via Cache clear).
-2. **Add Search Keywords**: Add a row to the `キーワード` sheet. The website will automatically underline that word in all articles and link it to a search query.
-3. **Change Categories**: Update the `カテゴリ` sheet. The search filters and submission form dropdowns will update automatically.
+### コンテンツを更新するには？
+1. **テキストの変更**: スプレッドシートの `body` や `title` 列を編集するだけです。次回の読み込み時に反映されます。
+2. **検索キーワードの追加**: `キーワード` シートに行を追加します。サイト内の全記事でその単語が自動的にリンク化されます。
+3. **カテゴリーの変更**: `カテゴリ` シートを更新します。検索フィルターや投稿フォームの選択肢が自動で同期されます。
 
 ---
 
-Created & Maintained by the Iizuna Apple Project Team.
+飯綱町産りんごプロジェクトチームによって作成・維持されています。
