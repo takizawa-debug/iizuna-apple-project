@@ -3,14 +3,14 @@
  * 役割: 検索アニメーション、スティッキー×ボタン、およびキーワードの非同期自動反映を実装。
  * 毀損防止策: 既存のSVGパス、CSSクラス名、および検索ロジックを完全に保持。
  */
-window.lzSearchEngine = (function() {
+window.lzSearchEngine = (function () {
   "use strict";
   var C = window.LZ_COMMON;
   var DYNAMIC_KEYWORDS = [];
   var isKeywordsReady = false; // 🍎 キーワード準備完了フラグ
 
   // スタイル注入
-  var injectSearchStyles = function() {
+  var injectSearchStyles = function () {
     if (document.getElementById('lz-search-engine-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-search-engine-styles';
@@ -20,29 +20,29 @@ window.lzSearchEngine = (function() {
       '.lz-auto-link.is-active { opacity: 1 !important; }',
 
       '.lz-s-wrap { padding: 15px 20px !important; position: relative !important; }',
-      
+
       /* 右上に固定される閉じるボタン (既存機能維持) */
       '.lz-s-close-sticky { ' +
-        'position: sticky !important; ' +
-        'top: 0 !important; ' +
-        'float: right !important; ' +
-        'z-index: 100 !important; ' +
-        'width: 38px !important; ' +
-        'height: 38px !important; ' +
-        'margin-top: -5px !important; ' +
-        'margin-right: -10px !important; ' +
-        'background: rgba(255, 255, 255, 0.9) !important; ' +
-        'border: 1px solid #ddd !important; ' +
-        'border-radius: 50% !important; ' +
-        'display: flex !important; ' +
-        'align-items: center !important; ' +
-        'justify-content: center !important; ' +
-        'font-size: 26px !important; ' +
-        'color: #666 !important; ' +
-        'cursor: pointer !important; ' +
-        'box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; ' +
-        'transition: .2s !important; ' +
-        'line-height: 1 !important; ' +
+      'position: sticky !important; ' +
+      'top: 0 !important; ' +
+      'float: right !important; ' +
+      'z-index: 100 !important; ' +
+      'width: 38px !important; ' +
+      'height: 38px !important; ' +
+      'margin-top: -5px !important; ' +
+      'margin-right: -10px !important; ' +
+      'background: rgba(255, 255, 255, 0.9) !important; ' +
+      'border: 1px solid #ddd !important; ' +
+      'border-radius: 50% !important; ' +
+      'display: flex !important; ' +
+      'align-items: center !important; ' +
+      'justify-content: center !important; ' +
+      'font-size: 26px !important; ' +
+      'color: #666 !important; ' +
+      'cursor: pointer !important; ' +
+      'box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important; ' +
+      'transition: .2s !important; ' +
+      'line-height: 1 !important; ' +
       '}',
       '.lz-s-close-sticky:hover { background: #fff !important; color: #cf3a3a !important; border-color: #cf3a3a !important; }',
 
@@ -62,7 +62,7 @@ window.lzSearchEngine = (function() {
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
       '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1000; } }',
       '.lz-s-loading-label { font-size: 1.2rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
-    ].join('\\n');
+    ].join('\n');
     document.head.appendChild(style);
   };
 
@@ -79,42 +79,42 @@ window.lzSearchEngine = (function() {
       if (json.ok) {
         DYNAMIC_KEYWORDS = json.items || [];
         isKeywordsReady = true;
-        
+
         // 1. ページ内の既存コンテンツにリンクを即時適用
         window.lzSearchEngine.updateAllLinksInPage();
-        
+
         // 2. 🍎 重要：モーダルが開いていれば、modal.jsのrefreshを呼び出して「正式に」再描画する
         // これにより、後出しでもリンクのクリックイベントが確実に有効になります。
         if (window.lzModal && window.lzModal.refresh) {
           window.lzModal.refresh();
         }
       }
-    } catch(e) { console.error("Keywords fetch failed", e); }
+    } catch (e) { console.error("Keywords fetch failed", e); }
   }
-  
+
   prefetchKeywords();
-  injectSearchStyles(); 
+  injectSearchStyles();
 
   return {
     // 🍎 ページ内の全要素をスキャンして自動リンクを当てる
-    updateAllLinksInPage: function() {
+    updateAllLinksInPage: function () {
       if (!isKeywordsReady) return;
       var lang = window.LZ_CURRENT_LANG || 'ja';
       var targets = document.querySelectorAll('.lz-article-body, .lz-card-body, .lz-modal-body-txt, .lz-txt');
-      
-      targets.forEach(function(el) {
+
+      targets.forEach(function (el) {
         if (el.dataset.lzLinked === "true") return;
-        
+
         var originalHtml = el.innerHTML;
         // 更新モード(isUpdateMode=true)でリンク適用
         var linkedHtml = window.lzSearchEngine.applyLinks(originalHtml, el.dataset.id || "", lang, true);
-        
+
         if (originalHtml !== linkedHtml) {
           el.innerHTML = linkedHtml;
           el.dataset.lzLinked = "true";
-          
-          setTimeout(function() {
-            el.querySelectorAll('.lz-auto-link').forEach(function(link) {
+
+          setTimeout(function () {
+            el.querySelectorAll('.lz-auto-link').forEach(function (link) {
               link.classList.add('is-active');
             });
           }, 100);
@@ -122,55 +122,55 @@ window.lzSearchEngine = (function() {
       });
     },
 
-    applyLinks: function(text, currentId, targetLang, isUpdateMode) {
+    applyLinks: function (text, currentId, targetLang, isUpdateMode) {
       if (!DYNAMIC_KEYWORDS.length) return text;
-      
+
       var map = {};
-      DYNAMIC_KEYWORDS.forEach(function(kw) {
+      DYNAMIC_KEYWORDS.forEach(function (kw) {
         var word = kw[targetLang] || kw['ja'];
         if (word && word.length > 1) {
           map[word.toLowerCase()] = { word: word, originalJa: kw.ja, type: 'search' };
         }
       });
-      document.querySelectorAll('.lz-card').forEach(function(card) {
+      document.querySelectorAll('.lz-card').forEach(function (card) {
         try {
           var d = JSON.parse(card.dataset.item || "{}");
           var title = C.L(d, 'title', targetLang);
           if (title && title.length > 1 && card.dataset.id !== currentId) {
             map[title.toLowerCase()] = { word: title, id: card.dataset.id, type: 'direct' };
           }
-        } catch(e){}
+        } catch (e) { }
       });
 
-      var candidates = Object.values(map).sort(function(a,b){ return b.word.length - a.word.length; });
-      
+      var candidates = Object.values(map).sort(function (a, b) { return b.word.length - a.word.length; });
+
       // 🍎 更新モードの場合は HTMLタグを壊さないよう細心の注意を払う
       var resultText = isUpdateMode ? text : C.esc(text);
       var tokens = [];
 
-      candidates.forEach(function(item, idx) {
+      candidates.forEach(function (item, idx) {
         // 🍎 改良：HTMLタグの属性内（href="りんご"など）を置換しないための正規表現
         var regex = new RegExp('(?<!<[^>]*)' + item.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-        
-        resultText = resultText.replace(regex, function(match) {
+
+        resultText = resultText.replace(regex, function (match) {
           var token = "###LZT_" + idx + "###";
           tokens[idx] = (item.type === 'direct')
-            ? '<span class="lz-auto-link direct" data-goto-id="'+item.id+'">'+match+'</span>'
-            : '<span class="lz-auto-link search" data-keyword="'+(item.originalJa || item.word)+'" data-display="'+match+'">'+match+'</span>';
+            ? '<span class="lz-auto-link direct" data-goto-id="' + item.id + '">' + match + '</span>'
+            : '<span class="lz-auto-link search" data-keyword="' + (item.originalJa || item.word) + '" data-display="' + match + '">' + match + '</span>';
           return token;
         });
       });
-      tokens.forEach(function(html, idx){ if(html) resultText = resultText.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
+      tokens.forEach(function (html, idx) { if (html) resultText = resultText.replace(new RegExp("###LZT_" + idx + "###", "g"), html); });
       return resultText;
     },
 
-    run: async function(keyword, targetLang, modalEl, backFunc) {
+    run: async function (keyword, targetLang, modalEl, backFunc) {
       injectSearchStyles();
       var displayWord = keyword;
       if (window.event && window.event.currentTarget && window.event.currentTarget.dataset.display) {
         displayWord = window.event.currentTarget.dataset.display;
       }
-      
+
       // 🍎 リンゴ線画アニメーション (維持)
       modalEl.innerHTML = [
         '<div class="lz-s-loading">',
@@ -180,34 +180,34 @@ window.lzSearchEngine = (function() {
         '  <div class="lz-s-loading-label">' + getMsg('searching', targetLang) + '</div>',
         '</div>'
       ].join('');
-      
+
       try {
         var endpoint = window.LZ_CONFIG.SEARCH_ENDPOINT + "?q=" + encodeURIComponent(keyword) + "&limit=50";
         var res = await fetch(endpoint);
         var json = await res.json();
         var currentId = new URLSearchParams(location.search).get('id');
-        var results = (json.items || []).filter(function(it){ return it.title !== currentId; });
+        var results = (json.items || []).filter(function (it) { return it.title !== currentId; });
 
-        var hl = function(text) {
+        var hl = function (text) {
           if (!displayWord) return text;
           var r = new RegExp(displayWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
-          return text.replace(r, function(m){ return '<mark>' + m + '</mark>'; });
+          return text.replace(r, function (m) { return '<mark>' + m + '</mark>'; });
         };
 
         var resTitle = getMsg('search_res_title', targetLang).replace('{0}', C.esc(displayWord));
-        
+
         var html = '<div class="lz-s-wrap" data-search-term="' + C.esc(keyword) + '">';
         html += '<div class="lz-s-close-sticky" id="lzSearchStickyClose">&times;</div>';
         html += '<div class="lz-s-title">' + resTitle + '</div>';
-        
-        if(results.length === 0) {
+
+        if (results.length === 0) {
           html += '<div style="padding:30px; border:2px dashed #eee; border-radius:12px; text-align:center; color:#888;">' + getMsg('not_found', targetLang) + '</div>';
         } else {
-          results.forEach(function(it) {
+          results.forEach(function (it) {
             var l1 = C.L(it, 'l1', targetLang), l2 = C.L(it, 'l2', targetLang), title = C.L(it, 'title', targetLang);
             var lead = C.L(it, 'lead', targetLang) || "", body = C.L(it, 'body', targetLang) || "";
-            var imgHtml = it.mainImage ? '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">' 
-                                      : '<div class="lz-s-img-placeholder"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
+            var imgHtml = it.mainImage ? '<img src="' + C.esc(it.mainImage) + '" style="width:100%; height:100%; object-fit:cover;">'
+              : '<div class="lz-s-img-placeholder"><img src="' + C.esc(window.LZ_CONFIG.ASSETS.LOGO_RED) + '"></div>';
 
             var combinedText = (lead + " " + body).replace(/\s+/g, ' ');
             var idx = combinedText.toLowerCase().indexOf(displayWord.toLowerCase());
@@ -227,24 +227,24 @@ window.lzSearchEngine = (function() {
             html += '</div>';
           });
         }
-        
+
         html += '<button class="lz-btn lz-btn-search-back">' + getMsg('back_to_article', targetLang) + '</button></div>';
         modalEl.innerHTML = html;
 
         modalEl.querySelector('.lz-btn-search-back').onclick = backFunc;
         modalEl.querySelector('#lzSearchStickyClose').onclick = backFunc;
-        
-        modalEl.querySelectorAll('.lz-s-item').forEach(function(item) {
-          item.onclick = function() {
+
+        modalEl.querySelectorAll('.lz-s-item').forEach(function (item) {
+          item.onclick = function () {
             var targetId = item.dataset.gotoId;
-            var cardInDom = document.querySelector('.lz-card[data-id="'+targetId+'"]');
-            if(cardInDom) window.lzModal.open(cardInDom);
+            var cardInDom = document.querySelector('.lz-card[data-id="' + targetId + '"]');
+            if (cardInDom) window.lzModal.open(cardInDom);
             else location.href = (window.LZ_CONFIG.MENU_URL[item.dataset.l1] || location.origin) + "?lang=" + targetLang + "&id=" + encodeURIComponent(targetId);
           };
         });
         modalEl.scrollTop = 0;
 
-      } catch(e) {
+      } catch (e) {
         modalEl.innerHTML = '<div class="lz-s-wrap" style="padding:20px; text-align:center; color:#cf3a3a;">⚠️ Error: ' + C.esc(e.message) + '</div>';
       }
     }
