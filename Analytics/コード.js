@@ -32,10 +32,12 @@ function ensureLogsSheet_() {
     sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]).setBackground('#eeeeee').setFontWeight('bold');
     sh.setFrozenRows(1);
   } else {
-    // 🍎 ヘッダーの同期チェック（追加されたカラムを反映）
-    const currentHeaders = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
-    if (currentHeaders.length < HEADER.length) {
-      sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]);
+    // 🍎 ヘッダーの同期チェック（追加・不足・順序を矯正）
+    const lastCol = Math.max(sh.getLastColumn(), 1);
+    const currentHeaders = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+    const isMatched = HEADER.every((h, i) => currentHeaders[i] === h);
+    if (!isMatched) {
+      sh.getRange(1, 1, 1, HEADER.length).setValues([HEADER]).setBackground('#eeeeee');
     }
   }
   return sh;
@@ -240,29 +242,33 @@ function getDashboardStats() {
   const colUtmSource = idx('utm_source');
 
   const stats = {
-    totalPv: rows.slice(-1000).length, // 全体計は全データだが、最近の傾向は直近を見る。ただし表示は全体。
+    totalPv: 0,
     recentPv: 0,
     basePageRanking: {}, // /savor, /discover etc.
     itemRanking: {},     // { card_id: { count, title } }
     keywordRanking: {},  // search_term + keyword
-    referrerRanking: {}, // 流入元ドメイン
+    referrerRanking: {}, // 流入元（セッション1回カウント）
     exitRanking: {},     // 離脱先（外部リンク）
     langDistribution: { ja: 0, en: 0, zh: 0, other: 0 },
     regionRanking: {},   // 地域
     interactionRanking: { share: {}, pdf: {} }, // 共有・PDF
     engagement: {}       // { card_id: { sum_ms, count } }
   };
-  stats.totalPv = rows.length;
 
   const colSessionId = idx('session_id');
-  const processedSessions = new Set();
+  const sessionSourceMap = {}; // sid -> { source }
 
   rows.forEach(row => {
     const tsStr = row[colTs];
     const ts = new Date(tsStr);
-    if (ts >= sevenDaysAgo) stats.recentPv++;
-
     const ev = row[colEvent];
+    const sid = row[colSessionId];
+
+    // 🍎 PV集計（page_viewのみを「PV」としてカウント）
+    if (ev === 'page_view') {
+      stats.totalPv++;
+      if (ts >= sevenDaysAgo) stats.recentPv++;
+    }
 
     // URLの正規化
     let rawUrl = String(row[colUrl] || 'unknown');
@@ -327,28 +333,28 @@ function getDashboardStats() {
       }
     }
 
-    // 流入元（リファラ）の集計 - セッションごとに最初の1回のみカウント
-    const sid = row[colSessionId];
-    if (sid && !processedSessions.has(sid)) {
+    // 流入元（リファラ）の集計ロジック: セッションごとに1つ選出
+    if (sid) {
       const ref = String(row[colReferrer] || "").trim();
-      const utmSource = String(row[colUtmSource] || "").trim();
+      const utmSource = String(row[colUtmSource] || "").trim().toLowerCase();
       const internalDomain = 'appletown-iizuna.com';
       const isInternal = ref.includes(internalDomain);
 
-      if (utmSource === 'share' || utmSource.includes('share')) {
-        stats.referrerRanking["SNS共有経由"] = (stats.referrerRanking["SNS共有経由"] || 0) + 1;
-        processedSessions.add(sid);
-      } else if (utmSource === 'pdf_qr' || utmSource.includes('qr')) {
-        stats.referrerRanking["印刷チラシQR経由"] = (stats.referrerRanking["印刷チラシQR経由"] || 0) + 1;
-        processedSessions.add(sid);
-      } else if (ref && !isInternal) {
-        const refDomain = ref.split('/')[2] || "直接アクセス/不明";
-        stats.referrerRanking[refDomain] = (stats.referrerRanking[refDomain] || 0) + 1;
-        processedSessions.add(sid);
-      } else if (!ref || isInternal) {
-        // 内部遷移の場合は、セッションの最初であれば「直接アクセス」扱い（通常は空のはず）
-        stats.referrerRanking["直接アクセス/不明"] = (stats.referrerRanking["直接アクセス/不明"] || 0) + 1;
-        processedSessions.add(sid);
+      // 判定優先度: utm_source > 外部リンクリファラ > 直接アクセス
+      let currentSrc = "";
+      if (utmSource.includes('share') || utmSource.includes('shere')) currentSrc = "SNS共有経由";
+      else if (utmSource.includes('qr') || utmSource.includes('pr') || utmSource.includes('pdf')) currentSrc = "印刷チラシQR経由";
+      else if (ref && !isInternal) {
+        currentSrc = ref.split('/')[2] || "直接アクセス/不明";
+      } else if (!ref) {
+        currentSrc = "直接アクセス/不明";
+      }
+
+      // 有効なソース(UTM/外部)が見つかったら上書き、または未登録なら登録
+      if (currentSrc && currentSrc !== "直接アクセス/不明") {
+        sessionSourceMap[sid] = currentSrc;
+      } else if (!sessionSourceMap[sid]) {
+        sessionSourceMap[sid] = "直接アクセス/不明";
       }
     }
 
@@ -387,8 +393,14 @@ function getDashboardStats() {
     .map(([id, d]) => ({ name: d.title, count: d.count }))
     .sort((a, b) => b.count - a.count).slice(0, 15);
 
+  // 🍎 セッション別ランキングを確定（ここで初めてカウントする）
+  const sourceRankingCount = {};
+  Object.values(sessionSourceMap).forEach(s => {
+    sourceRankingCount[s] = (sourceRankingCount[s] || 0) + 1;
+  });
+
   stats.keywordRanking = sortRank(stats.keywordRanking);
-  stats.referrerRanking = sortRank(stats.referrerRanking);
+  stats.referrerRanking = sortRank(sourceRankingCount);
   stats.exitRanking = sortRank(stats.exitRanking);
   stats.regionRanking = sortRank(stats.regionRanking);
 
@@ -471,10 +483,10 @@ function setupSpreadsheetDashboard() {
   sh.getRange('D10').setValue('個別コンテンツ (詳細表示) 人気順').setFontWeight('bold').setBackground('#f5f5f7');
   sh.getRange('D11').setFormula(`=QUERY(Logs!A:BC, "SELECT Z, COUNT(A) WHERE Z IS NOT NULL GROUP BY Z ORDER BY COUNT(A) DESC LIMIT 20 LABEL COUNT(A) '表示数', Z '項目ID'", 1)`);
 
-  // セクション5: 検索キーワード (合算)
+  // セクション5: 検索キーワード (最大範囲指定)
   sh.getRange('A35').setValue('注目ワード (検索・リンク) 合計ランキング').setFontWeight('bold').setBackground('#f5f5f7');
-  // QUERYの範囲を最新の列数に合わせて調整
-  sh.getRange('A36').setFormula(`={QUERY(Logs!A:AZ, "SELECT AZ, COUNT(A) WHERE AZ IS NOT NULL GROUP BY AZ LABEL COUNT(A) 'ヒッツ'", 1); QUERY(Logs!A:AF, "SELECT AF, COUNT(A) WHERE AF IS NOT NULL GROUP BY AF LABEL COUNT(A) 'ヒッツ'", 0)}`);
+  // QUERYの範囲をLogsシートの最終列(BCくらい)まで確実に含める
+  sh.getRange('A36').setFormula(`={QUERY(Logs!A:BC, "SELECT AF, COUNT(A) WHERE AF IS NOT NULL GROUP BY AF LABEL COUNT(A) 'ヒッツ'", 1); QUERY(Logs!A:BC, "SELECT AY, COUNT(A) WHERE AY IS NOT NULL GROUP BY AY LABEL COUNT(A) 'ヒッツ'", 0)}`);
   sh.getRange('A36').setValue('注目キーワード (合算)'); // ヘッダーを上書きしてラベルを日本語化
   sh.getRange('A36').setFontWeight('bold').setBackground('#f5f5f7');
   sh.getRange('C36').setValue('※正確な合算結果とグラフはWebダッシュボードをご利用ください。').setFontColor('#86868b');
