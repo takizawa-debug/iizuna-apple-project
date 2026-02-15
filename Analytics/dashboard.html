@@ -229,11 +229,38 @@
                 </table>
             </div>
             <div class="table-card">
-                <div class="table-title">人気アイテム <i>詳細モーダル</i></div>
+                <div class="table-title">記事の滞在時間ランキング <i>平均読了時間</i></div>
+                <table id="duration-rank-table">
+                    <thead>
+                        <tr>
+                            <th>記事タイトル</th>
+                            <th style="text-align: right;">平均時間</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="table-card">
+                <div class="table-title">注目キーワード <i>検索・自動リンク</i></div>
+                <table id="kw-rank-table">
+                    <thead>
+                        <tr>
+                            <th>単語</th>
+                            <th style="text-align: right;">ヒット数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="table-card">
+                <div class="table-title">人気アイテム <i>詳細表示</i></div>
                 <table id="item-rank-table">
                     <thead>
                         <tr>
-                            <th>項目ID</th>
+                            <th>項目</th>
                             <th style="text-align: right;">閲覧数</th>
                         </tr>
                     </thead>
@@ -243,6 +270,18 @@
         </div>
 
         <div class="grid" style="grid-template-columns: 1fr 1fr;">
+            <div class="table-card">
+                <div class="table-title">流入地域ランキング <i>アクセス元地域</i></div>
+                <table id="region-rank-table">
+                    <thead>
+                        <tr>
+                            <th>都道府県・市区町村</th>
+                            <th style="text-align: right;">アクセス数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
             <div class="table-card">
                 <div class="table-title">流入元ランキング <i>参照元サイト</i></div>
                 <table id="ref-rank-table">
@@ -255,13 +294,28 @@
                     <tbody></tbody>
                 </table>
             </div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr;">
             <div class="table-card">
-                <div class="table-title">外部リンク遷移 <i>離脱アクション</i></div>
-                <table id="exit-rank-table">
+                <div class="table-title">SNS共有ランキング <i>シェア数</i></div>
+                <table id="share-rank-table">
                     <thead>
                         <tr>
-                            <th>遷移先URL / ドメイン</th>
-                            <th style="text-align: right;">クリック数</th>
+                            <th>記事タイトル</th>
+                            <th style="text-align: right;">シェア数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="table-card">
+                <div class="table-title">PDF発行ランキング <i>印刷数</i></div>
+                <table id="pdf-rank-table">
+                    <thead>
+                        <tr>
+                            <th>記事タイトル</th>
+                            <th style="text-align: right;">発行数</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -270,12 +324,12 @@
         </div>
 
         <div class="table-card" style="margin-top: 20px;">
-            <div class="table-title">注目キーワード <i>検索・自動リンク</i></div>
-            <table id="kw-rank-table">
+            <div class="table-title">外部リンク遷移 <i>離脱アクション</i></div>
+            <table id="exit-rank-table">
                 <thead>
                     <tr>
-                        <th>単語</th>
-                        <th style="text-align: right;">ヒット数</th>
+                        <th>遷移先URL / ドメイン</th>
+                        <th style="text-align: right;">クリック数</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -311,13 +365,17 @@
 
       // 各種ランキングの描画
       renderTable('base-rank-table', stats.basePageRanking);
-      renderTable('item-rank-table', stats.itemRanking);
+      renderTable('duration-rank-table', stats.stayTimeRanking, '秒');
       renderTable('kw-rank-table', stats.keywordRanking);
+      renderTable('item-rank-table', stats.itemRanking);
+      renderTable('region-rank-table', stats.regionRanking);
       renderTable('ref-rank-table', stats.referrerRanking);
+      renderTable('share-rank-table', stats.interactionShare);
+      renderTable('pdf-rank-table', stats.interactionPdf);
       renderTable('exit-rank-table', stats.exitRanking);
     }
 
-    function renderTable(id, data) {
+    function renderTable(id, data, unit = '') {
       const tbody = document.querySelector('#' + id + ' tbody');
       if (!data || data.length === 0) {
           tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#ccc; padding:20px;">データなし</td></tr>';
@@ -328,12 +386,13 @@
       data.forEach(item => {
         const row = document.createElement('tr');
         const percent = (item.count / maxCount) * 100;
+        const displayVal = item.count.toLocaleString() + unit;
         row.innerHTML = `
           <td>
             <div style="margin-bottom:4px; font-weight: 500; word-break: break-all;">${item.name}</div>
             <div class="rank-bar"><div class="rank-fill" style="width: ${percent}%"></div></div>
           </td>
-          <td style="text-align: right; font-weight: 700; vertical-align: top; padding-top: 12px;">${item.count.toLocaleString()}</td>
+          <td style="text-align: right; font-weight: 700; vertical-align: top; padding-top: 12px; white-space: nowrap;">${displayVal}</td>
         `;
         tbody.appendChild(row);
       });

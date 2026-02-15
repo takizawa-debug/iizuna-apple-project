@@ -195,6 +195,16 @@ function doGet(e) {
 /**
  * ダッシュボード用の統計データを取得（HtmlTemplateから呼び出し）
  */
+const PAGE_NAME_MAP = {
+  '/': 'トップページ',
+  '/savor': '味わう',
+  '/discover': '知る',
+  '/experience': '体験する',
+  '/live': '暮らす',
+  '/business': 'ビジネス',
+  'index.html': 'トップページ'
+};
+
 function getDashboardStats() {
   const sh = ensureLogsSheet_();
   const data = sh.getDataRange().getValues();
@@ -217,16 +227,23 @@ function getDashboardStats() {
   const colReferrer = idx('referrer');
   const colHref = idx('href');
   const colLinkDomain = idx('link_domain');
+  const colGeoRegion = idx('geo_region');
+  const colGeoCity = idx('geo_city');
+  const colDwellMs = idx('dwell_ms');
+  const colModalTitle = idx('modal_name');
 
   const stats = {
     totalPv: rows.length,
     recentPv: 0,
     basePageRanking: {}, // /savor, /discover etc.
-    itemRanking: {},     // Card IDs / Details
+    itemRanking: {},     // { card_id: { count, title } }
     keywordRanking: {},  // search_term + keyword
     referrerRanking: {}, // 流入元ドメイン
     exitRanking: {},     // 離脱先（外部リンク）
-    langDistribution: { ja: 0, en: 0, zh: 0, other: 0 }
+    langDistribution: { ja: 0, en: 0, zh: 0, other: 0 },
+    regionRanking: {},   // 地域
+    interactionRanking: { share: {}, pdf: {} }, // 共有・PDF
+    engagement: {}       // { card_id: { sum_ms, count } }
   };
 
   rows.forEach(row => {
@@ -234,26 +251,24 @@ function getDashboardStats() {
     const ts = new Date(tsStr);
     if (ts >= sevenDaysAgo) stats.recentPv++;
 
-    // URLの正規化 (?以降や#を削る)
+    const ev = row[colEvent];
+
+    // URLの正規化
     let rawUrl = String(row[colUrl] || 'unknown');
     let cleanUrl = rawUrl.split('?')[0].split('#')[0].replace(/\/$/, "");
-
-    // 🍎 トップページ（ドメインのみ）を / と同等に扱う
     if (!cleanUrl.includes('/') || cleanUrl.split('/').length <= 3) {
-      if (cleanUrl.includes('appletown-iizuna.com')) {
-        cleanUrl = '/';
-      }
+      if (cleanUrl.includes('appletown-iizuna.com')) cleanUrl = '/';
     }
     if (!cleanUrl.startsWith('http')) {
       cleanUrl = '/' + cleanUrl.split('/').pop().replace("index.html", "");
       if (cleanUrl === '//') cleanUrl = '/';
     }
 
-    // ベースページの集計 (主要なパスのみ)
+    // ベースページの集計
     const basePaths = ['savor', 'discover', 'experience', 'live', 'business'];
     const isBasePath = basePaths.some(p => cleanUrl.includes(p)) || cleanUrl === '/' || cleanUrl.endsWith('index.html');
 
-    if (isBasePath) {
+    if (isBasePath && ev === 'page_view') {
       let key = cleanUrl;
       if (cleanUrl !== '/') {
         key = '/' + cleanUrl.split('/').pop().replace("index.html", "");
@@ -261,14 +276,44 @@ function getDashboardStats() {
       stats.basePageRanking[key] = (stats.basePageRanking[key] || 0) + 1;
     }
 
-    // アイテム（モーダル/詳細）の集計
+    // アイテム（モーダル）の集計
     let cardId = row[colCardId];
+    let modalTitle = row[colModalTitle];
     if (!cardId && rawUrl.includes('?')) {
       const m = rawUrl.match(/[\?&]id=([^&#]+)/);
       if (m) cardId = decodeURIComponent(m[1]);
     }
-    if (cardId) {
-      stats.itemRanking[cardId] = (stats.itemRanking[cardId] || 0) + 1;
+    if (cardId && ev === 'modal_open') {
+      if (!stats.itemRanking[cardId]) stats.itemRanking[cardId] = { count: 0, title: modalTitle || cardId };
+      stats.itemRanking[cardId].count++;
+    }
+
+    // 地域
+    const region = row[colGeoRegion];
+    const city = row[colGeoCity];
+    if (region) {
+      const geoKey = region + (city ? " " + city : "");
+      stats.regionRanking[geoKey] = (stats.regionRanking[geoKey] || 0) + 1;
+    }
+
+    // Share / PDF
+    if (ev === 'modal_share' || ev === 'sns_link_click') {
+      const key = modalTitle || cardId || '不明';
+      stats.interactionRanking.share[key] = (stats.interactionRanking.share[key] || 0) + 1;
+    }
+    if (ev === 'modal_pdf_generate') {
+      const key = modalTitle || cardId || '不明';
+      stats.interactionRanking.pdf[key] = (stats.interactionRanking.pdf[key] || 0) + 1;
+    }
+
+    // 滞在時間
+    if (ev === 'modal_close' && cardId) {
+      const ms = Number(row[colDwellMs]) || 0;
+      if (ms > 0 && ms < 3600000) { // 極端な値（1時間以上）は除外
+        if (!stats.engagement[cardId]) stats.engagement[cardId] = { sum: 0, count: 0, title: modalTitle || cardId };
+        stats.engagement[cardId].sum += ms;
+        stats.engagement[cardId].count++;
+      }
     }
 
     // 流入元（リファラ）の集計
@@ -284,7 +329,6 @@ function getDashboardStats() {
     // 🍎 内部ドメインの場合はスキップ（ランキングを汚さない）
 
     // 離脱先（外部リンク）の集計
-    const ev = row[colEvent];
     if (ev === 'outbound_click' || ev === 'sns_link_click' || ev === 'related_article_click') {
       const exitUrl = row[colHref] || row[colLinkDomain] || "unknown";
       stats.exitRanking[exitUrl] = (stats.exitRanking[exitUrl] || 0) + 1;
@@ -305,16 +349,34 @@ function getDashboardStats() {
   });
 
   // ランキングを配列化してソート
-  const sortRank = (obj) => Object.entries(obj)
-    .map(([name, count]) => ({ name, count }))
+  const sortRank = (obj, mapping = null) => Object.entries(obj)
+    .map(([name, count]) => ({
+      name: (mapping && mapping[name]) ? mapping[name] : name,
+      count
+    }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 15);
 
-  stats.basePageRanking = sortRank(stats.basePageRanking);
-  stats.itemRanking = sortRank(stats.itemRanking);
+  stats.basePageRanking = sortRank(stats.basePageRanking, PAGE_NAME_MAP);
+
+  stats.itemRanking = Object.entries(stats.itemRanking)
+    .map(([id, d]) => ({ name: d.title, count: d.count }))
+    .sort((a, b) => b.count - a.count).slice(0, 15);
+
   stats.keywordRanking = sortRank(stats.keywordRanking);
   stats.referrerRanking = sortRank(stats.referrerRanking);
   stats.exitRanking = sortRank(stats.exitRanking);
+  stats.regionRanking = sortRank(stats.regionRanking);
+
+  stats.interactionShare = sortRank(stats.interactionRanking.share);
+  stats.interactionPdf = sortRank(stats.interactionRanking.pdf);
+
+  stats.stayTimeRanking = Object.entries(stats.engagement)
+    .map(([id, d]) => ({
+      name: d.title,
+      count: Math.round((d.sum / d.count) / 100) / 10 // 秒単位 (少数第1位)
+    }))
+    .sort((a, b) => b.count - a.count).slice(0, 15);
 
   return stats;
 }

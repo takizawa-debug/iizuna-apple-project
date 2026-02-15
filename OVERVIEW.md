@@ -43,7 +43,7 @@ graph LR
 
 ### 4. 高度なアクセス分析システム (`Analytics/`)
 単なるPV計測に留まらず、ユーザーの「興味の遷移」を高度に可視化します：
-- **[Web版ダッシュボード](https://script.google.com/macros/s/AKfycbwZp-19FicqMoArZs7l1IH_EAlcIY4n7Cuw78vyvS5gCfekJ5vy4syglcRckNmIUj2l_g/exec?mode=dashboard)**: パラメータを正規化したページ別集計に加え、個別モーダル（むーちゃん等の記事）の人気度を階層別に分析可能。
+- **[Web版ダッシュボード](https://script.google.com/macros/s/AKfycbyKEcxjhF3oauzrZB1hxYbl9a4w1FAq9vzktVP5FDMcmnIWuvN_U3zzlCzJ9dKMAnhsQg/exec?mode=dashboard)**: パラメータを正規化したページ別集計に加え、個別モーダル（むーちゃん等の記事）の人気度を階層別に分析可能。
 - **流入・離脱の可視化**: どの外部サイトから来たか（Referrer）や、どの外部リンクをクリックして離脱したか（Exit Link）を新たに計測。
 - **キーワードジャーニー追跡**: 検索フォームからの入力と、記事内キーワードクリックを完全に統合。トップページ（ドメインのみ）へのアクセスも `/` として正確に合算されます。
 - **完全日本語化**: 運用チームが迷わず利用できるよう、管理画面の全項目を日本語化。
@@ -58,7 +58,7 @@ graph LR
 | `web/` | フロントエンドのコアロジック | UI/UXエンジニア (CSS/JS) |
 | `Form/` | 情報投稿フォームのロジック | 統合開発者 |
 | `Import/` | GASロジック (バックエンド) | バックエンド / GAS開発者 |
-| `Analytics/` | 分析ロジック & [管理画面](https://script.google.com/macros/s/AKfycbwZp-19FicqMoArZs7l1IH_EAlcIY4n7Cuw78vyvS5gCfekJ5vy4syglcRckNmIUj2l_g/exec?mode=dashboard) | データアナリスト |
+| `Analytics/` | 分析ロジック & [管理画面](https://script.google.com/macros/s/AKfycbyKEcxjhF3oauzrZB1hxYbl9a4w1FAq9vzktVP5FDMcmnIWuvN_U3zzlCzJ9dKMAnhsQg/exec?mode=dashboard) | データアナリスト |
 | **スプレッドシート** | データベース / コンテンツ | **運用・コンテンツ管理担当** |
 
 ### コンテンツを更新するには？
