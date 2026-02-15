@@ -1,7 +1,7 @@
 /**
  * header.js - ナビゲーション・コンポーネント (デザイン復元・高速ジャンプ版)
  */
-(async function headerNavBoot(){
+(async function headerNavBoot() {
   "use strict";
 
   const C = window.LZ_COMMON;
@@ -17,8 +17,8 @@
       position: fixed !important; inset: 0 0 auto 0 !important; height: var(--lz-h-height) !important; 
       background: var(--lz-h-red) !important; z-index: 9000 !important; color: #fff !important; 
       box-shadow: 0 4px 18px rgba(0,0,0,.12) !important;
-      opacity: 0; visibility: hidden; transform: translateY(-30px);
-      transition: opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1), transform 1.5s cubic-bezier(0.22, 1, 0.36, 1), visibility 1.5s;
+      opacity: 0; visibility: hidden; transform: translateY(-100%);
+      transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0.4s;
     }
     .lz-hdr.is-visible { opacity: 1 !important; visibility: visible !important; transform: translateY(0) !important; }
 
@@ -108,7 +108,7 @@
   /* ==========================================
      3. ヘルパー・HTML構造 (安定版に準拠)
      ========================================== */
-     function getLangLinks() {
+  function getLangLinks() {
     const config = window.LZ_CONFIG.LANG;
     return config.SUPPORTED.map(l => {
       // 🍎 hrefに情報を固定せず、data-langに保持させる
@@ -173,7 +173,7 @@
     window.scrollTo({ top: y, behavior: isInstant ? "auto" : "smooth" });
   }
 
-  function setupEvents(){
+  function setupEvents() {
     const drawer = document.getElementById('lzDrawer'), backdrop = document.getElementById('lzDwBackdrop');
     const closeDrawer = () => { drawer.classList.remove('is-open'); backdrop.style.display = 'none'; };
 
@@ -198,8 +198,8 @@
 
     // 言語セレクター
     const setupLang = (cid, bc, mc) => {
-      const c = document.getElementById(cid), b = c?.querySelector('.'+bc), m = c?.querySelector('.'+mc);
-      if(!b || !m) return;
+      const c = document.getElementById(cid), b = c?.querySelector('.' + bc), m = c?.querySelector('.' + mc);
+      if (!b || !m) return;
       b.onclick = (e) => { e.stopPropagation(); m.classList.toggle('is-open'); b.classList.toggle('is-active'); };
 
       // 🍎 追加：メニュー内のリンクがクリックされた瞬間に「今」のURLを取得して遷移
@@ -207,13 +207,13 @@
         const a = e.target.closest('a');
         if (!a || !a.dataset.lang) return;
         e.preventDefault();
-        
+
         // 🍎 実行時の最新URL（モーダルを閉じて id が消えていれば、消えた状態のもの）を取得
         const nextUrl = new URL(window.location.href);
         nextUrl.searchParams.set('lang', a.dataset.lang);
         nextUrl.searchParams.delete('jump'); // 言語変更時はスクロール予約は消去
         nextUrl.hash = "";
-        
+
         window.location.href = nextUrl.toString();
       });
 
@@ -224,7 +224,7 @@
 
     const hamb = document.getElementById('lzHamb'), close = document.getElementById('lzDwClose');
     hamb.onclick = () => { drawer.classList.add('is-open'); backdrop.style.display = 'block'; };
-    [backdrop, close].forEach(el => { if(el) el.onclick = closeDrawer; });
+    [backdrop, close].forEach(el => { if (el) el.onclick = closeDrawer; });
   }
 
   /* --- 5. メニューの構築 (Skeleton) --- */
@@ -236,26 +236,26 @@
   try {
     const res = await fetch(`${ENDPOINT}?all=1`);
     const json = await res.json();
-    if(json.ok) {
+    if (json.ok) {
       const map = new Map();
-      json.items.forEach(it => { if(!map.has(it.l1)) map.set(it.l1, []); if(!map.get(it.l1).some(x => x.key === it.l2)) map.get(it.l1).push({ key: it.l2, label: C.L(it, 'l2') }); });
+      json.items.forEach(it => { if (!map.has(it.l1)) map.set(it.l1, []); if (!map.get(it.l1).some(x => x.key === it.l2)) map.get(it.l1).push({ key: it.l2, label: C.L(it, 'l2') }); });
       MENU_ORDER.forEach((l1, i) => {
         const l2Data = map.get(l1) || [];
         const links = l2Data.map(d => `<a href="${MENU_URL[l1]}?lang=${window.LZ_CURRENT_LANG}&jump=${encodeURIComponent(d.key)}">${d.label}</a>`).join('');
         const panels = document.querySelectorAll('.lz-h-panel');
-        if(panels[i]) panels[i].innerHTML = links || '<div style="padding:10px;text-align:center;color:#999;">(No Articles)</div>';
+        if (panels[i]) panels[i].innerHTML = links || '<div style="padding:10px;text-align:center;color:#999;">(No Articles)</div>';
         const dwGroups = document.querySelectorAll('.lz-h-dw-group');
-        if(dwGroups[i]) {
+        if (dwGroups[i]) {
           const area = dwGroups[i].querySelector('.lz-h-dw-l2-area'), arrow = dwGroups[i].querySelector('.lz-h-dw-arrow'), link = dwGroups[i].querySelector('.lz-h-dw-l1a');
-          if(l2Data.length > 0) {
+          if (l2Data.length > 0) {
             area.innerHTML = links;
             arrow.onclick = (e) => { e.preventDefault(); dwGroups[i].classList.toggle('is-active'); arrow.style.transform = dwGroups[i].classList.contains('is-active') ? 'rotate(180deg)' : 'rotate(0)'; };
-            link.onclick = (e) => { if(!dwGroups[i].classList.contains('is-active')) arrow.click(); else closeDrawer(); };
-          } else { area.innerHTML = ''; if(arrow) arrow.style.display='none'; link.onclick=closeDrawer; }
+            link.onclick = (e) => { if (!dwGroups[i].classList.contains('is-active')) arrow.click(); else closeDrawer(); };
+          } else { area.innerHTML = ''; if (arrow) arrow.style.display = 'none'; link.onclick = closeDrawer; }
         }
       });
     }
-  } catch(e) { console.error(e); }
+  } catch (e) { console.error(e); }
 
   setupEvents();
 
@@ -268,26 +268,22 @@
     }
   };
 
-  // 🍎 シールド解除を待ってから監視を開始するロジック
-  const startHeaderLogic = () => {
-    // 1. すでにスクロールされている（ジャンプ後など）場合は即表示
-    if (window.scrollY > 10) {
-      showHeader();
-      return;
-    }
-    // 2. スクロールを検知したら表示
-    window.addEventListener('scroll', showHeader, { passive: true });
-    // 3. スクロールしなかった場合のフォールバック（1秒待って表示）
-    window._lzHeaderFallback = setTimeout(showHeader, 1000);
+  // 1. スクロールを検知したら即表示（閾値 0）
+  window.addEventListener('scroll', showHeader, { passive: true });
+  if (window.scrollY > 0) showHeader();
+
+  // 2. <html>クラスの変化を監視して、シールドが消えた瞬間に「一定時間後に表示」のタイマーを開始
+  const startFallback = () => {
+    if (window._lzHeaderFallback) return;
+    window._lzHeaderFallback = setTimeout(showHeader, 400); // シールド解除後 400ms で表示
   };
 
-  // <html>クラスの変化を監視して、シールドが消えた瞬間に起動
   if (!document.documentElement.classList.contains('lz-loading-lock')) {
-    startHeaderLogic();
+    startFallback();
   } else {
     const observer = new MutationObserver(() => {
       if (!document.documentElement.classList.contains('lz-loading-lock')) {
-        startHeaderLogic();
+        startFallback();
         observer.disconnect();
       }
     });
