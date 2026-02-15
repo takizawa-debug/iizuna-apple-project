@@ -260,6 +260,7 @@ function getDashboardStats() {
   const colSessionId = idx('session_id');
   const sessionSourceMap = {}; // sid -> { source }
   const sessionRegionMap = {}; // sid -> { region }
+  const sessionKeywordMap = new Set(); // sid + keyword + ev
 
   rows.forEach(row => {
     const tsStr = row[colTs];
@@ -274,7 +275,7 @@ function getDashboardStats() {
     }
 
     // 🍎 追加指標
-    if (ev === 'modal_open') stats.totalModalOpens++;
+    if (ev === 'modal_open' || ev === 'modal_navigate') stats.totalModalOpens++;
     if (ev === 'keyword_click') stats.totalKeywordClicks++;
 
     // URLの正規化
@@ -379,10 +380,16 @@ function getDashboardStats() {
     else if (lang.includes('zh')) stats.langDistribution.zh++;
     else stats.langDistribution.other++;
 
-    // キーワード合算
+    // キーワード合算 (重複排除: 1セッション内で同じイベントによる同じキーワードは1回のみ)
     const kw = (row[colSearchTerm] || row[colKeyword] || "").trim();
     if (kw) {
-      stats.keywordRanking[kw] = (stats.keywordRanking[kw] || 0) + 1;
+      // 🍎 search_result_click は「結果のクリック」であり「検索意図」ではないため、ランキング合算からは除外
+      // 🍎 または、1セッション内に同じ単語での keyword_click / search_execute があっても1回として数える
+      const kwKey = sid + "_" + kw;
+      if (ev !== 'search_result_click' && !sessionKeywordMap.has(kwKey)) {
+        stats.keywordRanking[kw] = (stats.keywordRanking[kw] || 0) + 1;
+        sessionKeywordMap.add(kwKey);
+      }
     }
   });
 

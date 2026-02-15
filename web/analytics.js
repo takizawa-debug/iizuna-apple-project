@@ -130,7 +130,7 @@
     D.addEventListener("click", e => {
       const t = e.target;
 
-      // --- モーダル内 検索結果クリック ---
+      /* 🍎 重複排除: modal-search.js / search.js 側で個別に送るため、グローバルリスナーからは除外 
       const searchItem = t.closest('.lz-s-item');
       if (searchItem) {
         const wrap = searchItem.closest('.lz-s-wrap');
@@ -143,6 +143,7 @@
           result_count: allItems.length
         });
       }
+      */
 
       // 🍎 FAB検索結果 (search.js)
       const fabBtn = t.closest('.apz-item-btn');
