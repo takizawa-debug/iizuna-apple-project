@@ -11,7 +11,7 @@
  */
 
 const CATEGORIES_SHEET_NAME = 'カテゴリ';
-const TARGET_SHEETS = ['知る', '味わう', '体験する', '働く・住む', '販売・発信する'];
+const TARGET_SHEETS = ['知る', '知る（品種）', '味わう', '体験する', '働く・住む', '販売・発信する'];
 
 const START_ROW = 4; // データ開始行
 const COL_E = 5;     // 大カテゴリ (L1)
