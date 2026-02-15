@@ -18,49 +18,6 @@ const COL_E = 5;     // 大カテゴリ (L1)
 const COL_F = 6;     // 中カテゴリ (L2)
 const COL_G = 7;     // 小カテゴリ (L3)
 
-/**
- * メニュー追加 (デバッグ・手動更新用)
- */
-function onOpen() {
-  const ui = SpreadsheetApp.getUi();
-  ui.createMenu('🍎 カテゴリ管理')
-    .addItem('現在の行のプルダウンを強制更新', 'forceRefreshCurrentRow')
-    .addToUi();
-}
-
-/**
- * 手動更新: 現在選択されている行のバリデーションを再適用する
- */
-function forceRefreshCurrentRow() {
-  const sheet = SpreadsheetApp.getActiveSheet();
-  const cell = sheet.getActiveCell();
-  const row = cell.getRow();
-
-  if (row < START_ROW) {
-    Browser.msgBox("データ行（4行目以降）を選択してください");
-    return;
-  }
-
-  if (!TARGET_SHEETS.includes(sheet.getName())) {
-    Browser.msgBox("対象シートではありません: " + sheet.getName());
-    return;
-  }
-
-  // マスタ取得
-  const masterSheet = sheet.getParent().getSheetByName(CATEGORIES_SHEET_NAME);
-  if (!masterSheet) {
-    Browser.msgBox(`エラー: 「${CATEGORIES_SHEET_NAME}」シートが見つかりません。`);
-    return;
-  }
-
-  const masterValues = masterSheet.getRange(2, 1, masterSheet.getLastRow() - 1, 3).getValues();
-
-  // 更新実行
-  updateL2Validation_(sheet, row, masterValues);
-  updateL3Validation_(sheet, row, masterValues);
-
-  Browser.msgBox("更新完了: 行 " + row);
-}
 
 /**
  * 編集時トリガー
