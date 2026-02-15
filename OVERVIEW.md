@@ -41,7 +41,7 @@
 本サイト専用に開発された「Appletown Analytics」は、単なる数字の集計を超え、ユーザーの「真の関心」を可視化します。
 
 ### 4.1 トレンド推移・前期間比較・モバイル対応
-PV（閲覧数）やUU（ユーザー数）を時系列で表示。前期間との比較をグラフで可視化することで、キャンペーンやSNS拡散の効果を即座に判定できます。また、**スマホ表示に完全対応**しており、出先でも素早く状況を確認可能です。
+PV（閲覧数）やUU（ユーザー数）を時系列で表示。前期間との比較をグラフで可視化することで、キャンペーンやSNS拡散の効果を即座に判定できます。また、**スマホ表示（2x2グリッド・縦積みスタック）に完全対応**しており、出先でも素早く状況を確認可能です。
 
 ![分析ダッシュボード概要](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/dashboard_desktop_1771158627598.png)
 
@@ -51,7 +51,7 @@ PV（閲覧数）やUU（ユーザー数）を時系列で表示。前期間と�
 ### 4.3 詳細な回遊・流入分析
 ユーザーがどこから来て、何に興味を持ち、どのPDFを発行したか。これらを1つの画面で俯瞰することが可能です。
 
-![モバイル表示と詳細分析](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/mobile_top_metrics_1771158742682.png)
+![モバイル表示（2x2グリッドと縦積み）](file:///Users/takizawahiroki/.gemini/antigravity/brain/6df3dc5b-cb6a-4c08-97ef-d729c1fb9d82/mobile_metrics_2x2_1771160017687.png)
 
 ---
 
