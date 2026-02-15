@@ -3,7 +3,7 @@
  */
 
 const SPREADSHEET_ID = '1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU';
-const SHEET_NAME  = 'Logs';
+const SHEET_NAME = 'Logs';
 const ERROR_SHEET = 'Errors';
 
 const HEADER = [
@@ -11,7 +11,7 @@ const HEADER = [
   'page_url', 'page_title', 'referrer', 'utm_source', 'utm_medium', 'utm_campaign',
   'screen_w', 'screen_h', 'ua', 'geo_ip', 'geo_country', 'geo_region', 'geo_city',
   'geo_lat', 'geo_lon', 'language',
-  'engaged_ms', 'element', 'label', 'href', 'modal_name', 'card_id', 'group', 
+  'engaged_ms', 'element', 'label', 'href', 'modal_name', 'card_id', 'group',
   'platform', 'action', 'idx', 'search_term', 'link_domain', 'scroll_depth'
 ];
 
@@ -101,17 +101,36 @@ function appendLogRows_(dataList, timestampJST) {
   const rows = dataList.map(data => formatRow_(data, timestampJST));
   const sh = ensureLogsSheet_();
   const lock = LockService.getScriptLock();
-  
-  if (lock.tryLock(10000)) {
+
+  // 🍎 ロック取得リトライロジック
+  // 1回目: 5秒待つ
+  if (lock.tryLock(5000)) {
     try {
-      const lastRow = sh.getLastRow();
-      sh.getRange(lastRow + 1, 1, rows.length, HEADER.length).setValues(rows);
+      _write(sh, rows);
     } finally {
       lock.releaseLock();
     }
   } else {
-    throw new Error('Could not obtain lock after 10 seconds.');
+    // 失敗時: 一旦フラッシュして、少し待機してから再試行（10秒）
+    SpreadsheetApp.flush();
+    Utilities.sleep(1500);
+    if (lock.tryLock(10000)) {
+      try {
+        _write(sh, rows);
+      } finally {
+        lock.releaseLock();
+      }
+    } else {
+      // それでもダメならエラー（ただし、ここでメール通知等はしない方が良いかも）
+      console.error('Lock timeout: Data lost for ' + dataList.length + ' rows');
+      // throw new Error('Could not obtain lock.'); // クライアントにエラーを返すと再送の嵐になるので、サイレント失敗またはログのみにする手もある
+    }
   }
+}
+
+function _write(sh, rows) {
+  const lastRow = sh.getLastRow();
+  sh.getRange(lastRow + 1, 1, rows.length, HEADER.length).setValues(rows);
 }
 
 /**
@@ -153,7 +172,7 @@ function logError_(err, raw) {
   try {
     const es = ensureErrorSheet_();
     es.appendRow([toJSTString(new Date()), String(err && err.stack || err), String(raw || '')]);
-  } catch (_) {}
+  } catch (_) { }
 }
 
 function textOut_(body) {
