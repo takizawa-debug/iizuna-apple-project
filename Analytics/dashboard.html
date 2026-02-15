@@ -245,10 +245,20 @@
                 <h1>アクセス解析ダッシュボード</h1>
             </div>
             <div class="header-actions">
-                <div class="date-range-picker">
-                    <input type="date" id="start-date">
-                    <span style="color:#ccc; font-weight:800;">~</span>
-                    <input type="date" id="end-date">
+                <div class="date-range-selector">
+                    <select id="range-preset" onchange="onPresetChange()">
+                        <option value="7d">直近7日間</option>
+                        <option value="1m">直近1ヶ月</option>
+                        <option value="3m">直近3ヶ月</option>
+                        <option value="6m">直近6ヶ月</option>
+                        <option value="1y">直近1年間</option>
+                        <option value="custom">期間指定</option>
+                    </select>
+                    <div class="custom-range" id="custom-range-ui">
+                        <input type="date" id="start-date">
+                        <span style="color:#ccc; font-weight:800;">~</span>
+                        <input type="date" id="end-date">
+                    </div>
                 </div>
                 <button class="btn-refresh" onclick="refresh()">更新</button>
             </div>
@@ -256,12 +266,12 @@
 
         <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
             <div class="card">
-                <div class="card-title">累計PV</div>
+                <div class="card-title">指定期間の合計PV</div>
                 <div class="card-value" id="total-pv">-</div>
             </div>
             <div class="card">
-                <div class="card-title">直近7日間PV</div>
-                <div class="card-value" id="recent-pv">-</div>
+                <div class="card-title">ユニークユーザー数 (UU)</div>
+                <div class="card-value" id="total-uu">-</div>
             </div>
             <div class="card">
                 <div class="card-title">詳細表示回数</div>

@@ -261,7 +261,7 @@ function getDashboardStats(params = {}) {
 
   const stats = {
     totalPv: 0,
-    recentPv: 0,
+    totalUu: 0,
     basePageRanking: {}, // /savor, /discover etc.
     itemRanking: {},     // { card_id: { count, title } }
     keywordRanking: {},  // search_term + keyword
@@ -276,9 +276,11 @@ function getDashboardStats(params = {}) {
   };
 
   const colSessionId = idx('session_id');
+  const colVisitorId = idx('visitor_id');
   const sessionSourceMap = {}; // sid -> { source }
   const sessionRegionMap = {}; // sid -> { region }
   const sessionKeywordMap = new Set(); // sid + keyword + ev
+  const visitorSet = new Set(); // 🍎 ユニークユーザー集計用
 
   rows.forEach(row => {
     const tsStr = row[colTs];
@@ -290,11 +292,12 @@ function getDashboardStats(params = {}) {
     const ev = row[colEvent];
     const sid = row[colSessionId];
 
-    // 🍎 PV集計（page_viewのみを「PV」としてカウント）
+    // 🍎 PV・UU集計
     if (ev === 'page_view') {
       stats.totalPv++;
-      if (ts >= sevenDaysAgo) stats.recentPv++;
     }
+    const vid = row[colVisitorId];
+    if (vid) visitorSet.add(vid);
 
     // 🍎 追加指標
     if (ev === 'modal_open' || ev === 'modal_navigate') stats.totalModalOpens++;
@@ -414,6 +417,8 @@ function getDashboardStats(params = {}) {
       }
     }
   });
+
+  stats.totalUu = visitorSet.size;
 
   // ランキングを配列化してソート
   const sortRank = (obj, mapping = null) => Object.entries(obj)
