@@ -165,20 +165,22 @@
       if (!json || !json.ok) throw new Error("no data");
       var items = json.items || [], groups = new Map();
 
-      if (items.length > 0) {
-        // ★修正タイトル取得: 現在の言語での名前が設定されている記事を探す
-        var localizedL2 = "";
+      // ★修正：タイトル上書きの安全化
+      // 日本語の場合はdata-l2→C.T(l2)で設定済みのタイトルをそのまま使う。
+      // 他言語の場合のみ、翻訳が存在する記事からカテゴリ名を取得して上書きする。
+      if (items.length > 0 && window.LZ_CURRENT_LANG !== 'ja') {
+        var lang = window.LZ_CURRENT_LANG;
+        var translatedL2 = "";
         for (var i = 0; i < items.length; i++) {
-          var val = C.L(items[i], "l2");
-          if (val && val !== items[i].l2) { // 翻訳が入っているものを優先
-            localizedL2 = val; break;
+          if (items[i][lang] && items[i][lang].l2) {
+            translatedL2 = items[i][lang].l2;
+            break;
           }
         }
-        // それでも見つからない（全記事未翻訳）場合は、とりあえず1つ目の翻訳を呼ぶ(勝手に日本語にはしない)
-        if (!localizedL2) localizedL2 = C.L(items[0], "l2");
-
-        var titleEl = root.querySelector(".lz-title");
-        if (titleEl && localizedL2) titleEl.textContent = localizedL2;
+        if (translatedL2) {
+          var titleEl = root.querySelector(".lz-title");
+          if (titleEl) titleEl.textContent = translatedL2;
+        }
       }
 
       items.forEach(function (it) {
