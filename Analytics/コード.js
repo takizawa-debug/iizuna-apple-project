@@ -239,7 +239,10 @@ function getDashboardStats(params = {}) {
     filterEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   }
 
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  // 🍎 比較用：前期間の計算
+  const durationMs = filterEnd.getTime() - filterStart.getTime();
+  const prevStart = new Date(filterStart.getTime() - durationMs - 1000);
+  const prevEnd = new Date(filterStart.getTime() - 1001);
 
   // インデックス取得
   const idx = (name) => headers.indexOf(name);
@@ -272,7 +275,9 @@ function getDashboardStats(params = {}) {
     interactionRanking: { share: {}, pdf: {} }, // 共有・PDF
     engagement: {},      // { card_id: { sum_ms, count } }
     totalModalOpens: 0,
-    totalKeywordClicks: 0
+    totalKeywordClicks: 0,
+    timeSeries: {},     // { '2023-01-01': { pv: 0, uu: new Set(), modal: 0, kw: 0 } }
+    timeSeriesPrev: {}  // 前期間用
   };
 
   const colSessionId = idx('session_id');
@@ -282,24 +287,44 @@ function getDashboardStats(params = {}) {
   const sessionKeywordMap = new Set(); // sid + keyword + ev
   const visitorSet = new Set(); // 🍎 ユニークユーザー集計用
 
+  const getDateKey = (date) => Utilities.formatDate(date, 'Asia/Tokyo', 'yyyy-MM-dd');
+
   rows.forEach(row => {
     const tsStr = row[colTs];
     const ts = new Date(tsStr);
-
-    // 🍎 指定期間外ならスキップ
-    if (ts < filterStart || ts > filterEnd) return;
-
     const ev = row[colEvent];
     const sid = row[colSessionId];
+    const vid = row[colVisitorId];
 
-    // 🍎 PV・UU集計
+    const isCurrent = (ts >= filterStart && ts <= filterEnd);
+    const isPrev = (ts >= prevStart && ts <= prevEnd);
+
+    if (!isCurrent && !isPrev) return;
+
+    const dateKey = getDateKey(ts);
+
+    // 🍎 タイムシリーズ集計
+    const targetSeries = isCurrent ? stats.timeSeries : stats.timeSeriesPrev;
+    if (!targetSeries[dateKey]) {
+      targetSeries[dateKey] = { pv: 0, uuSet: new Set(), modal: 0, kw: 0 };
+    }
+    const tsData = targetSeries[dateKey];
+
+    if (ev === 'page_view') tsData.pv++;
+    if (vid) tsData.uuSet.add(vid);
+    if (ev === 'modal_open' || ev === 'modal_navigate') tsData.modal++;
+    if (ev === 'keyword_click') tsData.kw++;
+
+    // 🍎 詳細集計（現期間のみ）
+    if (!isCurrent) return;
+
+    // PV・UU累計
     if (ev === 'page_view') {
       stats.totalPv++;
     }
-    const vid = row[colVisitorId];
     if (vid) visitorSet.add(vid);
 
-    // 🍎 追加指標
+    // 追加指標
     if (ev === 'modal_open' || ev === 'modal_navigate') stats.totalModalOpens++;
     if (ev === 'keyword_click') stats.totalKeywordClicks++;
 
@@ -374,7 +399,6 @@ function getDashboardStats(params = {}) {
       const internalDomain = 'appletown-iizuna.com';
       const isInternal = ref.includes(internalDomain);
 
-      // 判定優先度: utm_source > 外部リンクリファラ > 直接アクセス
       let currentSrc = "";
       if (utmSource.includes('share') || utmSource.includes('shere')) currentSrc = "SNS共有経由";
       else if (utmSource.includes('qr') || utmSource.includes('pr') || utmSource.includes('pdf')) currentSrc = "印刷機能QR経由";
@@ -384,7 +408,6 @@ function getDashboardStats(params = {}) {
         currentSrc = "直接アクセス/不明";
       }
 
-      // 有効なソース(UTM/外部)が見つかったら上書き、または未登録なら登録
       if (currentSrc && currentSrc !== "直接アクセス/不明") {
         sessionSourceMap[sid] = currentSrc;
       } else if (!sessionSourceMap[sid]) {
@@ -405,11 +428,9 @@ function getDashboardStats(params = {}) {
     else if (lang.includes('zh')) stats.langDistribution.zh++;
     else stats.langDistribution.other++;
 
-    // キーワード合算 (重複排除: 1セッション内で同じイベントによる同じキーワードは1回のみ)
+    // キーワード合算
     const kw = (row[colSearchTerm] || row[colKeyword] || "").trim();
     if (kw) {
-      // 🍎 search_result_click は「結果のクリック」であり「検索意図」ではないため、ランキング合算からは除外
-      // 🍎 または、1セッション内に同じ単語での keyword_click / search_execute があっても1回として数える
       const kwKey = sid + "_" + kw;
       if (ev !== 'search_result_click' && !sessionKeywordMap.has(kwKey)) {
         stats.keywordRanking[kw] = (stats.keywordRanking[kw] || 0) + 1;
@@ -418,7 +439,15 @@ function getDashboardStats(params = {}) {
     }
   });
 
-  stats.totalUu = visitorSet.size;
+  // 🍎 タイムシリーズの後処理 (Setを数値に変換)
+  const finalizeSeries = (ts) => {
+    Object.keys(ts).forEach(k => {
+      ts[k].uu = ts[k].uuSet.size;
+      delete ts[k].uuSet;
+    });
+  };
+  finalizeSeries(stats.timeSeries);
+  finalizeSeries(stats.timeSeriesPrev);
 
   // ランキングを配列化してソート
   const sortRank = (obj, mapping = null) => Object.entries(obj)

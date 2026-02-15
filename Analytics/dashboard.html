@@ -6,6 +6,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@500;700&family=Noto+Sans+JP:wght@400;700&display=swap"
         rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary: #FF3B30;
@@ -89,6 +90,60 @@
             font-size: 36px;
             font-weight: 800;
             font-family: 'Outfit', sans-serif;
+        }
+
+        .card.active {
+            border: 2px solid var(--primary);
+            background: #fffafa;
+        }
+
+        .card.clickable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .chart-card {
+            grid-column: 1 / -1;
+            padding: 30px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot.current {
+            background: var(--primary);
+        }
+
+        .dot.prev {
+            background: #ccc;
+            border: 1px dashed #999;
         }
 
         .table-card {
@@ -268,21 +323,34 @@
         </header>
 
         <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
-            <div class="card">
+            <div class="card clickable active" onclick="switchMetric('pv', this)">
                 <div class="card-title">指定期間の合計PV</div>
                 <div class="card-value" id="total-pv">-</div>
             </div>
-            <div class="card">
+            <div class="card clickable" onclick="switchMetric('uu', this)">
                 <div class="card-title">ユニークユーザー数 (UU)</div>
                 <div class="card-value" id="total-uu">-</div>
             </div>
-            <div class="card">
+            <div class="card clickable" onclick="switchMetric('modal', this)">
                 <div class="card-title">詳細表示回数</div>
                 <div class="card-value" id="modal-opens">-</div>
             </div>
-            <div class="card">
+            <div class="card clickable" onclick="switchMetric('kw', this)">
                 <div class="card-title">キーワードクリック</div>
                 <div class="card-value" id="kw-clicks">-</div>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <div class="table-title">トレンド推移 <i>前期間との比較</i></div>
+                <div class="chart-legend">
+                    <div class="legend-item"><span class="dot current"></span> <span>選択期間</span></div>
+                    <div class="legend-item"><span class="dot prev"></span> <span>前期間</span></div>
+                </div>
+            </div>
+            <div style="height: 300px; position: relative;">
+                <canvas id="main-chart"></canvas>
             </div>
         </div>
 
@@ -459,17 +527,24 @@
                 .getDashboardStats({ startDate: start, endDate: end });
         }
 
+        let mainChart = null;
+        let globalStats = null;
+        let activeMetric = 'pv';
+
         function showStats(stats) {
             document.getElementById('loading').style.display = 'none';
             if (stats.error) {
                 alert(stats.error);
                 return;
             }
+            globalStats = stats;
 
             document.getElementById('total-pv').innerText = stats.totalPv.toLocaleString();
             document.getElementById('total-uu').innerText = stats.totalUu.toLocaleString();
             document.getElementById('modal-opens').innerText = stats.totalModalOpens.toLocaleString();
             document.getElementById('kw-clicks').innerText = stats.totalKeywordClicks.toLocaleString();
+
+            updateChart();
 
             // 各種ランキングの描画
             renderTable('base-rank-table', stats.basePageRanking);
@@ -481,6 +556,99 @@
             renderTable('share-rank-table', stats.interactionShare);
             renderTable('pdf-rank-table', stats.interactionPdf);
             renderTable('exit-rank-table', stats.exitRanking);
+        }
+
+        function switchMetric(metric, el) {
+            activeMetric = metric;
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            updateChart();
+        }
+
+        function updateChart() {
+            if (!globalStats) return;
+            const ctx = document.getElementById('main-chart').getContext('2d');
+
+            const currentKeys = Object.keys(globalStats.timeSeries).sort();
+            const prevKeys = Object.keys(globalStats.timeSeriesPrev).sort();
+
+            const currentData = currentKeys.map(k => globalStats.timeSeries[k][activeMetric] || 0);
+            const prevData = prevKeys.map(k => globalStats.timeSeriesPrev[k][activeMetric] || 0);
+
+            // X軸ラベル
+            const labels = currentKeys.map(k => k.split('-').slice(1).join('/'));
+
+            if (mainChart) mainChart.destroy();
+
+            mainChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '今期間',
+                            data: currentData,
+                            borderColor: '#FF3B30',
+                            backgroundColor: 'rgba(255, 59, 48, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointBackgroundColor: '#fff',
+                            pointHoverRadius: 6,
+                            zIndex: 2
+                        },
+                        {
+                            label: '前期間',
+                            data: prevData,
+                            borderColor: '#ccc',
+                            borderDash: [5, 5],
+                            backgroundColor: 'transparent',
+                            fill: false,
+                            tension: 0.4,
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            zIndex: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#333',
+                            bodyColor: '#666',
+                            borderColor: '#eee',
+                            borderWidth: 1,
+                            padding: 12,
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += context.parsed.y.toLocaleString();
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f0f0f0', drawBorder: false },
+                            ticks: { font: { size: 11 }, color: '#999' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: 11 }, color: '#999' }
+                        }
+                    }
+                }
+            });
         }
 
         function renderTable(id, data, unit = '') {
