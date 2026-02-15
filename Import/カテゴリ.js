@@ -19,6 +19,50 @@ const COL_F = 6;     // 中カテゴリ (L2)
 const COL_G = 7;     // 小カテゴリ (L3)
 
 /**
+ * メニュー追加 (デバッグ・手動更新用)
+ */
+function onOpen() {
+  const ui = SpreadsheetApp.getUi();
+  ui.createMenu('🍎 カテゴリ管理')
+    .addItem('現在の行のプルダウンを強制更新', 'forceRefreshCurrentRow')
+    .addToUi();
+}
+
+/**
+ * 手動更新: 現在選択されている行のバリデーションを再適用する
+ */
+function forceRefreshCurrentRow() {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const cell = sheet.getActiveCell();
+  const row = cell.getRow();
+
+  if (row < START_ROW) {
+    Browser.msgBox("データ行（4行目以降）を選択してください");
+    return;
+  }
+
+  if (!TARGET_SHEETS.includes(sheet.getName())) {
+    Browser.msgBox("対象シートではありません: " + sheet.getName());
+    return;
+  }
+
+  // マスタ取得
+  const masterSheet = sheet.getParent().getSheetByName(CATEGORIES_SHEET_NAME);
+  if (!masterSheet) {
+    Browser.msgBox(`エラー: 「${CATEGORIES_SHEET_NAME}」シートが見つかりません。`);
+    return;
+  }
+
+  const masterValues = masterSheet.getRange(2, 1, masterSheet.getLastRow() - 1, 3).getValues();
+
+  // 更新実行
+  updateL2Validation_(sheet, row, masterValues);
+  updateL3Validation_(sheet, row, masterValues);
+
+  Browser.msgBox("更新完了: 行 " + row);
+}
+
+/**
  * 編集時トリガー
  */
 function onEdit(e) {
@@ -41,32 +85,30 @@ function onEdit(e) {
   if (rowEnd < START_ROW) return;
 
   // E列(5) または F列(6) が編集範囲に含まれているかチェック
-  // 含まれていなければ何もしない
   const isL1Edited = (colStart <= COL_E && colEnd >= COL_E);
   const isL2Edited = (colStart <= COL_F && colEnd >= COL_F);
 
   if (!isL1Edited && !isL2Edited) return;
 
-  // マスタデータの取得 (キャッシュ推奨だが、onEdit内で都度取得でも通常は十分高速)
-  // [A列(大), B列(中), C列(小)]
-  const masterSheet = e.source.getSheetByName(CATEGORIES_SHEET_NAME);
+  // マスタデータの取得
+  const ss = e.source || sheet.getParent(); // e.sourceが稀に無い場合への保険
+  const masterSheet = ss.getSheetByName(CATEGORIES_SHEET_NAME);
   if (!masterSheet) return;
 
-  // マスタデータ全取得 (A2:C)
   const masterLastRow = masterSheet.getLastRow();
   if (masterLastRow < 2) return;
+
+  // 全データ取得はコストが高いので、必要な時だけ取る
   const masterValues = masterSheet.getRange(2, 1, masterLastRow - 1, 3).getValues();
 
-  // 編集された行を1行ずつ処理 (コピペで複数行変更された場合に対応)
+  // 編集された行を1行ずつ処理
   for (let r = rowStart; r <= rowEnd; r++) {
     if (r < START_ROW) continue;
 
-    // --- Case 1: E列 (大カテゴリ) が変更された場合 ---
     if (isL1Edited) {
       updateL2Validation_(sheet, r, masterValues);
     }
 
-    // --- Case 2: F列 (中カテゴリ) が変更された場合 ---
     if (isL2Edited) {
       updateL3Validation_(sheet, r, masterValues);
     }
@@ -81,21 +123,20 @@ function updateL2Validation_(sheet, row, masterValues) {
   const cellL2 = sheet.getRange(row, COL_F);
   const cellL3 = sheet.getRange(row, COL_G);
 
-  // L1が空なら、L2, L3もクリアして入力規則削除
+  // L1が空なら、L2, L3も入力規則削除
   if (!l1Val) {
-    cellL2.clearContent().clearDataValidations();
-    cellL3.clearContent().clearDataValidations();
+    cellL2.clearDataValidations().clearContent(); // 値もクリア
+    cellL3.clearDataValidations().clearContent();
     return;
   }
 
   // マスタから L1 に一致する L2 のリストを作成 (B列)
-  // 重複排除 (Set使用)
   const l2Options = new Set();
   masterValues.forEach(rowVal => {
     // rowVal = [L1, L2, L3]
     const mL1 = String(rowVal[0]).trim();
     const mL2 = String(rowVal[1]).trim();
-    if (mL1 === l1Val && mL2) {
+    if (mL1 === l1Val && mL2 !== "") {
       l2Options.add(mL2);
     }
   });
@@ -106,26 +147,23 @@ function updateL2Validation_(sheet, row, masterValues) {
   if (optionsArr.length > 0) {
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInList(optionsArr, true)
-      .setAllowInvalid(false) // 違反値は拒否（または警告のみにするなら setAllowInvalid(true)）
+      .setAllowInvalid(false) // 厳密にチェック
       .build();
     cellL2.setDataValidation(rule);
   } else {
-    // 候補がない場合は入力規則削除（自由入力にするか、クリアするかは要件次第だが一旦クリア）
+    // 候補がない＝マスタ不整合などの可能性
+    // 既存の入力規則を消す
     cellL2.clearDataValidations();
   }
 
-  // L1が変わったら、既存のL2値は不整合になる可能性が高いのでクリアするのが一般的だが、
-  // ユーザーの誤操作防止のため「値がリストになければクリア」等の親切設計も可能。
-  // ここではシンプルに「常に中身はクリア」とする（新しい親を選んだのだから子はリセット）
-  // ただし、すでに正しい値が入っている場合（コピペ時など）を考慮し、
-  // 「現在の値が新リストに含まれていなければクリア」とするのがベスト。
+  // 既存の値がリストになければクリア (コピペ対策も兼ねる)
   const currentL2 = String(cellL2.getValue()).trim();
   if (currentL2 && !l2Options.has(currentL2)) {
     cellL2.setValue(null);
   }
 
   // L3はL1変更に伴い文脈が変わるため無条件クリア＆規則削除
-  cellL3.clearContent().clearDataValidations();
+  cellL3.clearDataValidations().clearContent();
 }
 
 /**
@@ -138,7 +176,7 @@ function updateL3Validation_(sheet, row, masterValues) {
 
   // 親が指定されていなければクリア
   if (!l1Val || !l2Val) {
-    cellL3.clearContent().clearDataValidations();
+    cellL3.clearDataValidations().clearContent();
     return;
   }
 
@@ -148,7 +186,7 @@ function updateL3Validation_(sheet, row, masterValues) {
     const mL1 = String(rowVal[0]).trim();
     const mL2 = String(rowVal[1]).trim();
     const mL3 = String(rowVal[2]).trim(); // 小カテゴリ
-    if (mL1 === l1Val && mL2 === l2Val && mL3) {
+    if (mL1 === l1Val && mL2 === l2Val && mL3 !== "") {
       l3Options.add(mL3);
     }
   });
@@ -171,4 +209,3 @@ function updateL3Validation_(sheet, row, masterValues) {
     cellL3.setValue(null);
   }
 }
-
