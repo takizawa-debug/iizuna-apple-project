@@ -208,10 +208,11 @@ function doGet(e) {
   try {
     const p = e.parameter || {};
 
-    // 🍎 キャッシュキーの生成 (パラメータをソートして安定化)
-    const sortedKeys = Object.keys(p).sort();
-    const sortedParams = {}; sortedKeys.forEach(k => sortedParams[k] = p[k]);
-    const cacheKey = "api_v1_" + Utilities.base64Encode(JSON.stringify(sortedParams));
+    // 🍎 キャッシュキーの生成 (パラメータが一意であればOK)
+    // フォーム設定などの動的要素はキャッシュしない、または短くするなどの判断が必要だが、
+    // 基本的にマスターデータ系なのでキャッシュして問題ない。
+    const cache = CacheService.getScriptCache();
+    const cacheKey = "api_v1_" + Utilities.base64Encode(JSON.stringify(p));
 
     // キャッシュがあればそれを返す (フォーム関連などキャッシュしたくないものは除外)
     if (p.mode !== 'form_genres') {
@@ -267,7 +268,7 @@ function doGet(e) {
         return {
           l1, l2, l3: _pick(row, idx, COL.L3),
           en: { l1: _pick(row, idx, COL.L1_EN), l2: _pick(row, idx, COL.L2_EN), l3: _pick(row, idx, COL.L3_EN) },
-          zh: { l1: _pick(row, idx, COL.L1_ZH), l2: _pick(row, idx, COL.L2_ZH), l3: _pick(row, idx, COL.L3_ZH) }
+          zh: { l1: _pick(row, idx, COL.L1_ZH), l2: _pick(row, idx, COL.L1_ZH), l3: _pick(row, idx, COL.L3_ZH) }
         };
       }).filter(Boolean);
       resultObj = { ok: true, items: list };
@@ -290,17 +291,14 @@ function doGet(e) {
 
     // 3. 通常のセクション取得
     else {
-      const targetL1 = String(p.l1 || "").trim();
-      const targetL2 = String(p.l2 || "").trim();
       const filtered = dataRows.filter(row =>
-        String(_pick(row, idx, COL.L1)).trim() === targetL1 && String(_pick(row, idx, COL.L2)).trim() === targetL2
+        String(_pick(row, idx, COL.L1)) === p.l1 && String(_pick(row, idx, COL.L2)) === p.l2
       ).map(row => _mapRowToObject(row, idx));
       resultObj = { ok: true, items: filtered };
     }
 
     // 🍎 JSON文字列化してキャッシュに保存 (21600秒 = 6時間)
     const jsonStr = JSON.stringify(resultObj);
-    const cache = CacheService.getScriptCache();
     if (jsonStr.length < 100000) { // キャッシュサイズ制限（100KB目安）への配慮
       cache.put(cacheKey, jsonStr, 21600);
     }
