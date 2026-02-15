@@ -207,21 +207,6 @@ function _mapRowToObject(row, idx) {
 function doGet(e) {
   try {
     const p = e.parameter || {};
-
-    // 🍎 キャッシュキーの生成 (パラメータが一意であればOK)
-    // フォーム設定などの動的要素はキャッシュしない、または短くするなどの判断が必要だが、
-    // 基本的にマスターデータ系なのでキャッシュして問題ない。
-    const cache = CacheService.getScriptCache();
-    const cacheKey = "api_v1_" + Utilities.base64Encode(JSON.stringify(p));
-
-    // キャッシュがあればそれを返す (フォーム関連などキャッシュしたくないものは除外)
-    if (p.mode !== 'form_genres') {
-      const cached = cache.get(cacheKey);
-      if (cached) {
-        return ContentService.createTextOutput(cached).setMimeType(ContentService.MimeType.JSON);
-      }
-    }
-
     if (p.mode === 'form_genres') {
       return serveFormGenres(e); // 新しいファイルに書いた関数を呼び出す
     }
@@ -230,8 +215,6 @@ function doGet(e) {
     const header = values[HEADER_ROW - 1].map(v => String(v).trim());
     const idx = _indexHeader(header);
     const dataRows = values.slice(DATA_START_ROW - 1);
-
-    let resultObj;
 
     // 【追記箇所】キーワード定義シートから多言語リストを返すモード
     if (p.mode === 'keywords') {
@@ -251,11 +234,10 @@ function doGet(e) {
           zh: String(row[2] || "").trim()
         }));
 
-      resultObj = { ok: true, items: kwData };
-      // return _json(resultObj); // 後でキャッシュ保存するために変数に入れる
+      return _json({ ok: true, items: kwData });
     }
     // 1. メニュー生成用
-    else if (p.all === '1') {
+    if (p.all === '1') {
       const seen = new Set();
       const list = dataRows.map((row, i) => {
         const l1 = String(_pick(row, idx, COL.L1)).trim();
@@ -268,14 +250,14 @@ function doGet(e) {
         return {
           l1, l2, l3: _pick(row, idx, COL.L3),
           en: { l1: _pick(row, idx, COL.L1_EN), l2: _pick(row, idx, COL.L2_EN), l3: _pick(row, idx, COL.L3_EN) },
-          zh: { l1: _pick(row, idx, COL.L1_ZH), l2: _pick(row, idx, COL.L1_ZH), l3: _pick(row, idx, COL.L3_ZH) }
+          zh: { l1: _pick(row, idx, COL.L1_ZH), l2: _pick(row, idx, COL.L2_ZH), l3: _pick(row, idx, COL.L3_ZH) }
         };
       }).filter(Boolean);
-      resultObj = { ok: true, items: list };
+      return _json({ ok: true, items: list });
     }
 
     // 2. キーワード検索 (検索対象：タイトル・リード・本文・カテゴリL1〜L3の全言語)
-    else if (p.q) {
+    if (p.q) {
       const q = p.q.toLowerCase();
       const results = dataRows.filter(row => {
         const searchTargets = [
@@ -286,24 +268,15 @@ function doGet(e) {
         const text = searchTargets.map(k => String(_pick(row, idx, k)).toLowerCase()).join(' ');
         return text.includes(q);
       }).map(row => _mapRowToObject(row, idx));
-      resultObj = { ok: true, items: results.slice(0, p.limit || 50) };
+      return _json({ ok: true, items: results.slice(0, p.limit || 50) });
     }
 
     // 3. 通常のセクション取得
-    else {
-      const filtered = dataRows.filter(row =>
-        String(_pick(row, idx, COL.L1)) === p.l1 && String(_pick(row, idx, COL.L2)) === p.l2
-      ).map(row => _mapRowToObject(row, idx));
-      resultObj = { ok: true, items: filtered };
-    }
+    const filtered = dataRows.filter(row =>
+      String(_pick(row, idx, COL.L1)) === p.l1 && String(_pick(row, idx, COL.L2)) === p.l2
+    ).map(row => _mapRowToObject(row, idx));
 
-    // 🍎 JSON文字列化してキャッシュに保存 (21600秒 = 6時間)
-    const jsonStr = JSON.stringify(resultObj);
-    if (jsonStr.length < 100000) { // キャッシュサイズ制限（100KB目安）への配慮
-      cache.put(cacheKey, jsonStr, 21600);
-    }
-
-    return ContentService.createTextOutput(jsonStr).setMimeType(ContentService.MimeType.JSON);
+    return _json({ ok: true, items: filtered });
 
   } catch (err) {
     return _json({ ok: false, error: String(err) });
