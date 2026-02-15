@@ -254,7 +254,7 @@
                         <option value="1y">直近1年間</option>
                         <option value="custom">期間指定</option>
                     </select>
-                    <div class="custom-range" id="custom-range-ui">
+                    <div class="custom-range" id="custom-range-ui" style="display: none;">
                         <input type="date" id="start-date">
                         <span style="color:#ccc; font-weight:800;">~</span>
                         <input type="date" id="end-date">
@@ -440,7 +440,7 @@
             }
 
             document.getElementById('total-pv').innerText = stats.totalPv.toLocaleString();
-            document.getElementById('recent-pv').innerText = stats.recentPv.toLocaleString();
+            document.getElementById('total-uu').innerText = stats.totalUu.toLocaleString();
             document.getElementById('modal-opens').innerText = stats.totalModalOpens.toLocaleString();
             document.getElementById('kw-clicks').innerText = stats.totalKeywordClicks.toLocaleString();
 
