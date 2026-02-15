@@ -200,18 +200,22 @@
             </div>
         </header>
 
-        <div class="grid">
+        <div class="grid" style="grid-template-columns: repeat(4, 1fr);">
             <div class="card">
-                <div class="card-title">累計ログ数</div>
+                <div class="card-title">累計PV</div>
                 <div class="card-value" id="total-pv">-</div>
             </div>
             <div class="card">
-                <div class="card-title">直近7日間の累計PV</div>
+                <div class="card-title">直近7日間PV</div>
                 <div class="card-value" id="recent-pv">-</div>
             </div>
             <div class="card">
-                <div class="card-title">最多利用言語</div>
-                <div class="card-value" id="top-lang">-</div>
+                <div class="card-title">詳細表示回数</div>
+                <div class="card-value" id="modal-opens">-</div>
+            </div>
+            <div class="card">
+                <div class="card-title">キーワードクリック</div>
+                <div class="card-value" id="kw-clicks">-</div>
             </div>
         </div>
 
@@ -338,69 +342,65 @@
     </div>
 
     <script>
-    window.onload = function() {
-      google.script.run
-        .withSuccessHandler(showStats)
-        .withFailureHandler(handleError)
-        .getDashboardStats();
-      
-      document.getElementById('date-now').innerText = new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
-    };
+        window.onload = function () {
+            google.script.run
+                .withSuccessHandler(showStats)
+                .withFailureHandler(handleError)
+                .getDashboardStats();
 
-    function showStats(stats) {
-      document.getElementById('loading').style.display = 'none';
-      if (stats.error) {
-        alert(stats.error);
-        return;
-      }
+            document.getElementById('date-now').innerText = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
+        };
 
-      document.getElementById('total-pv').innerText = stats.totalPv.toLocaleString();
-      document.getElementById('recent-pv').innerText = stats.recentPv.toLocaleString();
-      
-      // Top Language
-      const langMap = { ja: '日本語', en: '英語', zh: '中国語', other: 'その他' };
-      const sortedLangs = Object.entries(stats.langDistribution).sort((a,b) => b[1]-a[1]);
-      const topLangKey = sortedLangs[0][0];
-      document.getElementById('top-lang').innerText = langMap[topLangKey] || topLangKey.toUpperCase();
+        function showStats(stats) {
+            document.getElementById('loading').style.display = 'none';
+            if (stats.error) {
+                alert(stats.error);
+                return;
+            }
 
-      // 各種ランキングの描画
-      renderTable('base-rank-table', stats.basePageRanking);
-      renderTable('duration-rank-table', stats.stayTimeRanking, '秒');
-      renderTable('kw-rank-table', stats.keywordRanking);
-      renderTable('item-rank-table', stats.itemRanking);
-      renderTable('region-rank-table', stats.regionRanking);
-      renderTable('ref-rank-table', stats.referrerRanking);
-      renderTable('share-rank-table', stats.interactionShare);
-      renderTable('pdf-rank-table', stats.interactionPdf);
-      renderTable('exit-rank-table', stats.exitRanking);
-    }
+            document.getElementById('total-pv').innerText = stats.totalPv.toLocaleString();
+            document.getElementById('recent-pv').innerText = stats.recentPv.toLocaleString();
+            document.getElementById('modal-opens').innerText = stats.totalModalOpens.toLocaleString();
+            document.getElementById('kw-clicks').innerText = stats.totalKeywordClicks.toLocaleString();
 
-    function renderTable(id, data, unit = '') {
-      const tbody = document.querySelector('#' + id + ' tbody');
-      if (!data || data.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#ccc; padding:20px;">データなし</td></tr>';
-          return;
-      }
-      const maxCount = data[0]?.count || 1;
-      
-      data.forEach(item => {
-        const row = document.createElement('tr');
-        const percent = (item.count / maxCount) * 100;
-        const displayVal = item.count.toLocaleString() + unit;
-        row.innerHTML = `
+            // 各種ランキングの描画
+            renderTable('base-rank-table', stats.basePageRanking);
+            renderTable('duration-rank-table', stats.stayTimeRanking, '秒');
+            renderTable('kw-rank-table', stats.keywordRanking);
+            renderTable('item-rank-table', stats.itemRanking);
+            renderTable('region-rank-table', stats.regionRanking);
+            renderTable('ref-rank-table', stats.referrerRanking);
+            renderTable('share-rank-table', stats.interactionShare);
+            renderTable('pdf-rank-table', stats.interactionPdf);
+            renderTable('exit-rank-table', stats.exitRanking);
+        }
+
+        function renderTable(id, data, unit = '') {
+            const tbody = document.querySelector('#' + id + ' tbody');
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#ccc; padding:20px;">データなし</td></tr>';
+                return;
+            }
+            const maxCount = data[0]?.count || 1;
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const percent = (item.count / maxCount) * 100;
+                const displayVal = item.count.toLocaleString() + unit;
+                row.innerHTML = `
           <td>
             <div style="margin-bottom:4px; font-weight: 500; word-break: break-all;">${item.name}</div>
             <div class="rank-bar"><div class="rank-fill" style="width: ${percent}%"></div></div>
           </td>
           <td style="text-align: right; font-weight: 700; vertical-align: top; padding-top: 12px; white-space: nowrap;">${displayVal}</td>
         `;
-        tbody.appendChild(row);
-      });
-    }
+                tbody.appendChild(row);
+            });
+        }
 
-    function handleError(e) {
-      document.getElementById('loading').innerHTML = '<div style="color:var(--primary); text-align:center;">エラーが発生しました:<br>' + e.message + '</div>';
-    }
+        function handleError(e) {
+            document.getElementById('loading').innerHTML = '<div style="color:var(--primary); text-align:center;">エラーが発生しました:<br>' + e.message + '</div>';
+        }
     </script>
 </body>
 

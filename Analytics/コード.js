@@ -252,11 +252,14 @@ function getDashboardStats() {
     langDistribution: { ja: 0, en: 0, zh: 0, other: 0 },
     regionRanking: {},   // 地域
     interactionRanking: { share: {}, pdf: {} }, // 共有・PDF
-    engagement: {}       // { card_id: { sum_ms, count } }
+    engagement: {},      // { card_id: { sum_ms, count } }
+    totalModalOpens: 0,
+    totalKeywordClicks: 0
   };
 
   const colSessionId = idx('session_id');
   const sessionSourceMap = {}; // sid -> { source }
+  const sessionRegionMap = {}; // sid -> { region }
 
   rows.forEach(row => {
     const tsStr = row[colTs];
@@ -269,6 +272,10 @@ function getDashboardStats() {
       stats.totalPv++;
       if (ts >= sevenDaysAgo) stats.recentPv++;
     }
+
+    // 🍎 追加指標
+    if (ev === 'modal_open') stats.totalModalOpens++;
+    if (ev === 'keyword_click') stats.totalKeywordClicks++;
 
     // URLの正規化
     let rawUrl = String(row[colUrl] || 'unknown');
@@ -305,12 +312,13 @@ function getDashboardStats() {
       stats.itemRanking[cardId].count++;
     }
 
-    // 地域
-    const region = row[colGeoRegion];
-    const city = row[colGeoCity];
-    if (region) {
-      const geoKey = region + (city ? " " + city : "");
-      stats.regionRanking[geoKey] = (stats.regionRanking[geoKey] || 0) + 1;
+    // 地域 (セッションごとに1つ選出)
+    if (sid) {
+      const region = row[colGeoRegion];
+      const city = row[colGeoCity];
+      if (region && !sessionRegionMap[sid]) {
+        sessionRegionMap[sid] = region + (city ? " " + city : "");
+      }
     }
 
     // Share / PDF
@@ -343,7 +351,7 @@ function getDashboardStats() {
       // 判定優先度: utm_source > 外部リンクリファラ > 直接アクセス
       let currentSrc = "";
       if (utmSource.includes('share') || utmSource.includes('shere')) currentSrc = "SNS共有経由";
-      else if (utmSource.includes('qr') || utmSource.includes('pr') || utmSource.includes('pdf')) currentSrc = "印刷チラシQR経由";
+      else if (utmSource.includes('qr') || utmSource.includes('pr') || utmSource.includes('pdf')) currentSrc = "印刷機能QR経由";
       else if (ref && !isInternal) {
         currentSrc = ref.split('/')[2] || "直接アクセス/不明";
       } else if (!ref) {
@@ -398,11 +406,15 @@ function getDashboardStats() {
   Object.values(sessionSourceMap).forEach(s => {
     sourceRankingCount[s] = (sourceRankingCount[s] || 0) + 1;
   });
+  const regionRankingCount = {};
+  Object.values(sessionRegionMap).forEach(r => {
+    regionRankingCount[r] = (regionRankingCount[r] || 0) + 1;
+  });
 
   stats.keywordRanking = sortRank(stats.keywordRanking);
   stats.referrerRanking = sortRank(sourceRankingCount);
   stats.exitRanking = sortRank(stats.exitRanking);
-  stats.regionRanking = sortRank(stats.regionRanking);
+  stats.regionRanking = sortRank(regionRankingCount);
 
   stats.interactionShare = sortRank(stats.interactionRanking.share);
   stats.interactionPdf = sortRank(stats.interactionRanking.pdf);
