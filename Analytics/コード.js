@@ -283,7 +283,7 @@ function getDashboardStats(params = {}) {
   const colSessionId = idx('session_id');
   const colVisitorId = idx('visitor_id');
   const sessionSourceMap = {}; // sid -> { source }
-  const sessionRegionMap = {}; // sid -> { region }
+  const visitorRegionMap = {}; // vid -> { region }
   const sessionKeywordMap = new Set(); // sid + keyword + ev
   const visitorSet = new Set(); // 🍎 ユニークユーザー集計用
 
@@ -363,12 +363,12 @@ function getDashboardStats(params = {}) {
       stats.itemRanking[cardId].count++;
     }
 
-    // 地域 (セッションごとに1つ選出)
-    if (sid) {
+    // 地域 (ユーザーごとに1つ選出)
+    if (vid) {
       const region = row[colGeoRegion];
       const city = row[colGeoCity];
-      if (region && !sessionRegionMap[sid]) {
-        sessionRegionMap[sid] = region + (city ? " " + city : "");
+      if (region && !visitorRegionMap[vid]) {
+        visitorRegionMap[vid] = region + (city ? " " + city : "");
       }
     }
 
@@ -449,6 +449,8 @@ function getDashboardStats(params = {}) {
   finalizeSeries(stats.timeSeries);
   finalizeSeries(stats.timeSeriesPrev);
 
+  stats.totalUu = visitorSet.size;
+
   // ランキングを配列化してソート
   const sortRank = (obj, mapping = null) => Object.entries(obj)
     .map(([name, count]) => ({
@@ -470,7 +472,7 @@ function getDashboardStats(params = {}) {
     sourceRankingCount[s] = (sourceRankingCount[s] || 0) + 1;
   });
   const regionRankingCount = {};
-  Object.values(sessionRegionMap).forEach(r => {
+  Object.values(visitorRegionMap).forEach(r => {
     regionRankingCount[r] = (regionRankingCount[r] || 0) + 1;
   });
 
