@@ -4,8 +4,8 @@ const vm = require('vm');
 const mocks = require('./mock/gas-mocks');
 
 // Load GAS Code
-const gasFilePath = path.join(__dirname, '../Inport/保存処理.js');
-const formSettingsPath = path.join(__dirname, '../Inport/フォーム設定.js');
+const gasFilePath = path.join(__dirname, '../Import/保存処理.js');
+const formSettingsPath = path.join(__dirname, '../Import/フォーム設定.js');
 
 const gasCode = fs.readFileSync(gasFilePath, 'utf8');
 const formSettingsCode = fs.readFileSync(formSettingsPath, 'utf8');

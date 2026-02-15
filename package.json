@@ -7,8 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "gas-push-analytics": "cd Analytics && clasp push",
     "gas-pull-analytics": "cd Analytics && clasp pull",
-    "gas-push-import": "cd Inport && clasp push",
-    "gas-pull-import": "cd Inport && clasp pull"
+    "gas-push-import": "cd Import && clasp push",
+    "gas-pull-import": "cd Import && clasp pull"
   },
   "keywords": [],
   "author": "",

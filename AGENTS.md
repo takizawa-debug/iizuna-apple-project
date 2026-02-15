@@ -6,9 +6,9 @@
 
 ## 技術スタック
 - **Frontend**: Vanilla JS / HTML / CSS (ディレクトリ: `web/`, `Form/`)
-- **Backend**: Google Apps Script (GAS) (ディレクトリ: `Inport/`, `Analytics/`)
+- **Backend**: Google Apps Script (GAS) (ディレクトリ: `Import/`, `Analytics/`)
 - **Database**: Google Spreadsheet
-  - **Content & CMS**: `Inport` ⇔ [情報編集用スプレッドシート_りんごのまちいいづな](https://docs.google.com/spreadsheets/d/1ODqTU1KspNWDZq7NYICyeAjUOHNdQIV9TfFs9fpPKkU) (`1ODqTU1KspNWDZq7NYICyeAjUOHNdQIV9TfFs9fpPKkU`)
+  - **Content & CMS**: `Import` ⇔ [情報編集用スプレッドシート_りんごのまちいいづな](https://docs.google.com/spreadsheets/d/1ODqTU1KspNWDZq7NYICyeAjUOHNdQIV9TfFs9fpPKkU) (`1ODqTU1KspNWDZq7NYICyeAjUOHNdQIV9TfFs9fpPKkU`)
   - **Analytics**: `Analytics` ⇔ [Appletown Analytics](https://docs.google.com/spreadsheets/d/1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU) (`1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU`)
 - **Storage**: AWS S3 (`appletown-iizuna` バケット)
 - **AI**: Google Gemini API (`gemini-2.5-flash`)
@@ -19,13 +19,13 @@
 
 | キー名 | 等価な役割 | 備考 |
 | :--- | :--- | :--- |
-| `TR_API_KEY` | Gemini API Key | 翻訳機能(`Inport/翻訳.js`)で使用 |
-| `AWS_ACCESS_KEY_ID` | AWS Access Key | S3アップロード(`Inport/保存処理.js`)で使用 |
-| `AWS_SECRET_ACCESS_KEY` | AWS Secret Key | S3アップロード(`Inport/保存処理.js`)で使用 |
+| `TR_API_KEY` | Gemini API Key | 翻訳機能(`Import/翻訳.js`)で使用 |
+| `AWS_ACCESS_KEY_ID` | AWS Access Key | S3アップロード(`Import/保存処理.js`)で使用 |
+| `AWS_SECRET_ACCESS_KEY` | AWS Secret Key | S3アップロード(`Import/保存処理.js`)で使用 |
 | `ADMIN_EMAIL` | 管理者メールアドレス | 定数`ADMIN_EMAIL`の初期値として使用される場合あり |
 
 ## ディレクトリ構成と役割
-### `Inport/` (Content Management System)
+### `Import/` (Content Management System)
 メインのGASプロジェクト。飯綱町のコンテンツ管理機能の中核を担います。
 - **紐付くSS**: `1ODqTU1KspNWDZq7NYICyeAjUOHNdQIV9TfFs9fpPKkU`
 - **主要なシート**:
@@ -74,7 +74,7 @@
 
 ## データ構造とスキーマ定義 (Source of Truth)
 
-### `Inport/HP出力.js` ⇔ 「公開用」シート
+### `Import/HP出力.js` ⇔ 「公開用」シート
 このスクリプト内の `const COL` 定義が、スプレッドシートの期待する構造です。
 - **必須カラム**: `Title`, `Lead`, `Body` (各言語), `L1`, `L2` (カテゴリ)
 - **多言語対応**: `_en` (英語), `_中文` (中国語) の接尾辞を持つカラムが存在すること。
@@ -102,12 +102,12 @@
 
 ### 4. デプロイ運用 (Clasp)
 - `package.json` に定義されたスクリプトを使用する。
-  - `npm run gas-push-import`: Inportプロジェクトのアップロード
+  - `npm run gas-push-import`: Importプロジェクトのアップロード
   - `npm run gas-push-analytics`: Analyticsプロジェクトのアップロード
 - `.clasp.json` の `scriptId` が正しい環境（本番/開発）を指しているか確認する。
 
 ## エージェント・タスク実行チェックリスト
-- [ ] **変更の影響範囲確認**: `Inport` を変更する場合、Spreadsheetの構造（列定義）に変更が必要か確認したか？
+- [ ] **変更の影響範囲確認**: `Import` を変更する場合、Spreadsheetの構造（列定義）に変更が必要か確認したか？
 - [ ] **AWS署名**: S3アップロード処理を変更する場合、Signature V4の生成ロジックを壊していないか？
 - [ ] **AIプロンプト**: `翻訳.js` のプロンプトを変更する場合、JSON出力形式の制約を守っているか？
 - [ ] **テスト**: ローカルで実行できないGAS特有の機能（`SpreadsheetApp`, `PropertiesService` 等）を含む場合、モックを作成するか、最小限のテスト関数を作成して動作確認を行う案を提示したか？
