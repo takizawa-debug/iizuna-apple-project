@@ -19,8 +19,7 @@
   const style = document.createElement('style');
   style.textContent = `
     #lzFooterMain { clear: both !important; width: 100% !important; margin-top: 100px !important; display: block !important; font-family: var(--font-base) !important; }
-    .lz-journey { background: var(--soft-red, #fff5f5); padding: 80px 20px; border-top: 1px solid rgba(207, 58, 58, 0.05); text-align: center; }
-    .lz-journey__title { font-weight: 800; font-size: 1.6rem; color: #cf3a3a; margin-bottom: 40px; letter-spacing: 0.05em; }
+    .lz-journey { background: var(--soft-red, #fff5f5); padding: 30px 20px; border-top: 1px solid rgba(207, 58, 58, 0.05); text-align: center; }
     .lz-steps { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; max-width: 1100px; margin: 0 auto; }
     .lz-step {
       position: relative;
@@ -59,8 +58,7 @@
     .lz-fnav__link:hover { opacity: 1; text-decoration: underline; }
     .lz-fcopy { font-size: 1rem; opacity: 0.7; letter-spacing: 0.03em; }
     @media (max-width: 768px) {
-      .lz-journey { padding: 60px 16px; }
-      .lz-journey__title { font-size: 1.3rem; }
+      .lz-journey { padding: 24px 16px; }
       .lz-step { min-width: 140px; padding: 14px 20px; font-size: 1.1rem; }
       .lz-footer { padding: 60px 16px; }
       .lz-fnav { gap: 15px 25px; }
@@ -91,7 +89,6 @@
   const footerHTML = `
     <div id="lzFooterMain">
       <div class="lz-journey">
-        <div class="lz-journey__title">${C.T('りんごのまちを旅する')}</div>
         <div class="lz-steps">${journeyLinks}</div>
       </div>
       <footer class="lz-footer">
