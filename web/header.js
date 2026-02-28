@@ -122,7 +122,7 @@
   const brandTitle = {
     ja: { t1: '飯綱町産りんごポータルサイト', t2: 'りんごのまちいいづな' },
     en: { t1: 'Iizuna Apple Portal Site', t2: 'Appletown Iizuna' },
-    zh: { t1: '飯綱町蘋果入口網站', t2: '蘋果之郷 飯綱町' }
+    zh: { t1: '飯綱町蘋果入口網站', t2: '苹果小镇 飯綱町' }
   }[window.LZ_CURRENT_LANG] || { t1: 'Iizuna Apple Portal Site', t2: 'Appletown Iizuna' };
 
   const headerHTML = `

@@ -68,7 +68,7 @@
     const texts = {
       ja: ["飯綱町産りんごポータルサイト", "りんごのまち", "いいづな"],
       en: ["Iizuna Apple Portal Site", "Appletown", "Iizuna"],
-      zh: ["飯綱町蘋果入口網站", "蘋果之郷", "飯綱町"]
+      zh: ["飯綱町蘋果入口網站", "苹果小镇", "飯綱町"]
     }[lang] || ["Iizuna Apple Portal Site", "Appletown", "Iizuna"];
 
     root.className = "appletown-hero";
