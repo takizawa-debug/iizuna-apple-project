@@ -33,12 +33,12 @@ window.LZ_COMMON = (function () {
   var injectCoreStyles = function () {
     if (document.getElementById('lz-common-styles')) return;
 
-    /* Google Fonts: Zen Kaku Gothic New (太字・アクセント用) */
+    /* Google Fonts: Zen Maru Gothic (本文用) + Zen Kaku Gothic New (太字・アクセント用) */
     if (!document.getElementById('lz-google-fonts')) {
       var link = document.createElement('link');
       link.id = 'lz-google-fonts';
       link.rel = 'stylesheet';
-      link.href = 'https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap';
+      link.href = 'https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap';
       document.head.appendChild(link);
     }
 
@@ -48,7 +48,7 @@ window.LZ_COMMON = (function () {
       ':root {',
       '  /* フォントとサイズ */',
       '  --fz-l2: clamp(2.4rem, 5vw, 3.2rem); --fz-l3: 1.85rem; --fz-body: 1.5rem;',
-      '  --font-base: "FOT-TsukuARdGothic Std", "筑紫A丸ゴシック", "TsukuARdGothic-Regular", system-ui, -apple-system, sans-serif;',
+      '  --font-base: "Zen Maru Gothic", system-ui, -apple-system, sans-serif;',
       '  --font-accent: "Zen Kaku Gothic New", sans-serif;',
       '  ',
       '  /* 配色 (復活) */',
@@ -59,7 +59,7 @@ window.LZ_COMMON = (function () {
       '  /* 角丸と装飾 (復活) */',
       '  --card-radius: 20px; --radius: 14px;',
       '}',
-      '/* 本文・一般テキスト: 筑紫A丸ゴシック */',
+      '/* 本文・一般テキスト: Zen Maru Gothic */',
       'body { font-family: var(--font-base); }',
       '/* 太字・アクセント系: Zen Kaku Gothic New */',
       'h1, h2, h3, h4, h5, h6, b, strong, th { font-family: var(--font-accent); }',
