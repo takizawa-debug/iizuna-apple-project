@@ -1,7 +1,7 @@
 /**
  * section.js - 記事一覧コンポーネント (多言語対応・Manual Infinity Edition)
  */
-(function() {
+(function () {
   "use strict";
 
   var C = window.LZ_COMMON;
@@ -10,7 +10,7 @@
   /* ==========================================
      1. CSS (既存デザインを完全維持)
      ========================================== */
-  var injectStyles = function() {
+  var injectStyles = function () {
     if (document.getElementById('lz-section-styles')) return;
     var style = document.createElement('style');
     style.id = 'lz-section-styles';
@@ -19,7 +19,7 @@
       '.lz-section.lz-ready { min-height: auto; }',
       '.lz-head { margin: 0 0 20px; position: relative; z-index: 10; }',
       '.lz-titlewrap { position: relative; display: inline-flex; align-items: center; padding: 12px 36px 12px 20px; box-sizing: border-box; background: linear-gradient(135deg, rgba(207, 58, 58, 0.04) 0%, rgba(255, 255, 255, 0.9) 100%); border-left: 5px solid var(--apple-red); border-radius: 0 40px 40px 0; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }',
-      '.lz-title { margin: 0; font-weight: 800; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
+      '.lz-title { margin: 0; font-weight: 600; font-size: 2.6rem; color: var(--apple-brown); letter-spacing: .08em; }',
       '.lz-l3head { display: flex; align-items: center; gap: .55em; margin: 24px 2px 10px; }',
       '.lz-l3bar { width: 10px; height: 1.4em; background: var(--apple-brown); border-radius: 3px; flex: 0 0 auto; }',
       '.lz-l3title { margin: 0; font-weight: 600; font-size: var(--fz-l3, 1.85rem); color: var(--apple-brown); line-height: 1.25; }',
@@ -59,12 +59,12 @@
     track.innerHTML = originalHTML + originalHTML + originalHTML;
     var isMouseDown = false;
     var startX, scrollLeftInitial;
-    var resetToCenter = function() {
+    var resetToCenter = function () {
       var singleWidth = track.scrollWidth / 3;
       track.scrollLeft = singleWidth;
     };
     setTimeout(resetToCenter, 50);
-    track.addEventListener('scroll', function() {
+    track.addEventListener('scroll', function () {
       var singleWidth = track.scrollWidth / 3;
       if (track.scrollLeft >= singleWidth * 2) {
         track.scrollLeft -= singleWidth;
@@ -72,17 +72,17 @@
         track.scrollLeft += singleWidth;
       }
     }, { passive: true });
-    track.addEventListener('mousedown', function(e) {
+    track.addEventListener('mousedown', function (e) {
       isMouseDown = true;
       startX = e.pageX - track.offsetLeft;
       scrollLeftInitial = track.scrollLeft;
     });
-    window.addEventListener('mouseup', function() { isMouseDown = false; });
-    track.addEventListener('mousemove', function(e) {
+    window.addEventListener('mouseup', function () { isMouseDown = false; });
+    track.addEventListener('mousemove', function (e) {
       if (!isMouseDown || e.buttons !== 1) return;
       e.preventDefault();
       var x = e.pageX - track.offsetLeft;
-      var walk = (x - startX) * 1.5; 
+      var walk = (x - startX) * 1.5;
       track.scrollLeft = scrollLeftInitial - walk;
     });
   }
@@ -90,16 +90,16 @@
   /* ==========================================
      3. ユーティリティ
      ========================================== */
-  function lzCenterLogoSVG(svg){
+  function lzCenterLogoSVG(svg) {
     try {
       var path = svg.querySelector('path, .lz-logo-path');
-      if(!path) return;
+      if (!path) return;
       var bb = path.getBBox();
-      if (bb.width === 0) return; 
+      if (bb.width === 0) return;
       var cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2, box = Math.max(bb.width, bb.height);
-      svg.setAttribute('viewBox', (cx - box/2) + ' ' + (cy - box/2) + ' ' + box + ' ' + box);
+      svg.setAttribute('viewBox', (cx - box / 2) + ' ' + (cy - box / 2) + ' ' + box + ' ' + box);
       svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    } catch(e){}
+    } catch (e) { }
   }
 
   /* ★修正：多言語対応(C.Lを使用) ＆ modal.js用データの埋め込み */
@@ -108,7 +108,7 @@
     var title = C.L(it, 'title') || "(無題)";
     var lead = C.L(it, 'lead') || "";
     var body = C.L(it, 'body') || "";
-    
+
     var subs = it.subImages || [];
     var sns = it.sns || {};
     var related = it.relatedArticles || [];
@@ -118,7 +118,7 @@
       '  data-item=\'' + C.esc(JSON.stringify(it)) + '\' ', // ★追加：全言語のデータをモーダルに引き継ぐ
       '  data-lead="' + C.esc(lead) + '" data-body="' + C.esc(body) + '" data-main="' + C.esc(it.mainImage || "") + '"',
       '  data-sub=\'' + C.esc(JSON.stringify(subs)) + '\' data-sns=\'' + C.esc(JSON.stringify(sns)) + '\'',
-      '  data-related=\'' + C.esc(JSON.stringify(related)) + '\'', 
+      '  data-related=\'' + C.esc(JSON.stringify(related)) + '\'',
       '  data-address="' + C.esc(it.address || "") + '" data-hours-combined="' + C.esc(it.hoursCombined || "") + '"',
       '  data-form="' + C.esc(it.form || "") + '" data-tel="' + C.esc(it.tel || "") + '" data-home="' + C.esc(it.home || "") + '"',
       '  data-ec="' + C.esc(it.ec || "") + '" data-target="' + C.esc(it.target || "") + '" data-org="' + C.esc(it.organizer || "") + '"',
@@ -131,7 +131,7 @@
     ].join('');
   }
 
-  window.renderSection = async function(root) {
+  window.renderSection = async function (root) {
     if (root.dataset.lzDone === '1') return;
     var config = window.LZ_CONFIG, l1 = root.dataset.l1 || config.L1, l2 = root.dataset.l2 || "";
     if (!l2) return;
@@ -157,13 +157,13 @@
     ].join('');
 
     var _svg = root.querySelector('.lz-logo');
-    if(_svg) { setTimeout(function(){ lzCenterLogoSVG(_svg); }, 10); }
-    
+    if (_svg) { setTimeout(function () { lzCenterLogoSVG(_svg); }, 10); }
+
     try {
       var json = await C.NET.json(config.ENDPOINT + "?l1=" + encodeURIComponent(l1) + "&l2=" + encodeURIComponent(l2));
       if (!json || !json.ok) throw new Error("no data");
       var items = json.items || [], groups = new Map();
-      
+
       /* ★修正：大項目(L2)のタイトルを翻訳後のデータで上書き */
       if (items.length > 0) {
         var l2Title = C.L(items[0], "l2");
@@ -171,16 +171,16 @@
         if (titleEl && l2Title) titleEl.textContent = l2Title;
       }
 
-      items.forEach(function(it) {
+      items.forEach(function (it) {
         var k = (it.l3 || "").trim();
         if (!groups.has(k)) groups.set(k, []);
         groups.get(k).push(it);
       });
       var html = "", pad = C.ratio(imageRatio);
-      groups.forEach(function(arr, key) {
+      groups.forEach(function (arr, key) {
         var localizedL3 = C.L(arr[0], 'l3');
         if (key) html += '<div class="lz-l3head"><span class="lz-l3bar"></span><h3 class="lz-l3title">' + C.esc(localizedL3) + '</h3></div>';
-        html += '<div class="lz-track-outer"><div class="lz-track">' + arr.map(function(it){ return cardHTML(it, pad, key); }).join("") + '</div></div>';
+        html += '<div class="lz-track-outer"><div class="lz-track">' + arr.map(function (it) { return cardHTML(it, pad, key); }).join("") + '</div></div>';
       });
       root.querySelector(".lz-groupwrap").innerHTML = html;
       root.querySelector(".lz-section").classList.add("lz-ready");
@@ -188,24 +188,24 @@
       root.querySelectorAll(".lz-track").forEach(setupInfinityTrack);
 
       if (mql.matches) {
-        var mobileObserver = new IntersectionObserver(function(entries) {
-          entries.forEach(function(entry) { entry.target.classList.toggle("is-active", entry.isIntersecting); });
+        var mobileObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) { entry.target.classList.toggle("is-active", entry.isIntersecting); });
         }, { threshold: 0.8 });
-        root.querySelectorAll(".lz-card").forEach(function(card) { mobileObserver.observe(card); });
+        root.querySelectorAll(".lz-card").forEach(function (card) { mobileObserver.observe(card); });
       }
-      root.addEventListener("click", function(e) {
+      root.addEventListener("click", function (e) {
         var card = e.target.closest(".lz-card");
         if (card && window.lzModal) { e.preventDefault(); window.lzModal.open(card); }
       });
-    } catch(e) { 
+    } catch (e) {
       var errorLabel = window.LZ_CURRENT_LANG === 'ja' ? '読み込みに失敗しました' : 'Failed to load content';
-      root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">' + C.esc(errorLabel) + '</div>'; 
+      root.querySelector(".lz-groupwrap").innerHTML = '<div style="padding:40px; text-align:center; color:#999;">' + C.esc(errorLabel) + '</div>';
     }
   };
 
-  var boot = function() {
+  var boot = function () {
     injectStyles();
-    var waitConfig = setInterval(function() {
+    var waitConfig = setInterval(function () {
       if (window.LZ_CONFIG) { clearInterval(waitConfig); var els = document.querySelectorAll(".lz-container, .lz-section[data-l2]"); for (var i = 0; i < els.length; i++) { window.renderSection(els[i]); } }
     }, 50);
   };
