@@ -1,13 +1,13 @@
 /**
  * top-slideshow.js - トップページ専用：左右チラ見せフェードスライドショー
  */
-(function() {
+(function () {
   "use strict";
 
   const C = window.LZ_COMMON;
   if (!C) return;
 
-  const injectStyles = function() {
+  const injectStyles = function () {
     if (document.getElementById('lz-top-ss-styles')) return;
     const style = document.createElement('style');
     style.id = 'lz-top-ss-styles';
@@ -36,7 +36,7 @@
       .logoDrawWrapper svg { display:block; width: 100%; height: auto;}
       .draw { fill:none; stroke:#fff; stroke-width:14; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: logoDraw 2600ms ease forwards; }
       @keyframes logoDraw { to { stroke-dashoffset:0; } }
-      .logoType { display:flex; flex-direction:column; align-items:flex-start; text-align:left; color:#fff; line-height:1.08; opacity: 0; transition: opacity 1200ms ease-in-out; }
+      .logoType { display:flex; flex-direction:column; align-items:flex-start; text-align:left; color:#fff; line-height:1.08; opacity: 0; transition: opacity 1200ms ease-in-out; font-family: var(--font-accent); }
       .logoType.show { opacity: 1; }
       .logoType > div:nth-child(1) { font-weight: 700; font-size: clamp(1.3rem, 2.6vw, 2.6rem); opacity: .95; margin-bottom: .2em; }
       .logoType > div:nth-child(2), .logoType > div:nth-child(3) { font-weight: 900; letter-spacing: .01em; font-size: clamp(3.2rem, 6.2vw, 5.2rem); line-height: 1.02; }
@@ -55,7 +55,7 @@
     document.head.appendChild(style);
   };
 
-  const init = function() {
+  const init = function () {
     const root = document.getElementById('lz-top-slideshow');
     if (!root) return;
 

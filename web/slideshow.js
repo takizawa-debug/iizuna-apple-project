@@ -1,10 +1,10 @@
 /**
  * slideshow.js - スライドショー・コンポーネント (レイアウト保持版)
  */
-(function() {
+(function () {
   "use strict";
 
-  const injectStyles = function() {
+  const injectStyles = function () {
     if (document.getElementById('lz-slideshow-styles')) return;
     const style = document.createElement('style');
     style.id = 'lz-slideshow-styles';
@@ -24,7 +24,7 @@
       .lz-ss-text {
         position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
         opacity: 0; color: #fff; text-align: center; z-index: 10; width: 100%; padding: 0 4vw; box-sizing: border-box;
-        font-family: system-ui, -apple-system, sans-serif; font-weight: 700; line-height: 1.4;
+        font-family: var(--font-accent); font-weight: 700; line-height: 1.4;
         font-size: clamp(1.8rem, 4.5vw, 3.2rem);
         text-shadow: 0 0 25px rgba(0,0,0,0.9), 2px 2px 10px rgba(0,0,0,0.6);
         transition: opacity 1.2s ease-out;
@@ -37,7 +37,7 @@
     document.head.appendChild(style);
   };
 
-  const init = function() {
+  const init = function () {
     const root = document.getElementById('lz-slideshow-app');
     if (!root) return;
 

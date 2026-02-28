@@ -18,7 +18,7 @@
   // 2. CSSの注入（変更なし）
   const style = document.createElement('style');
   style.textContent = `
-    #lzFooterMain { clear: both !important; width: 100% !important; margin-top: 100px !important; display: block !important; font-family: system-ui, -apple-system, sans-serif !important; }
+    #lzFooterMain { clear: both !important; width: 100% !important; margin-top: 100px !important; display: block !important; font-family: var(--font-base) !important; }
     .lz-journey { background: var(--soft-red, #fff5f5); padding: 80px 20px; border-top: 1px solid rgba(207, 58, 58, 0.05); text-align: center; }
     .lz-journey__title { font-weight: 800; font-size: 1.6rem; color: #cf3a3a; margin-bottom: 40px; letter-spacing: 0.05em; }
     .lz-steps { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap; max-width: 1100px; margin: 0 auto; }
@@ -81,8 +81,8 @@
 
   const footerLinks = FOOTER_LINKS.map(item => {
     // 外部サイトでなければ言語パラメータを付与
-    const finalUrl = item.url.startsWith('http') && !item.url.includes(location.hostname) 
-      ? item.url 
+    const finalUrl = item.url.startsWith('http') && !item.url.includes(location.hostname)
+      ? item.url
       : item.url + langQuery;
     return `<a href="${finalUrl}" class="lz-fnav__link">${C.T(item.label)}</a>`;
   }).join('');
