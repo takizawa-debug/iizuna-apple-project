@@ -38,8 +38,8 @@
       @keyframes logoDraw { to { stroke-dashoffset:0; } }
       .logoType { display:flex; flex-direction:column; align-items:flex-start; text-align:left; color:#fff; line-height:1.08; opacity: 0; transition: opacity 1200ms ease-in-out; font-family: var(--font-accent); }
       .logoType.show { opacity: 1; }
-      .logoType > div:nth-child(1) { font-weight: 700; font-size: clamp(1.3rem, 2.6vw, 2.6rem); opacity: .95; margin-bottom: .2em; }
-      .logoType > div:nth-child(2), .logoType > div:nth-child(3) { font-weight: 900; letter-spacing: .01em; font-size: clamp(3.2rem, 6.2vw, 5.2rem); line-height: 1.02; }
+      .logoType > div:nth-child(1) { font-weight: 500; font-size: clamp(1.3rem, 2.6vw, 2.6rem); opacity: .95; margin-bottom: .2em; }
+      .logoType > div:nth-child(2), .logoType > div:nth-child(3) { font-weight: 700; letter-spacing: .01em; font-size: clamp(3.2rem, 6.2vw, 5.2rem); line-height: 1.02; }
       @media (min-width: 1200px) { .logoType > div:nth-child(2), .logoType > div:nth-child(3) { font-size: clamp(4.2rem, 6vw, 7.2rem); } }
       @media (max-width: 767px) {
         .appletown-hero { margin-top: 46px !important; height:auto !important; padding:0 !important; }

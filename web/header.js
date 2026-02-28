@@ -34,7 +34,7 @@
     .lz-h-brand__img { width: 48px !important; height: 48px !important; border-radius: 6px !important; object-fit: cover !important; flex-shrink: 0 !important; }
     .lz-h-brand__txt { display: flex !important; flex-direction: column !important; line-height: 1.1 !important; white-space: nowrap !important; overflow: hidden; }
     .lz-h-t1 { font-weight: 400 !important; font-size: clamp(0.9rem, 1.5vw, 1.1rem) !important; opacity: .9 !important; margin-top: 4px !important; }
-    .lz-h-t2 { font-weight: 800 !important; font-size: clamp(1.4rem, 2.5vw, 2.0rem) !important; letter-spacing: .01em !important; margin-top: 2px !important; }
+    .lz-h-t2 { font-weight: 500 !important; font-size: clamp(1.4rem, 2.5vw, 2.0rem) !important; letter-spacing: .01em !important; margin-top: 2px !important; }
     
     .lz-h-right { display: flex !important; align-items: center !important; gap: clamp(8px, 2vw, 16px) !important; flex-shrink: 0 !important; }
 
