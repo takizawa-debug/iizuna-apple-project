@@ -483,9 +483,9 @@
             '  }',
             '  #lz-intro-block .lz-intro__welcome-overlay {',
             '    position: absolute; inset: 0;',
-            '    background: rgba(255, 255, 255, 0.55);',
+            '    background: rgba(255, 255, 255, 0.75);',
             '  }',
-            '  #lz-intro-block .lz-intro__welcome { position: relative; z-index: 10; text-align: center; width: 100%; }',
+            '  #lz-intro-block .lz-intro__welcome { position: relative; z-index: 10; text-align: center; width: 100%; text-shadow: 0 0 16px rgba(255,255,255,0.9), 0 0 8px rgba(255,255,255,0.9); }',
             '  #lz-intro-block .lz-intro__infog { margin-top: 100px !important; margin-bottom: 120px !important; width: 95% !important; max-width: 580px !important; }',
 
             '  #lz-intro-block .lz-intro__welcome-title { font-size: clamp(2.2rem, 5vw, 3.8rem) !important; color: #5b3a1e !important; }',
