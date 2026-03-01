@@ -32,59 +32,74 @@ window.lzModal = (function () {
     var style = document.createElement('style');
     style.id = 'lz-modal-styles';
     style.textContent = [
-      '.lz-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .35); display: none; align-items: center; justify-content: center; z-index: 20000; }',
-      '.lz-backdrop.open { display: flex; }',
+      '.lz-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 20000; }',
+      '.lz-backdrop.open { display: flex; animation: lzFadeIn 0.3s ease; }',
+      '@keyframes lzFadeIn { from { opacity: 0; } to { opacity: 1; } }',
       '.lz-shell { position: relative; display: flex; align-items: center; justify-content: center; pointer-events: none; }',
-      '.lz-modal { position: relative; width: min(860px, 92vw); max-height: 88vh; overflow: auto; background: #fff; border: 2px solid #cf3a3a; border-radius: 12px; z-index: 20001; pointer-events: auto; }',
-      '.lz-mh { background: #fff; border-bottom: 1px solid #eee; padding: 8px 10px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; position: sticky; top: 0; z-index: 10; }',
-      '.lz-mt { margin: 0; font-weight: 600; font-size: 1.8rem; color: #a82626; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
-      '.lz-actions { display: flex; gap: 6px; align-items: center; }',
-      '.lz-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid #cf3a3a; background: #fff; border-radius: 999px; padding: .45em .9em; cursor: pointer; color: #cf3a3a; font-weight: 600; font-size: 1.15rem; line-height: 1; transition: .2s; }',
-      '.lz-btn:hover { background: #cf3a3a; color: #fff; }',
-      '.lz-btn.active { background: #cf3a3a; color: #fff; }',
+      '.lz-modal { position: relative; width: min(1000px, 94vw); max-height: 88vh; min-height: 50vh; display: flex; flex-direction: column; overflow: hidden; background: #fff; border-radius: 20px; z-index: 20001; pointer-events: auto; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); transform: translateY(0); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }',
+      '.lz-backdrop:not(.open) .lz-modal { transform: translateY(20px); }',
+      '.lz-mh { background: #fff; border-bottom: 1px solid #eee; padding: 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; position: sticky; top: 0; z-index: 10; }',
+      '.lz-mt { margin: 0; font-weight: 700; font-size: clamp(1.4rem, 4vw, 1.9rem); color: #a82626; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }',
+      '.lz-actions { display: flex; gap: 8px; align-items: center; }',
+      '.lz-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; background: #fdfaf8; border: none; border-radius: 999px; padding: 10px 16px; cursor: pointer; color: #a82626; font-weight: 700; font-size: 1.1rem; line-height: 1; transition: all 0.2s ease; }',
+      '.lz-btn:hover { background: #feebeb; color: #cf3a3a; transform: scale(1.02); }',
       '.lz-btn svg { width: 18px; height: 18px; stroke-width: 2.5; }',
-      '@media (max-width:768px) { .lz-btn { width: 38px; height: 38px; padding: 0; } .lz-btn .lz-label { display: none; } }',
-      '.lz-m-lang-tabs { display: flex; gap: 4px; padding: 10px 15px; background: #fdfaf8; border-bottom: 1px solid #eee; }',
-      '.lz-m-lang-btn { padding: 4px 12px; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; border: 1px solid #ddd; background: #fff; color: #888; transition: .2s; }',
-      '.lz-m-lang-btn.active { background: #cf3a3a; color: #fff; border-color: #cf3a3a; }',
-      '.lz-mm { position: relative; background: #faf7f5; overflow: hidden; }',
-      '.lz-mm::before { content: ""; display: block; padding-top: 56.25%; }',
-      '.lz-mm img { position: absolute; inset: 0; max-width: 100%; max-height: 100%; margin: auto; object-fit: contain; transition: opacity .22s ease; }',
+      '@media (max-width:768px) { .lz-btn { width: 44px; height: 44px; padding: 0; } .lz-btn .lz-label { display: none; } }',
+      '.lz-m-lang-tabs { display: flex; padding: 12px 20px; background: #fff; justify-content: flex-end; }',
+      '.lz-m-lang-tabs-inner { display: inline-flex; background: #f1f1f2; padding: 4px; border-radius: 999px; gap: 2px; }',
+      '.lz-m-lang-btn { padding: 6px 16px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; border: none; background: transparent; color: #666; transition: all .2s; }',
+      '.lz-m-lang-btn.active { background: #fff; color: #cf3a3a; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }',
+      '.lz-modal-content { display: flex; flex-direction: row; height: 100%; overflow-y: auto; }',
+      '@media(max-width:768px) { .lz-modal-content { flex-direction: column; } }',
+      '.lz-modal-left { flex: 0 0 clamp(300px, 40%, 450px); padding: 0 0 24px 20px; display: flex; flex-direction: column; gap: 16px; position: sticky; top: 0; align-self: flex-start; }',
+      '@media(max-width:768px) { .lz-modal-left { flex: none; width: 100%; padding: 0; position: relative; } }',
+      '.lz-mm { position: relative; background: #faf7f5; border-radius: 12px; overflow: hidden; }',
+      '@media(max-width:768px) { .lz-mm { border-radius: 0; } }',
+      '.lz-mm::before { content: ""; display: block; padding-top: 75%; }',
+      '.lz-mm img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .22s ease; }',
       '.lz-mm img.lz-fadeout { opacity: 0; }',
-      '.lz-lead-strong { padding: 15px 15px 0; font-weight: 700; font-size: 1.55rem; line-height: 1.6; color: #222; }',
-      '.lz-txt { padding: 15px; font-size: 1.45rem; color: #444; line-height: 1.8; white-space: pre-wrap; }',
+      '.lz-modal-right { flex: 1; padding: 20px 24px 30px; display: flex; flex-direction: column; gap: 20px; }',
+      '@media(max-width:768px) { .lz-modal-right { padding: 16px 20px 30px; } }',
+      '.lz-lead-strong { font-weight: 700; font-size: clamp(1.3rem, 3.5vw, 1.6rem); line-height: 1.6; color: #222; }',
+      '.lz-txt { font-size: clamp(1.1rem, 3vw, 1.3rem); color: #444; line-height: 1.9; white-space: pre-wrap; }',
       '.lz-auto-link { text-decoration: underline; font-weight: 700; cursor: pointer; padding: 0 1px; border-radius: 2px; opacity: 0; transition: opacity 0.8s ease; }',
       '.lz-auto-link.is-active { opacity: 1; }',
-      '.lz-auto-link.direct { color: #cf3a3a; }',
-      '.lz-auto-link.search { color: #27ae60; }',
-      '.lz-auto-link:hover { background: #f5f5f5; }',
-      '.lz-info { margin: 15px; width: calc(100% - 30px); border-collapse: separate; border-spacing: 0 4px; }',
-      '.lz-info th { width: 9em; font-weight: 700; color: #a82626; background: #fff1f0; text-align: left; border-radius: 8px 0 0 8px; padding: 12px; font-size: 1.2rem; border: 1px solid #fce4e2; border-right: none; }',
-      '.lz-info td { background: #fff; border-radius: 0 8px 8px 0; padding: 12px; border: 1px solid #eee; font-size: 1.25rem; }',
-      '.lz-sns { display: flex; gap: 10px; flex-wrap: wrap; padding: 15px; }',
-      '.lz-sns a { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: transform .2s; }',
-      '.lz-sns a:hover { transform: scale(1.1); }',
-      '.lz-sns a svg { width: 22px; height: 22px; }',
-      '.lz-sns a[data-sns="web"] { background: #5b667a; } .lz-sns a[data-sns="ec"] { background: #e67e22; }',
-      '.lz-sns a[data-sns="ig"] { background: #E4405F; } .lz-sns a[data-sns="fb"] { background: #1877F2; }',
+      '.lz-auto-link.direct { color: #cf3a3a; text-decoration-color: rgba(207,58,58,0.3); text-underline-offset: 4px; }',
+      '.lz-auto-link.search { color: #27ae60; text-decoration-color: rgba(39,174,96,0.3); text-underline-offset: 4px; }',
+      '.lz-auto-link:hover { background: #fdf2f2; }',
+      '.lz-info-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }',
+      '.lz-info-item { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; background: #fcfcfc; border-radius: 12px; border: 1px solid #f0f0f0; }',
+      '.lz-info-label { font-weight: 700; color: #999; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 6px; }',
+      '.lz-info-label::before { content: ""; display: inline-block; width: 6px; height: 6px; background: #e0d5ce; border-radius: 50%; }',
+      '.lz-info-val { color: #333; font-size: clamp(1.1rem, 2.5vw, 1.25rem); line-height: 1.6; }',
+      '.lz-sns { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }',
+      '.lz-sns a { width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #fff; transition: transform .2s, box-shadow .2s; }',
+      '.lz-sns a:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }',
+      '.lz-sns a svg { width: 24px; height: 24px; }',
+      '.lz-sns a[data-sns="web"] { background: linear-gradient(135deg, #6c7a89 0%, #5b667a 100%); } .lz-sns a[data-sns="ec"] { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }',
+      '.lz-sns a[data-sns="ig"] { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); } .lz-sns a[data-sns="fb"] { background: #1877F2; }',
       '.lz-sns a[data-sns="x"] { background: #000; } .lz-sns a[data-sns="line"] { background: #06C755; } .lz-sns a[data-sns="tt"] { background: #000; }',
-      '.lz-g { padding: 0 15px 15px; display: grid; gap: 10px; grid-template-columns: repeat(5, 1fr); }',
-      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; border: 1px solid #eee; cursor: pointer; transition: opacity .2s; }',
-      '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; }',
-      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, .96); border: 1px solid #cf3a3a; border-radius: 50%; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 6px 20px rgba(0,0,0,0.15); transition: .2s; pointer-events: auto; }',
-      '.lz-arrow svg { width: 28px; height: 28px; stroke: #cf3a3a; stroke-width: 3.5; fill: none; }',
-      '.lz-arrow:hover { background: #cf3a3a; } .lz-arrow:hover svg { stroke: #fff; }',
-      '.lz-prev { left: -75px; } .lz-next { right: -75px; }',
-      '@media(max-width:1080px) { .lz-prev { left: 10px; } .lz-next { right: 10px; } }',
+      '.lz-g { display: grid; gap: 8px; grid-template-columns: repeat(4, 1fr); padding: 0 20px; }',
+      '@media(max-width:768px) { .lz-g { padding: 12px 16px 0; } }',
+      '.lz-g img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 6px; cursor: pointer; transition: opacity .2s, transform .2s; }',
+      '.lz-g img:hover { transform: scale(1.05); }',
+      '.lz-g img.is-active { outline: 3px solid #cf3a3a; outline-offset: 2px; opacity: 1; }',
+      '.lz-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: #fff; border: none; border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 21000; box-shadow: 0 8px 24px rgba(0,0,0,0.12); transition: all .2s; pointer-events: auto; }',
+      '.lz-arrow:active { transform: translateY(-50%) scale(0.95); }',
+      '.lz-arrow svg { width: 32px; height: 32px; stroke: #333; stroke-width: 2.5; fill: none; transition: stroke .2s; }',
+      '.lz-arrow:hover { box-shadow: 0 12px 32px rgba(0,0,0,0.2); } .lz-arrow:hover svg { stroke: #cf3a3a; }',
+      '.lz-prev { left: -80px; } .lz-next { right: -80px; }',
+      '@media(max-width:1100px) { .lz-prev { left: 16px; } .lz-next { right: 16px; } }',
       '@media(max-width:768px) {',
       '  .lz-shell { margin-bottom: 80px; }',
       '  .lz-modal { max-height: 80vh; max-height: 80svh; }',
-      '  .lz-arrow { width: 46px; height: 46px; }',
-      '  .lz-prev, .lz-next { top: auto; bottom: -64px; left: 50%; transform: none; }',
-      '  .lz-prev { transform: translateX(-115%); } .lz-next { transform: translateX(15%); }',
+      '  .lz-arrow { width: 48px; height: 48px; } .lz-arrow svg { width: 28px; height: 28px; }',
+      '  .lz-prev, .lz-next { top: auto; bottom: -24px; left: 50%; transform: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }',
+      '  .lz-arrow:active { transform: scale(0.95); }',
+      '  .lz-prev { transform: translateX(-120%); } .lz-next { transform: translateX(20%); }',
       '}',
-      '.lz-btn.lz-dl { border-color: #27ae60 !important; color: #27ae60 !important; } .lz-btn.lz-dl:hover { background: #27ae60 !important; color: #fff !important; }',
-      '.lz-map { padding: 15px; border-top: 1px solid #eee; } .lz-map iframe { width: 100%; height: 250px; border: 0; border-radius: 12px; background: #eee; }'
+      '.lz-btn.lz-dl { color: #27ae60 !important; background: #f2fcf5 !important; } .lz-btn.lz-dl:hover { background: #e0f8e9 !important; color: #1e8449 !important; }',
+      '.lz-map { margin-top: 10px; } .lz-map iframe { width: 100%; height: 280px; border: 0; border-radius: 12px; background: #eee; }'
     ].join('\n');
     document.head.appendChild(style);
   };
@@ -221,7 +236,8 @@ window.lzModal = (function () {
           displayHtml = '<a href="' + C.esc(strVal) + '" target="_blank" style="color:#cf3a3a; text-decoration:underline; font-weight:700;">' + displayHtml + '</a>';
         }
 
-        rows.push('<tr><th>' + fields[i].l + '</th><td>' + displayHtml + '</td></tr>');
+        // --- テーブルからモダンなリスト型へ変更 ---
+        rows.push('<div class="lz-info-item"><span class="lz-info-label">' + fields[i].l + '</span><span class="lz-info-val">' + displayHtml + '</span></div>');
       }
     }
 
@@ -255,9 +271,9 @@ window.lzModal = (function () {
     }
 
     // --- ④ タブの準備 ---
-    var langTabs = '<div class="lz-m-lang-tabs">' + window.LZ_CONFIG.LANG.SUPPORTED.map(function (l) {
-      var label = window.LZ_CONFIG.LANG.LABELS[l]; return '<div class="lz-m-lang-btn ' + (l === MODAL_ACTIVE_LANG ? 'active' : '') + '" data-lang="' + l + '">' + label + '</div>';
-    }).join('') + '</div>';
+    var langTabs = '<div class="lz-m-lang-tabs"><div class="lz-m-lang-tabs-inner">' + window.LZ_CONFIG.LANG.SUPPORTED.map(function (l) {
+      var label = window.LZ_CONFIG.LANG.LABELS[l]; return '<button class="lz-m-lang-btn ' + (l === MODAL_ACTIVE_LANG ? 'active' : '') + '" data-lang="' + l + '">' + label + '</button>';
+    }).join('') + '</div></div>';
 
     // --- ⑤ GoogleマップHTMLの生成 ---
     var mapHtml = "";
@@ -272,21 +288,29 @@ window.lzModal = (function () {
 
 
     MODAL.innerHTML = [
-      '<div class="lz-mh"><h2 class="lz-mt">' + C.esc(title) + '</h2><div class="lz-actions">',
-      (rawData.downloadUrl ? '<button class="lz-btn lz-dl" onclick="window.open(\'' + C.esc(rawData.downloadUrl) + '\',\'_blank\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">' + getTranslation('保存', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
-      '<button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">' + getTranslation('共有', MODAL_ACTIVE_LANG) + '</span></button>',
-      (window.innerWidth >= 769 ? '<button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
-      '    <button class="lz-btn" onclick="lzModal.close()">✕<span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button></div></div>',
-      langTabs, '<div>', (gallery.length ? '  <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
-      (lead ? '  <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''),
-      '  <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
-      /* --- 問い合わせ(form)ボタンの配置 --- */
-      (gallery.length > 1 ? '  <div class="lz-g">' + gallery.map(function (u, i) { return '<img src="' + C.esc(u) + '" data-idx="' + i + '" class="' + (i === 0 ? 'is-active' : '') + '">'; }).join('') + '</div>' : ''),
-      (rows.length ? '  <table class="lz-info"><tbody>' + rows.join('') + '</tbody></table>' : ''),
-      /* --- SNS・HP・ECリンクを表示 --- */
-      (snsLinksHtml.length ? '  <div class="lz-sns">' + snsLinksHtml.join('') + '</div>' : ''),
+      '<div class="lz-mh">',
+      '  <h2 class="lz-mt">' + C.esc(title) + '</h2>',
+      '  <div class="lz-actions">',
+      (rawData.downloadUrl ? '    <button class="lz-btn lz-dl" onclick="window.open(\'' + C.esc(rawData.downloadUrl) + '\',\'_blank\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg><span class="lz-label">' + getTranslation('保存', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
+      '    <button class="lz-btn lz-share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg><span class="lz-label">' + getTranslation('共有', MODAL_ACTIVE_LANG) + '</span></button>',
+      (window.innerWidth >= 769 ? '    <button class="lz-btn lz-pdf"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="lz-label">' + getTranslation('印刷', MODAL_ACTIVE_LANG) + '</span></button>' : ''),
+      '    <button class="lz-btn" onclick="lzModal.close()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg><span class="lz-label">' + getTranslation('閉じる', MODAL_ACTIVE_LANG) + '</span></button>',
+      '  </div>',
+      '</div>',
+      langTabs,
+      '<div class="lz-modal-content">',
+      '  <div class="lz-modal-left">',
+      (gallery.length ? '    <div class="lz-mm"><img id="lz-mainimg" src="' + C.esc(gallery[0]) + '" referrerpolicy="no-referrer-when-downgrade"></div>' : ''),
+      (gallery.length > 1 ? '    <div class="lz-g">' + gallery.map(function (u, i) { return '<img src="' + C.esc(u) + '" data-idx="' + i + '" class="' + (i === 0 ? 'is-active' : '') + '">'; }).join('') + '</div>' : ''),
+      '  </div>',
+      '  <div class="lz-modal-right">',
+      (lead ? '    <div class="lz-lead-strong">' + C.esc(lead) + '</div>' : ''),
+      '    <div class="lz-txt lz-modal-body-txt" data-id="' + d.id + '">' + linkedBody + '</div>',
+      (rows.length ? '    <div class="lz-info-list">' + rows.join('') + '</div>' : ''),
+      (snsLinksHtml.length ? '    <div class="lz-sns">' + snsLinksHtml.join('') + '</div>' : ''),
       relHtml,
       mapHtml,
+      '  </div>',
       '</div>'
     ].join('');
 
