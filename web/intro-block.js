@@ -413,6 +413,10 @@
 
         var ig = data.infog || CONTENT.ja.infog;
         var statsHtml = [
+            '<div class="lz-intro__infog-top-title">',
+            '<div class="infog-top-main">東京から約2時間の非日常</div>',
+            '<div class="infog-top-sub">（新幹線で長野駅まで1.5h｜牟礼駅まで25min）</div>',
+            '</div>',
             '<div class="lz-intro__infog">',
             '<img class="lz-intro__infog-bg" src="https://takizawa-debug.github.io/iizuna-apple-project/web/assets/infographic/bg.png" alt="" loading="lazy">',
             '<div class="lz-intro__infog-overlay">',
@@ -486,9 +490,12 @@
             '    background: rgba(255, 255, 255, 0.75);',
             '  }',
             '  #lz-intro-block .lz-intro__welcome { position: relative; z-index: 10; text-align: center; width: 100%; text-shadow: 0 0 16px rgba(255,255,255,0.9), 0 0 8px rgba(255,255,255,0.9); }',
+            '  #lz-intro-block .lz-intro__infog-top-title { text-align: center; margin-top: 100px !important; margin-bottom: 24px !important; }',
+            '  #lz-intro-block .infog-top-main { font-size: clamp(1.8rem, 4.5vw, 2.8rem) !important; font-weight: 700 !important; color: #5b3a1e !important; margin-bottom: 6px !important; letter-spacing: 0.1em; }',
+            '  #lz-intro-block .infog-top-sub { font-size: clamp(0.9rem, 2.2vw, 1.2rem) !important; color: #555 !important; font-weight: 700 !important; }',
             '  #lz-intro-block .lz-intro__infog {',
             '    z-index: 1;',
-            '    margin-top: 100px !important; margin-bottom: 120px !important;',
+            '    margin-top: 0 !important; margin-bottom: 120px !important;',
             '    width: 95% !important; max-width: 580px !important;',
             '    box-shadow: none !important; border-radius: 0 !important; background: transparent !important;',
             '  }',
