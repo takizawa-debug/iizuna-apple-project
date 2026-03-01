@@ -63,8 +63,12 @@ window.LZ_COMMON = (function () {
       'body { font-family: var(--font-base); }',
       '/* 太字・アクセント系: Zen Kaku Gothic New */',
       'h1, h2, h3, h4, h5, h6, b, strong, th { font-family: var(--font-accent); }',
-      '.lz-global-shield { position: fixed; inset: 0; background: #fff; z-index: 30000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.4s ease-out; }',
+      '.lz-global-shield { position: fixed; inset: 0; background: #fff; z-index: 30000; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.4s ease-out; gap: 16px; }',
       '.lz-global-shield.is-hidden { opacity: 0; transition: opacity 0.4s ease-out; pointer-events: none; }',
+      '.lz-shield-logo { width: 120px; height: 120px; object-fit: contain; animation: lz-pulse 2s infinite ease-in-out; }',
+      '.lz-shield-name { font-size: 1.1rem; font-weight: 700; color: #cf3a3a; letter-spacing: 0.1em; opacity: 0; animation: lz-fade-text 2s infinite ease-in-out; }',
+      '@keyframes lz-pulse { 0% { transform: scale(0.92); opacity: 0.2; } 20% { opacity: 1; } 50% { transform: scale(1.05); } 80% { opacity: 1; } 100% { transform: scale(0.92); opacity: 0.2; } }',
+      '@keyframes lz-fade-text { 0% { opacity: 0; transform: translateY(4px); } 20% { opacity: 1; transform: translateY(0); } 80% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-4px); } }',
       'html.lz-loading-lock body { overflow: hidden !important; height: 100vh !important; }'
     ].join('\n');
     document.head.appendChild(style);
@@ -72,7 +76,67 @@ window.LZ_COMMON = (function () {
   injectCoreStyles();
 
   /* ==========================================
-     3. シールド解除ロジック (看板設置で即解除) 🍎
+     3. 動的ローディング画面 (栽培されている品種からの取得処理) 🍎
+     ========================================== */
+  var initDynamicShield = function () {
+    document.documentElement.classList.add('lz-loading-lock');
+    var s = document.createElement('div');
+    s.id = 'lzGlobalShield'; s.className = 'lz-global-shield';
+    var img = document.createElement('img');
+    img.className = 'lz-shield-logo';
+    img.src = "https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png";
+    var nameLabel = document.createElement('div');
+    nameLabel.className = 'lz-shield-name';
+    nameLabel.textContent = "Loading...";
+    s.appendChild(img);
+    s.appendChild(nameLabel);
+    document.documentElement.appendChild(s);
+
+    var _timer;
+    window._lzSafetyFuse = setTimeout(function () {
+      document.documentElement.classList.remove('lz-loading-lock');
+      if (s) s.style.display = 'none';
+      if (_timer) clearInterval(_timer);
+    }, 8000);
+
+    // Endpoint for cultivated varieties
+    var url = "https://script.google.com/macros/s/AKfycbw63KkI8uQ90qXGvWf_kMh04R2-a84V4tX78n8aM2-A_YlC8y1wVw2lH1oBIt5n1N5z_A/exec?l1=" + encodeURIComponent("知る") + "&l2=" + encodeURIComponent("栽培されている品種");
+
+    NET.json(url, { timeout: 4000 }).then(function (json) {
+      if (!json || !json.items || json.items.length === 0) return;
+      var apples = json.items.filter(function (it) { return it.mainImage; }).map(function (it) {
+        var lang = window.LZ_CURRENT_LANG || "ja";
+        var t = (lang === 'ja') ? it.title : (it[lang] && it[lang].title ? it[lang].title : it.title);
+        // Replace .jpg with .png for the transparent cutout images
+        var src = it.mainImage.replace(/\.jpe?g$/i, '.png');
+        return { name: t, image: src };
+      });
+      if (apples.length === 0) return;
+
+      // Shuffle array
+      apples.sort(function () { return 0.5 - Math.random(); });
+
+      var idx = 0;
+      var updateApple = function () {
+        var a = apples[idx % apples.length];
+        // Reset animation
+        img.style.animation = 'none';
+        nameLabel.style.animation = 'none';
+        void img.offsetWidth; // trigger reflow
+        img.src = a.image;
+        nameLabel.textContent = a.name;
+        img.style.animation = 'lz-pulse 2s infinite ease-in-out';
+        nameLabel.style.animation = 'lz-fade-text 2s infinite ease-in-out';
+        idx++;
+      };
+
+      updateApple();
+      _timer = setInterval(updateApple, 2000);
+    }).catch(function (err) { });
+  };
+
+  /* ==========================================
+     4. シールド解除ロジック (看板設置で即解除) 🍎
      ========================================== */
   var initShieldController = function () {
     var urlParams = new URLSearchParams(window.location.search);
@@ -114,8 +178,9 @@ window.LZ_COMMON = (function () {
   };
 
   /* ==========================================
-     4. 多言語管理 ＆ 起動シーケンス
+     5. 多言語管理 ＆ 起動シーケンス
      ========================================== */
+  initDynamicShield();
   initShieldController();
 
   var initLang = function () {
