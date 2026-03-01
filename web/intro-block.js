@@ -475,10 +475,11 @@
             '    mask-size: contain; mask-position: center; mask-repeat: no-repeat;',
             '  }',
             '  #lz-intro-block .lz-intro__welcome-bg {',
-            '    position: absolute; inset: 0; z-index: -1;',
+            '    position: absolute; top: 0; left: 0; z-index: -1;',
+            '    width: 100vw !important; height: 100vh !important;',
             '    background: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/a67e2360-8ee6-013e-065a-0a58a9feac02/d76519-7-464235-0.jpg") center center / cover no-repeat !important;',
-            '    background-attachment: fixed !important;',
             '    filter: saturate(1.3) contrast(1.15) brightness(1.05) sepia(0.15) !important;',
+            '    will-change: transform; pointer-events: none;',
             '  }',
             '  #lz-intro-block .lz-intro__welcome-overlay {',
             '    position: absolute; inset: 0;',
@@ -518,7 +519,26 @@
             '<div class="lz-intro__categories">' + catsHtml + '</div>',
             '</div>',
             '</div>'
-        ].join('');
+        ].join('\n');
+
+        // iOSやブラウザのバグに強固な JavaScript パララックス制御
+        var bg = root.querySelector('.lz-intro__welcome-bg');
+        var mask = root.querySelector('.lz-intro__welcome-mask');
+        if (bg && mask) {
+            var updatePx = function () {
+                var r = mask.getBoundingClientRect();
+                bg.style.transform = "translate(" + (-r.left) + "px, " + (-r.top) + "px)";
+            };
+            if (!window._lzPxEvt) {
+                window._lzPxEvt = true;
+                window._lzPxFns = [];
+                window.addEventListener('scroll', function () { window._lzPxFns.forEach(function (f) { f(); }); }, { passive: true });
+                window.addEventListener('resize', function () { window._lzPxFns.forEach(function (f) { f(); }); }, { passive: true });
+            }
+            window._lzPxFns = [updatePx];
+            requestAnimationFrame(updatePx);
+        }
+
     };
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
