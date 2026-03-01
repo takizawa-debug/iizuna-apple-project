@@ -1507,20 +1507,54 @@
 
                 <h3 style="color: var(--text);">6.1 情報表示機能（基礎機能）</h3>
                 <ul style="line-height: 1.8;">
-                    <li><strong>コンテンツ統合:</strong> 品種紹介、直売所、観光情報、求人、イベント等、既存情報の整理統合表示。</li>
-                    <li><strong>基本情報＋補足導線:</strong> 各テーマの基本情報表示に加え、関連リンクへの導線を設置。</li>
-                    <li><strong>統合キーワード検索・回遊システム:</strong>
+                    <li style="margin-bottom: 20px;">
+                        <strong>トップページ:</strong> 飯綱町産りんごのシズル感あふれる写真を画面全体に配置し、訪問者に強烈な第一印象（WOW感）を与えます。
+                        <div style="margin-top: 10px;">
+                            <img src="images/spec/ui_top.png" alt="トップページUI"
+                                style="width: 100%; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        </div>
+                    </li>
+                    <li style="margin-bottom: 20px;">
+                        <strong>コンテンツ統合表示（カードUI）:</strong>
+                        品種紹介、直売所、観光情報、求人、イベント等、既存情報の整理統合表示。横スクロール可能なカードコンポーネントを採用し、限られた画面スペースでも多くの情報を直感的に探索できるように設計。
+                        <div style="margin-top: 10px;">
+                            <img src="images/spec/ui_cards.png" alt="記事カード並びUI"
+                                style="width: 100%; max-width: 600px; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        </div>
+                    </li>
+                    <li style="margin-bottom: 15px;"><strong>基本情報＋補足導線:</strong> 各テーマの基本情報表示に加え、関連リンクへの導線を設置。</li>
+                    <li style="margin-bottom: 15px;"><strong>統合キーワード検索・回遊システム:</strong>
                         記事データの横断的なキーワード検索機能。各記事に紐づく関連キーワードをクリックすることで、紐づく別の記事へシームレスに遷移（ハッシュリンク）し、サイト内の回遊性を高めるアーキテクチャ。
                     </li>
-                    <li><strong>多言語化システム:</strong> 英語・繁体中文への即時切り替えをサポート。</li>
+                    <li>
+                        <strong>多言語化切り替えUI:</strong>
+                        ヘッダーに配置されたボタンから、日本語・英語・繁体中文への即時切り替えをサポート。インバウンドユーザーも迷わず母国語の情報にアクセス可能。
+                        <div style="margin-top: 5px;">
+                            <img src="images/spec/ui_btn_lang.png" alt="言語切り替えボタン"
+                                style="height: 35px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        </div>
+                    </li>
                 </ul>
 
                 <h3 style="color: var(--text);">6.2 アクション・連携機能</h3>
                 <ul style="line-height: 1.8;">
-                    <li><strong>共有ボタン (Share):</strong> ユーザーのブラウザ・OS標準のシェア機能を起動し、LINEやメール等を通じた拡散を促進。</li>
-                    <li><strong>ダウンロードボタン (Download):</strong> パンフレットPDFなど、配布資料の直接取得。</li>
-                    <li><strong>印刷ボタン (Print):</strong>
-                        PC版のみ。モーダル表示情報をA4サイズに自動整理し、アクセス用QRコードとクレジット表記を付与した上でブラウザの印刷機能(Print to PDF)を呼び出す。</li>
+                    <li style="margin-bottom: 20px;">
+                        <strong>モーダルUI（詳細表示）:</strong>
+                        記事をクリックすると、ページ遷移を伴わず画面中央に詳細情報がポップアップ表示される軽量なUI設計。ユーザーは元のページを見失うことなく、次々と情報を閲覧可能です。
+                        <div style="margin-top: 10px;">
+                            <img src="images/spec/ui_modal.png" alt="記事詳細モーダルUI"
+                                style="width: 100%; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                        </div>
+                    </li>
+                    <li style="margin-bottom: 15px;">
+                        <strong>共有・印刷アクション:</strong> 各コンテンツには、SNS等での拡散を促す「共有ボタン」と、ブラウザのPrint to
+                        PDF機能を呼び出してチラシ化する「印刷ボタン」を標準搭載。※印刷はPC環境のみ。
+                        <div style="margin-top: 8px;">
+                            <img src="images/spec/ui_btn_action.png" alt="共有・印刷アクションボタン"
+                                style="height: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        </div>
+                    </li>
+                    <li style="margin-bottom: 12px;"><strong>ダウンロードボタン (Download):</strong> パンフレットPDFなど、配布資料の直接取得。</li>
                     <li><strong>問い合わせ・情報提供統合窓口:</strong>
                         <ul style="margin-top: 5px;">
                             <li>生産者の生産体制や品種に関する情報受付フォームの運用</li>
