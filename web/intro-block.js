@@ -468,6 +468,13 @@
             '  }',
             '  #lz-intro-block .lz-intro__welcome-title { font-size: clamp(2.2rem, 5vw, 3.8rem) !important; color: #5b3a1e !important; }',
             '  #lz-intro-block .lz-intro__welcome-body { font-size: clamp(1.2rem, 2.2vw, 1.6rem) !important; color: #333 !important; font-weight: 700 !important; }',
+            '  #lz-intro-block .infog-head-city { font-size: clamp(1.6rem, 4.5vw, 2.6rem) !important; }',
+            '  #lz-intro-block .infog-label { font-size: clamp(0.9rem, 2.5vw, 1.2rem) !important; padding: 8px 18px !important; }',
+            '  #lz-intro-block .infog-val { font-size: clamp(1.0rem, 2.5vw, 1.2rem) !important; }',
+            '  #lz-intro-block .infog-val-pre { font-size: clamp(0.8rem, 1.8vw, 1.0rem) !important; }',
+            '  #lz-intro-block .infog-val-num { font-size: clamp(1.8rem, 5vw, 3.2rem) !important; }',
+            '  #lz-intro-block .infog-diff { font-size: clamp(0.8rem, 1.8vw, 1.0rem) !important; padding: 4px 10px !important; }',
+            '  #lz-intro-block .infog-sub { font-size: clamp(0.7rem, 1.5vw, 0.9rem) !important; margin-top: 6px !important; }',
             '</style>',
 
             '<div class="lz-intro">',
