@@ -28,6 +28,8 @@
             welcomeBody: "北信濃の五岳が肩を並べ、\n空からの風が、そっと頬をなでる。\n冷たい空気と、温かな土をぎゅっと抱きしめて、\n色あざやかに輝くりんごと\n人々の心が、しずかに、響きあう。\nここは、実りの鼓動と、私の呼吸が交わる\nちょうど “いい” 場所。",
             buttonLabel: "詳しく見る",
             infog: {
+                titleMain: "東京から約2時間の非日常",
+                titleSub: "（新幹線で長野駅まで1.5h｜牟礼駅まで25min）",
                 tokyo: "東京",
                 iizuna: "飯綱町",
                 rows: [
@@ -86,6 +88,8 @@
             welcomeBody: "Five peaks stand shoulder to shoulder,\na highland breeze grazes your cheek.\nCrisp air, warm earth — and orchards\nthat glow in every shade of red and gold.\nHere, the rhythm of the harvest\nand your own heartbeat align.\nA place that simply feels right.",
             buttonLabel: "Learn More",
             infog: {
+                titleMain: "An Extraordinary Escape, Just 2 Hours from Tokyo",
+                titleSub: "(1.5 hrs to Nagano Sta. via Shinkansen | 25 mins to Mure Sta.)",
                 tokyo: "Tokyo",
                 iizuna: "Iizuna",
                 rows: [
@@ -144,6 +148,8 @@
             welcomeBody: "北信濃五嶽比肩而立，\n高原的微風輕拂臉龐。\n清冽空氣與溫潤土壤緊緊相擁，\n漫山遍野的蘋果閃耀紅金光芒。\n收穫的律動與心跳的節拍，\n在這裡悄然合一。\n恰到好處的美好所在。",
             buttonLabel: "查看詳情",
             infog: {
+                titleMain: "距離東京約2小時的非凡秘境",
+                titleSub: "（乘新幹線至長野站約1.5小時｜至牟禮站約25分鐘）",
                 tokyo: "東京",
                 iizuna: "飯綱町",
                 rows: [
@@ -414,8 +420,8 @@
         var ig = data.infog || CONTENT.ja.infog;
         var statsHtml = [
             '<div class="lz-intro__infog-top-title">',
-            '<div class="infog-top-main">東京から約2時間の非日常</div>',
-            '<div class="infog-top-sub">（新幹線で長野駅まで1.5h｜牟礼駅まで25min）</div>',
+            '<div class="infog-top-main">' + C.esc(ig.titleMain) + '</div>',
+            '<div class="infog-top-sub">' + C.esc(ig.titleSub) + '</div>',
             '</div>',
             '<div class="lz-intro__infog">',
             '<img class="lz-intro__infog-bg" src="https://takizawa-debug.github.io/iizuna-apple-project/web/assets/infographic/bg.png" alt="" loading="lazy">',
