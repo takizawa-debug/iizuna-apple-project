@@ -231,12 +231,12 @@
             font-size: 12px;
         }
 
-        table {
+        #analytics-view table {
             width: 100%;
             border-collapse: collapse;
         }
 
-        th {
+        #analytics-view th {
             text-align: left;
             font-size: 12px;
             text-transform: uppercase;
@@ -246,7 +246,7 @@
             border-bottom: 1px solid #efeff4;
         }
 
-        td {
+        #analytics-view td {
             padding: 12px 0;
             border-bottom: 1px solid #f5f5f7;
             font-size: 14px;
@@ -892,8 +892,8 @@
             if (!start || !end) return;
 
             document.getElementById('loading').style.display = 'flex';
-            // 各テーブルを一旦クリア
-            document.querySelectorAll('tbody').forEach(b => b.innerHTML = '');
+            document.querySelectorAll('#analytics-view tbody').forEach(b => b.innerHTML = '');
+            document.querySelectorAll('.card-value').forEach(v => v.innerText = '-');
 
             // 🍎 Vercel (外部) から Apps Script の API モードへリクエスト
             // 注意: ここに設定するURLは、GASから「新しいデプロイ」で発行した「Webアプリ」のURLに置き換えてください。
