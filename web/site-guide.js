@@ -225,13 +225,13 @@
         root.innerHTML = [
 
             '<style>',
-            '  #lz-site-guide .lz-guide__headline { font-size: clamp(1.8rem, 4.0vw, 2.6rem) !important; color: #5b3a1e !important; }',
-            '  #lz-site-guide .lz-guide__sub { font-size: clamp(1.1rem, 1.8vw, 1.3rem) !important; color: #777 !important; }',
-            '  #lz-site-guide .lz-guide__feat-title { font-size: 1.25rem !important; color: #5b3a1e !important; }',
-            '  #lz-site-guide .lz-guide__feat-desc { font-size: 1.0rem !important; color: #999 !important; }',
-            '  #lz-site-guide .lz-guide__cta-headline { font-size: clamp(1.5rem, 3.2vw, 2.0rem) !important; color: #5b3a1e !important; }',
-            '  #lz-site-guide .lz-guide__cta-sub { font-size: 1.15rem !important; color: #888 !important; }',
-            '  #lz-site-guide .lz-guide__cta-btn { font-size: 1.2rem !important; }',
+            '  #lz-site-guide .lz-guide__headline { font-size: clamp(2.2rem, 4.5vw, 3.2rem) !important; color: #5b3a1e !important; }',
+            '  #lz-site-guide .lz-guide__sub { font-size: clamp(1.3rem, 2.2vw, 1.6rem) !important; color: #777 !important; }',
+            '  #lz-site-guide .lz-guide__feat-title { font-size: 1.4rem !important; color: #5b3a1e !important; }',
+            '  #lz-site-guide .lz-guide__feat-desc { font-size: 1.15rem !important; color: #999 !important; line-height: 1.6 !important; }',
+            '  #lz-site-guide .lz-guide__cta-headline { font-size: clamp(1.8rem, 3.8vw, 2.4rem) !important; color: #5b3a1e !important; }',
+            '  #lz-site-guide .lz-guide__cta-sub { font-size: 1.3rem !important; color: #888 !important; }',
+            '  #lz-site-guide .lz-guide__cta-btn { font-size: 1.35rem !important; padding: 16px 36px !important; }',
             '</style>',
 
             '<div class="lz-guide">',

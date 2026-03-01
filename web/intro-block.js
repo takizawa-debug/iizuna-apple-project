@@ -475,6 +475,10 @@
             '  #lz-intro-block .infog-val-num { font-size: clamp(1.8rem, 5vw, 3.2rem) !important; }',
             '  #lz-intro-block .infog-diff { font-size: clamp(0.8rem, 1.8vw, 1.0rem) !important; padding: 4px 10px !important; }',
             '  #lz-intro-block .infog-sub { font-size: clamp(0.7rem, 1.5vw, 0.9rem) !important; margin-top: 6px !important; }',
+            '  #lz-intro-block .lz-intro__cat-title { font-size: clamp(2.2rem, 4vw, 3.2rem) !important; margin-bottom: 6px !important; }',
+            '  #lz-intro-block .lz-intro__cat-catch { font-size: clamp(1.4rem, 2.8vw, 1.8rem) !important; line-height: 1.5 !important; margin-bottom: 8px !important; }',
+            '  #lz-intro-block .lz-intro__cat-desc { font-size: clamp(1.2rem, 2.0vw, 1.4rem) !important; line-height: 1.8 !important; }',
+            '  #lz-intro-block .lz-intro__cat-btn { font-size: 1.3rem !important; padding: 16px 36px !important; }',
             '</style>',
 
             '<div class="lz-intro">',
