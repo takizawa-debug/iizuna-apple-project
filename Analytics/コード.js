@@ -181,6 +181,18 @@ function doGet(e) {
         .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
     }
 
+    // 🍎 JSON API モード (Vercel等の外部フロントエンド用)
+    if (p.mode === 'api') {
+      const stats = getDashboardStats({ startDate: p.startDate, endDate: p.endDate });
+      if (stats.error) {
+        // CORS headers are injected by GAS natively for JSON responses but we ensure clean payload
+        return ContentService.createTextOutput(JSON.stringify({ error: stats.error }))
+          .setMimeType(ContentService.MimeType.JSON);
+      }
+      return ContentService.createTextOutput(JSON.stringify(stats))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     // 🍎 スプレッドシート側のセットアップ実行モード
     if (p.mode === 'setup') {
       setupSpreadsheetDashboard();
