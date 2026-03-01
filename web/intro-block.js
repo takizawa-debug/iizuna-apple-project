@@ -379,9 +379,15 @@
     /* ==========================================
        4. 描画
        ========================================== */
+    var initCount = 0;
     var init = function () {
         var root = document.getElementById('lz-intro-block');
-        if (!root) return;
+        if (!root) {
+            if (++initCount < 30) setTimeout(init, 100);
+            return;
+        }
+        if (root.getAttribute('data-loaded')) return;
+        root.setAttribute('data-loaded', 'true');
 
         injectStyles();
 
