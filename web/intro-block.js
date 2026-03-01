@@ -544,7 +544,6 @@
             '</div>',
             '<div class="lz-intro__content-wrap">',
             statsHtml,
-            '<hr class="lz-intro__divider">',
             '<div class="lz-intro__categories">' + catsHtml + '</div>',
             '</div>',
             '</div>'
