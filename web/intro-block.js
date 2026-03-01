@@ -477,7 +477,7 @@
             '  #lz-intro-block .lz-intro__welcome-bg {',
             '    position: absolute; top: 0; left: 0; z-index: -1;',
             '    width: 100vw !important; height: 100vh !important;',
-            '    background: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/a8e603f0-a041-013e-ab67-0a58a9feac02/20230825_iizuna-6.jpg") center center / cover no-repeat !important;',
+            '    background: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/122b3eb0-a042-013e-ffb5-0a58a9feac02/iizuna_20241113-24.jpg") center center / cover no-repeat !important;',
             '    filter: saturate(1.3) contrast(1.15) brightness(1.05) sepia(0.15) !important;',
             '    will-change: transform; pointer-events: none;',
             '  }',
