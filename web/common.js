@@ -1,6 +1,19 @@
 /**
  * common.js - Appletown 基盤コンポーネント (デザイン復元・高速解除版)
  */
+(function () {
+  if (document.getElementById('lzGlobalShield')) return;
+  document.documentElement.classList.add('lz-loading-lock');
+  var s = document.createElement('div');
+  s.id = 'lzGlobalShield'; s.className = 'lz-global-shield';
+  s.innerHTML = '<img class="lz-shield-logo" src="https://cdn.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png">';
+  document.documentElement.appendChild(s);
+  window._lzSafetyFuse = setTimeout(function () {
+    document.documentElement.classList.remove('lz-loading-lock');
+    if (s) s.style.display = 'none';
+  }, 5000);
+})();
+
 window.LZ_COMMON = (function () {
   "use strict";
 
@@ -64,6 +77,8 @@ window.LZ_COMMON = (function () {
       '/* 太字・アクセント系: Zen Kaku Gothic New */',
       'h1, h2, h3, h4, h5, h6, b, strong, th { font-family: var(--font-accent); }',
       '.lz-global-shield { position: fixed; inset: 0; background: #fff; z-index: 30000; display: flex; align-items: center; justify-content: center; opacity: 1; transition: opacity 0.4s ease-out; }',
+      '.lz-shield-logo { width: 80px; height: auto; animation: lz-pulse 1.5s infinite ease-in-out; }',
+      '@keyframes lz-pulse { 0% { transform: scale(0.92); opacity: 0.6; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.92); opacity: 0.6; } }',
       '.lz-global-shield.is-hidden { opacity: 0; transition: opacity 0.4s ease-out; pointer-events: none; }',
       'html.lz-loading-lock body { overflow: hidden !important; height: 100vh !important; }'
     ].join('\n');
