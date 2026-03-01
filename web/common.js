@@ -104,7 +104,6 @@ window.LZ_COMMON = (function () {
     function unlock() {
       clearInterval(waitReady);
       if (window._lzSafetyFuse) clearTimeout(window._lzSafetyFuse);
-      if (typeof window.LZ_CLEAR_LOADER_INTERVAL === 'function') window.LZ_CLEAR_LOADER_INTERVAL();
 
       setTimeout(function () {
         var s = document.getElementById('lzGlobalShield');
