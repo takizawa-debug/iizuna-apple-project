@@ -35,8 +35,8 @@
                 rows: [
                     {
                         label: "人口密度",
-                        t: { pre: "約", num: "6,488", unit: "人/㎢", diff: "世界有数の人口密度", sub: "面積：2,199km²｜人口：14,270,000人" },
-                        i: { pre: "約", num: "143", unit: "人/km²", diff: "ゆとりある空間", sub: "面積：75km²｜人口：10,755人", blueVal: true, blueDiff: true }
+                        t: { pre: "約", num: "6,488", unit: "人/㎢", diff: "世界有数の人口密度", sub: "人口：約1,427万人" },
+                        i: { pre: "約", num: "143", unit: "人/km²", diff: "ゆとりある空間", sub: "人口：約1万人", blueVal: true, blueDiff: true }
                     },
                     {
                         label: "標高",
