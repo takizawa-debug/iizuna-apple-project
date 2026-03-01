@@ -459,6 +459,17 @@
         ].join('');
 
         root.innerHTML = [
+
+            '<style>',
+            '  #lz-intro-block .lz-intro__welcome-wrap {',
+            '    position: relative; padding: 120px 24px 100px; overflow: hidden; margin-bottom: 80px;',
+            '    width: 100vw !important; margin-left: calc(50% - 50vw) !important;',
+            '    background: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/a67e2360-8ee6-013e-065a-0a58a9feac02/d76519-7-464235-0.jpg") center center / cover no-repeat !important;',
+            '  }',
+            '  #lz-intro-block .lz-intro__welcome-title { font-size: clamp(2.2rem, 5vw, 3.8rem) !important; color: #5b3a1e !important; }',
+            '  #lz-intro-block .lz-intro__welcome-body { font-size: clamp(1.2rem, 2.2vw, 1.6rem) !important; color: #333 !important; font-weight: 700 !important; }',
+            '</style>',
+
             '<div class="lz-intro">',
             '<div class="lz-intro__welcome-wrap">',
             '<div class="lz-intro__welcome">',
