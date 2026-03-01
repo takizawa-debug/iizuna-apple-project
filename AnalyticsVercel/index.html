@@ -926,13 +926,6 @@
                                                 <div>
                                                     <span
                                                         style="font-size: 10px; color: #666; display: block; margin-bottom: 2px;">▼
-                                                        観光協会</span>
-                                                    <img src="images/spec/town_tourist.png" alt="飯綱町観光協会 スクリーンショット"
-                                                        style="width: 100%; border: 1px solid #eee; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                                </div>
-                                                <div>
-                                                    <span
-                                                        style="font-size: 10px; color: #666; display: block; margin-bottom: 2px;">▼
                                                         公式EC（みつどんマルシェ）</span>
                                                     <img src="images/spec/town_ec.png" alt="みつどんマルシェ スクリーンショット"
                                                         style="width: 100%; border: 1px solid #eee; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
@@ -940,8 +933,8 @@
                                                 <div>
                                                     <span
                                                         style="font-size: 10px; color: #666; display: block; margin-bottom: 2px;">▼
-                                                        リンゴ部（楽天ふるさと納税）</span>
-                                                    <img src="images/spec/town_fanclub.png" alt="いいづなリンゴ部 スクリーンショット"
+                                                        観光協会</span>
+                                                    <img src="images/spec/town_tourist.png" alt="飯綱町観光協会 スクリーンショット"
                                                         style="width: 100%; border: 1px solid #eee; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                                                 </div>
                                                 <div>
@@ -949,6 +942,13 @@
                                                         style="font-size: 10px; color: #666; display: block; margin-bottom: 2px;">▼
                                                         りんご学校</span>
                                                     <img src="images/spec/town_school.png" alt="信州いいづなりんご学校 スクリーンショット"
+                                                        style="width: 100%; border: 1px solid #eee; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                                </div>
+                                                <div>
+                                                    <span
+                                                        style="font-size: 10px; color: #666; display: block; margin-bottom: 2px;">▼
+                                                        リンゴ部（楽天ふるさと納税）</span>
+                                                    <img src="images/spec/town_fanclub.png" alt="いいづなリンゴ部 スクリーンショット"
                                                         style="width: 100%; border: 1px solid #eee; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                                                 </div>
                                             </div>
@@ -1597,10 +1597,29 @@
                     </li>
                     <li style="margin-bottom: 12px;"><strong>ダウンロードボタン (Download):</strong> パンフレットPDFなど、配布資料の直接取得。</li>
                     <li><strong>問い合わせ・情報提供統合窓口:</strong>
-                        <ul style="margin-top: 5px;">
-                            <li>生産者の生産体制や品種に関する情報受付フォームの運用</li>
-                            <li>参画事業者の要件確認・登録申請システム</li>
-                            <li>行政からの情報発信物の専用受け口および発信基盤としての活用</li>
+                        <div style="margin-top: 10px; margin-bottom: 12px;">
+                            ユーザーの目的に応じて「情報提供」「お問い合わせ」「記事投稿」の3つのタブに分かれた統合フォームを設置。送信されたデータはシームレスにGoogle
+                            Spreadsheetのデータベースへ蓄積され、運用者の管理コストを最小化します。
+                        </div>
+                        <ul style="margin-top: 5px; line-height: 1.8;">
+                            <li style="margin-bottom: 20px;">
+                                <strong>「情報提供」「お問い合わせ」タブ（ニックネーム可）:</strong>
+                                町の発見や気軽な質問を促進するため、本名を必須としない設計。<br>
+                                <img src="images/spec/ui_form_tab.png" alt="情報提供フォーム（ニックネーム可）"
+                                    style="width: 100%; max-width: 600px; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 8px;">
+                            </li>
+                            <li style="margin-bottom: 20px;">
+                                <strong>「記事投稿」タブ（カテゴリ選択）:</strong>
+                                生産者、お店、イベント、記事など、登録内容に応じた専用の入力枠へ分岐。<br>
+                                <img src="images/spec/ui_form_submit.png" alt="記事投稿タブのカテゴリ選択"
+                                    style="width: 100%; max-width: 600px; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 8px;">
+                            </li>
+                            <li style="margin-bottom: 15px;">
+                                <strong>生産者・事業者向け詳細入力フォーム（情報の質担保）:</strong>
+                                「生産者の登録」では、栽培品種（サンふじ、シナノスイート等）、加工品の有無、作付面積、経営区分など、BtoB取引（仕入れ事業者等）にも耐えうる詳細なプロファイリング項目を用意。入力は任意としながらも、「埋めるべき枠組み」を提示することで、質の高い一次情報の自発的な提供を促す仕様設計となっています。<br>
+                                <img src="images/spec/ui_form_producer.png" alt="生産者向け詳細入力項目"
+                                    style="width: 100%; max-width: 600px; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); margin-top: 8px;">
+                            </li>
                         </ul>
                     </li>
                 </ul>
