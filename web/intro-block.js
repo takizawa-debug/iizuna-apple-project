@@ -17,7 +17,7 @@
         taiken: "https://cdn.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/f2837410-8f03-013e-e63d-0a58a9feac02/photo-intermediate.jpg",
         kurasu: "https://cdn.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/a681db10-8ee6-013e-065b-0a58a9feac02/slide-01.jpg",
         itonamu: "https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/b41733e0-8d6a-013e-bcf2-0a58a9feac02/sunfuji_kodama_1207-25.jpg"
-  ;
+    };
 
     /* ==========================================
        2. 多言語コンテンツ定義
@@ -45,7 +45,8 @@
                         label: "年平均気温",
                         t: { pre: "約", num: "17.0", unit: "℃", diff: "温暖な気候", sub: "気象庁発表 (2021〜2024平均)" },
                         i: { pre: "約", num: "12.7", unit: "℃", diff: "りんご栽培に最適", sub: "飯綱町役場屋上にて測定<br>(2021/4~2025/3平均)", blueVal: true, blueDiff: true }
-                                  ]
+                    }
+                ]
             },
             features: [
                 {
