@@ -48,22 +48,22 @@ window.lzSearchEngine = (function () {
       '}',
       '.lz-s-close-sticky:hover { background: #fff !important; color: #cf3a3a !important; border-color: #cf3a3a !important; }',
 
-      '.lz-s-title { font-size: 1.7rem !important; font-weight: 800 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; }',
+      '.lz-s-title { font-size: 1.7rem !important; font-weight: 600 !important; color: #333 !important; margin-bottom: 12px !important; border-left: 6px solid #27ae60 !important; padding-left: 12px !important; line-height: 1.3 !important; display: block !important; }',
       '.lz-s-item { display:flex; gap:12px; align-items:center; padding:10px; background:#fff; border:1px solid #eee; border-radius:10px; margin-bottom: 8px !important; cursor:pointer; transition:.2s; }',
       '.lz-s-item:hover { border-color: #27ae60; background: #f9fffb; transform: translateY(-1px); }',
-      '.lz-s-name { font-size: 1.3rem; font-weight: 800; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; }',
+      '.lz-s-name { font-size: 1.3rem; font-weight: 500; color: #cf3a3a; margin-bottom: 2px; line-height: 1.3; font-family: "Zen Kaku Gothic New", "Zen Gothic", "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; }',
       '.lz-s-body { font-size: 1.05rem; color: #666; line-height: 1.5; -webkit-line-clamp: 2; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }',
-      '.lz-s-cat { font-size: 0.95rem; background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 800; display: inline-block; }',
-      '.lz-btn-search-back { margin-top: 12px !important; width: 100% !important; height: auto !important; border: 2px solid #27ae60 !important; color: #27ae60 !important; background: #fff !important; transition: .2s !important; font-weight: 800 !important; font-size: 1.1rem !important; padding: 8px 0 !important; cursor: pointer !important; border-radius: 999px !important; text-align: center !important; display: block !important; } @media (max-width: 768px) { .lz-btn-search-back { margin-top: 18px !important; padding: 14px 0 !important; font-size: 1.3rem !important; width: 100% !important; height: auto !important; display: block !important; } }',
+      '.lz-s-cat { font-size: 0.95rem; background: #27ae60; color: #fff; padding: 2px 8px; border-radius: 4px; font-weight: 600; display: inline-block; }',
+      '.lz-btn-search-back { margin-top: 12px !important; width: 100% !important; height: auto !important; border: 2px solid #27ae60 !important; color: #27ae60 !important; background: #fff !important; transition: .2s !important; font-weight: 600 !important; font-size: 1.1rem !important; padding: 8px 0 !important; cursor: pointer !important; border-radius: 999px !important; text-align: center !important; display: block !important; } @media (max-width: 768px) { .lz-btn-search-back { margin-top: 18px !important; padding: 14px 0 !important; font-size: 1.3rem !important; width: 100% !important; height: auto !important; display: block !important; } }',
       '.lz-s-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; padding:15px; box-sizing:border-box; background:#f9f9f9; }',
       '.lz-s-img-placeholder img { width:100%; height:100%; object-fit:contain; opacity:0.15; filter:grayscale(1); }',
       'mark { background:#fff566; border-radius:2px; padding:0 2px; }',
       /* 🍎 リンゴ線画アニメーション (維持) */
-      '.lz-s-loading { padding: 60px 20px; text-align: center; }',
+      '.lz-s-loading { padding: 60px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; box-sizing: border-box; }',
       '.lz-s-logo { width: 90px; height: 90px; margin: 0 auto 15px; display: block; overflow: visible; }',
       '.lz-s-logo-path { fill: none; stroke: #ccc; stroke-width: 15; stroke-linecap: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: lz-s-draw 4.0s ease-in-out infinite; }',
       '@keyframes lz-s-draw { 0% { stroke-dashoffset: 1000; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 1000; } }',
-      '.lz-s-loading-label { font-size: 1.2rem; color: #999; font-weight: 800; letter-spacing: 0.05em; }'
+      '.lz-s-loading-label { font-size: 1.2rem; color: #999; font-weight: 400; letter-spacing: 0.05em; }'
     ].join('\n');
     document.head.appendChild(style);
   };
