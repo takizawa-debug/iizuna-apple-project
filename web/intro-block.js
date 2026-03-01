@@ -471,10 +471,10 @@
         root.innerHTML = [
 
             '<style>',
+            '  #lz-intro-block { overflow-x: hidden; width: 100%; box-sizing: border-box; }',
             '  #lz-intro-block .lz-intro__welcome-wrap {',
             '    position: relative; padding: 160px 24px 140px; margin-bottom: 80px;',
-            '    width: 100vw !important; margin-left: calc(50% - 50vw) !important;',
-            '    display: flex; justify-content: center; align-items: center;',
+            '    width: 100%; display: flex; justify-content: center; align-items: center;',
             '  }',
             '  #lz-intro-block .lz-intro__welcome-mask {',
             '    position: absolute; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);',
