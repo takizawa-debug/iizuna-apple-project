@@ -486,6 +486,7 @@
             '    background: rgba(255, 255, 255, 0.55);',
             '  }',
             '  #lz-intro-block .lz-intro__welcome { position: relative; z-index: 10; text-align: center; width: 100%; }',
+            '  #lz-intro-block .lz-intro__infog { margin-top: 100px !important; margin-bottom: 120px !important; width: 95% !important; max-width: 580px !important; }',
 
             '  #lz-intro-block .lz-intro__welcome-title { font-size: clamp(2.2rem, 5vw, 3.8rem) !important; color: #5b3a1e !important; }',
             '  #lz-intro-block .lz-intro__welcome-body { font-size: clamp(1.2rem, 2.2vw, 1.6rem) !important; color: #333 !important; font-weight: 700 !important; }',
