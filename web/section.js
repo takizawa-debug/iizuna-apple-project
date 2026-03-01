@@ -33,7 +33,7 @@
       '.lz-track { display: grid; grid-auto-flow: column; grid-auto-columns: var(--cw, calc((100% - 32px) / 3.2)); gap: 24px; overflow-x: auto; padding: 12px 12px 24px; scroll-snap-type: none; -webkit-overflow-scrolling: touch; cursor: grab; user-select: none; scrollbar-width: none; -ms-overflow-style: none; }',
       '.lz-track:active { cursor: grabbing; }',
       '.lz-track::-webkit-scrollbar { display: none; }',
-      '@media (max-width: 768px) { .lz-track { grid-auto-columns: calc(100% / 1.25); gap: 16px; } }',
+      '@media (max-width: 768px) { .lz-track { grid-auto-columns: var(--cw-sm, calc(100% / 1.25)); gap: 16px; } }',
       '.lz-card { position: relative; border: 1px solid rgba(231, 211, 200, 0.4); border-radius: 16px; background: #fff; transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease, border-color 0.3s ease; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }',
       '.lz-card:hover, .lz-card.is-active { transform: translateY(-8px) scale(1.01); border-color: rgba(207, 58, 58, 0.3); box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 0 20px rgba(207, 58, 58, 0.05); }',
       '.lz-body { padding: 20px 16px; display: grid; gap: 10px; }',
@@ -138,11 +138,15 @@
     var config = window.LZ_CONFIG, l1 = root.dataset.l1 || config.L1, l2 = root.dataset.l2 || "";
     if (!l2) return;
 
-    // 初期表示用の見出し (C.Tを使用)
     var heading = root.dataset.heading || C.T(l2);
     var imageRatio = root.dataset.imageRatio || "16:9";
+    var customWidth = root.dataset.cardWidth;
+    var customWidthSm = root.dataset.cardWidthSm;
     var mql = window.matchMedia("(max-width:768px)");
+
     root.style.setProperty("--ratio", C.ratio(imageRatio));
+    if (customWidth) root.style.setProperty("--cw", customWidth);
+    if (customWidthSm) root.style.setProperty("--cw-sm", customWidthSm);
 
     // ローディング文言の多言語対応
     var loadingLabel = window.LZ_CURRENT_LANG === 'ja' ? '記事読み込み中…' : 'Loading articles...';
