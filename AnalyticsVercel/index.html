@@ -1547,8 +1547,8 @@
                         <strong>多言語化切り替えUI:</strong>
                         ヘッダーに配置されたボタンから、日本語・英語・繁体中文への即時切り替えをサポート。インバウンドユーザーも迷わず母国語の情報にアクセス可能。
                         <div style="margin-top: 5px;">
-                            <img src="images/spec/ui_btn_lang.png" alt="言語切り替えボタン"
-                                style="height: 35px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <img src="images/spec/ui_header_lang.png" alt="言語切り替えボタン"
+                                style="height: 120px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                         </div>
                     </li>
                     <li style="margin-top: 25px; margin-bottom: 20px;">
@@ -1580,12 +1580,19 @@
                                 style="width: 100%; border: 1px solid #eaeaea; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
                         </div>
                     </li>
-                    <li style="margin-bottom: 15px;">
+                    <li style="margin-bottom: 25px;">
                         <strong>共有・印刷アクション:</strong> 各コンテンツには、SNS等での拡散を促す「共有ボタン」と、ブラウザのPrint to
                         PDF機能を呼び出してチラシ化する「印刷ボタン」を標準搭載。※印刷はPC環境のみ。
-                        <div style="margin-top: 8px;">
+                        <div style="margin-top: 8px; margin-bottom: 12px;">
                             <img src="images/spec/ui_btn_action.png" alt="共有・印刷アクションボタン"
                                 style="height: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        </div>
+                        <div
+                            style="background: rgba(0,0,0,0.02); padding: 15px; border-radius: 6px; border-left: 3px solid #ccc;">
+                            <strong>A4チラシ印刷イメージ:</strong>
+                            モーダル上の「印刷」ボタンを押下すると、画面遷移なしに印刷用レイアウトがバックグラウンドで生成されます。ヘッダーやフッター・不要なUI要素を排除し、アクセス用QRコードやクレジット、発行日時等を自動付与した上でPDF（A4）として出力されます。<br>
+                            <img src="images/spec/ui_print_a4.png" alt="A4印刷イメージ"
+                                style="width: 100%; max-width: 400px; border: 1px solid #ddd; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-top: 10px;">
                         </div>
                     </li>
                     <li style="margin-bottom: 12px;"><strong>ダウンロードボタン (Download):</strong> パンフレットPDFなど、配布資料の直接取得。</li>
