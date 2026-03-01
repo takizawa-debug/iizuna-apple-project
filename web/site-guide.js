@@ -225,8 +225,8 @@
         root.innerHTML = [
 
             '<style>',
-            '  #lz-site-guide .lz-guide__headline { font-size: clamp(2.2rem, 4.5vw, 3.2rem) !important; color: #5b3a1e !important; }',
-            '  #lz-site-guide .lz-guide__sub { font-size: clamp(1.3rem, 2.2vw, 1.6rem) !important; color: #777 !important; }',
+            '  #lz-site-guide .lz-guide__headline { font-size: clamp(2.2rem, 4.5vw, 3.2rem) !important; color: #5b3a1e !important; font-family: "Zen Kaku Gothic New", "Zen Gothic", sans-serif !important; font-weight: 500 !important; }',
+            '  #lz-site-guide .lz-guide__sub { font-size: clamp(1.3rem, 2.2vw, 1.6rem) !important; color: #777 !important; font-family: "Zen Kaku Gothic New", "Zen Gothic", sans-serif !important; font-weight: 400 !important; }',
             '  #lz-site-guide .lz-guide__feat-title { font-size: 1.4rem !important; color: #5b3a1e !important; }',
             '  #lz-site-guide .lz-guide__feat-desc { font-size: 1.15rem !important; color: #999 !important; line-height: 1.6 !important; }',
             '  #lz-site-guide .lz-guide__cta-headline { font-size: clamp(1.8rem, 3.8vw, 2.4rem) !important; color: #5b3a1e !important; }',
