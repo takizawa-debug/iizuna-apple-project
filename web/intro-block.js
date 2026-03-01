@@ -518,7 +518,7 @@
 
             '  #lz-intro-block .lz-intro__welcome-title { font-size: clamp(2.2rem, 5vw, 3.8rem) !important; color: #5b3a1e !important; }',
             '  #lz-intro-block .lz-intro__welcome-body { font-size: clamp(1.2rem, 2.2vw, 1.6rem) !important; color: #333 !important; font-weight: 700 !important; }',
-            '  #lz-intro-block .infog-head-city { font-size: clamp(1.6rem, 4.5vw, 2.6rem) !important; font-weight: 500 !important; font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "ヒラギノ丸ゴ ProN W4", "Rounded Mplus 1c", sans-serif !important; }',
+            '  #lz-intro-block .infog-head-city { font-size: clamp(1.6rem, 4.5vw, 2.6rem) !important; font-weight: 500 !important; font-family: "Zen Kaku Gothic New", "Zen Gothic", "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif !important; }',
             '  #lz-intro-block .infog-label { font-size: clamp(0.9rem, 2.5vw, 1.2rem) !important; padding: 8px 18px !important; }',
             '  #lz-intro-block .infog-val { font-size: clamp(1.0rem, 2.5vw, 1.2rem) !important; }',
             '  #lz-intro-block .infog-val-pre { font-size: clamp(0.8rem, 1.8vw, 1.0rem) !important; }',
