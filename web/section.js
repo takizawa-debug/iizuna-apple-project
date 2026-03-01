@@ -194,10 +194,27 @@
       root.querySelectorAll(".lz-track").forEach(setupInfinityTrack);
 
       if (mql.matches) {
-        var mobileObserver = new IntersectionObserver(function (entries) {
-          entries.forEach(function (entry) { entry.target.classList.toggle("is-active", entry.isIntersecting); });
-        }, { threshold: 0.8 });
-        root.querySelectorAll(".lz-card").forEach(function (card) { mobileObserver.observe(card); });
+        var updateActiveCard = function (track) {
+          var trackCenter = track.getBoundingClientRect().left + track.clientWidth / 2;
+          var cards = track.querySelectorAll(".lz-card");
+          var closestCard = null;
+          var minDistance = Infinity;
+          cards.forEach(function (card) {
+            card.classList.remove("is-active");
+            var rect = card.getBoundingClientRect();
+            var cardCenter = rect.left + rect.width / 2;
+            var distance = Math.abs(trackCenter - cardCenter);
+            if (distance < minDistance) {
+              minDistance = distance;
+              closestCard = card;
+            }
+          });
+          if (closestCard) closestCard.classList.add("is-active");
+        };
+        root.querySelectorAll(".lz-track").forEach(function (track) {
+          updateActiveCard(track);
+          track.addEventListener("scroll", function () { updateActiveCard(track); }, { passive: true });
+        });
       }
       root.addEventListener("click", function (e) {
         var card = e.target.closest(".lz-card");
