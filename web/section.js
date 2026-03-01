@@ -46,8 +46,6 @@
       '.lz-media::before { content: ""; display: block; padding-top: var(--ratio, 60%); }',
       '.lz-media > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1); }',
       '.lz-card:hover .lz-media > img, .lz-card.is-active .lz-media > img { transform: scale(1.05); }',
-      '.lz-media-badge { position: absolute; top: 12px; left: 12px; z-index: 2; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.5); padding: 4px 12px; border-radius: 999px; font-size: 1rem; font-weight: 700; color: var(--apple-brown); box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 4px; }',
-      '.lz-media-badge::before { content: ""; display: inline-block; width: 6px; height: 6px; background: var(--apple-red); border-radius: 50%; }',
       '.lz-media.is-empty::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 40%; aspect-ratio: 1/1; background-image: url("https://s3-ap-northeast-1.amazonaws.com/s3.peraichi.com/userData/cadd36d5-015f-4440-aa3c-b426c32c22a0/img/8ca4e300-96ba-013e-36ff-0a58a9feac02/%E3%82%8A%E3%82%93%E3%81%93%E3%82%99%E3%83%AD%E3%82%B3%E3%82%99_%E8%B5%A4.png"); background-position: center; background-repeat: no-repeat; background-size: contain; opacity: 0.15; }'
     ].join('\n');
     document.head.appendChild(style);
@@ -128,7 +126,6 @@
       '  data-ec="' + C.esc(it.ec || "") + '" data-target="' + C.esc(it.target || "") + '" data-org="' + C.esc(it.organizer || "") + '"',
       '  data-group="' + C.esc(groupKey) + '">',
       '  <div class="lz-media ' + (it.mainImage ? "" : "is-empty") + '" style="--ratio:' + pad + '">',
-      '    <div class="lz-media-badge">' + C.esc(groupKey || "注目") + '</div>',
       it.mainImage ? '    <img src="' + C.esc(it.mainImage) + '" loading="lazy" decoding="async" onerror="this.parentElement.classList.add(\'is-empty\'); this.remove();">' : '',
       '  </div>',
       '  <div class="lz-body"><h3 class="lz-title-sm">' + C.esc(title) + '</h3><div class="lz-lead">' + C.esc(lead) + '</div></div>',
