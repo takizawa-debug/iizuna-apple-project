@@ -207,18 +207,18 @@
         var style = document.createElement('style');
         style.id = 'lz-intro-styles';
         style.textContent = [
-            '.lz-intro { max-width: 1100px; margin: 0 auto; padding: 80px 24px 60px; font-family: var(--font-base); }',
+            '.lz-intro { padding: 0 0 60px; font-family: var(--font-base); }',
 
             /* ── ウェルカムセクション ── */
-            '.lz-intro__welcome { text-align: center; margin-bottom: 80px; }',
+            '.lz-intro__welcome { text-align: center; margin-bottom: 0; }',
             '.lz-intro__welcome-title {',
             '  font-family: var(--font-accent);',
-            '  font-weight: 700; font-size: clamp(2.2rem, 5vw, 3.6rem);',
+            '  font-weight: 700; font-size: clamp(2.2rem, 5vw, 3.6rem) !important;',
             '  color: var(--apple-brown, #5b3a1e);',
             '  margin: 0 0 36px; letter-spacing: .06em; line-height: 1.3;',
             '}',
             '.lz-intro__welcome-body {',
-            '  font-size: clamp(1.05rem, 1.8vw, 1.3rem);',
+            '  font-size: clamp(1.15rem, 2.0vw, 1.4rem) !important;',
             '  color: #555; line-height: 2.2; margin: 0;',
             '  white-space: pre-line; letter-spacing: .04em;',
             '}',
@@ -232,7 +232,7 @@
 
             /* ── TOKYO vs IIZUNA インフォグラフィック ── */
             '.lz-intro__infog {',
-            '  position: relative; margin-bottom: 80px; border-radius: 20px;',
+            '  position: relative; margin-bottom: 0; border-radius: 20px;',
             '  overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);',
             '  background: #f9f6f2;',
             '  max-width: 580px; margin-left: auto; margin-right: auto;',
@@ -327,28 +327,28 @@
             '.lz-intro__cat-body { display: flex; flex-direction: column; gap: 14px; }',
             '.lz-intro__cat-title {',
             '  font-family: var(--font-accent);',
-            '  font-weight: 700; font-size: clamp(1.8rem, 3vw, 2.4rem);',
+            '  font-weight: 700; font-size: clamp(1.9rem, 3.2vw, 2.6rem) !important;',
             '  color: var(--apple-brown, #5b3a1e);',
             '  margin: 0; letter-spacing: .05em;',
             '}',
             '.lz-intro__cat-catch {',
             '  font-family: var(--font-accent);',
-            '  font-weight: 500; font-size: clamp(1.15rem, 2vw, 1.45rem);',
+            '  font-weight: 500; font-size: clamp(1.25rem, 2.2vw, 1.55rem) !important;',
             '  color: var(--apple-red, #cf3a3a);',
             '  margin: 0; line-height: 1.6;',
             '}',
             '.lz-intro__cat-desc {',
-            '  font-size: clamp(0.95rem, 1.4vw, 1.1rem);',
+            '  font-size: clamp(1.05rem, 1.6vw, 1.2rem) !important;',
             '  color: #666; line-height: 1.9; margin: 0;',
             '}',
             '.lz-intro__cat-btn {',
             '  display: inline-flex; align-items: center; gap: 8px;',
             '  width: fit-content;',
-            '  padding: 12px 28px; border-radius: 999px;',
+            '  padding: 14px 32px; border-radius: 999px;',
             '  border: 2px solid var(--apple-red, #cf3a3a);',
             '  background: #fff; color: var(--apple-red, #cf3a3a);',
             '  font-family: var(--font-accent);',
-            '  font-weight: 700; font-size: 1.05rem;',
+            '  font-weight: 700; font-size: 1.15rem !important;',
             '  text-decoration: none; cursor: pointer;',
             '  transition: all 0.3s ease;',
             '  margin-top: 4px;',
@@ -460,13 +460,17 @@
 
         root.innerHTML = [
             '<div class="lz-intro">',
+            '<div class="lz-intro__welcome-wrap">',
             '<div class="lz-intro__welcome">',
             '<h2 class="lz-intro__welcome-title">' + C.esc(data.welcomeTitle) + '</h2>',
             '<p class="lz-intro__welcome-body">' + C.esc(data.welcomeBody) + '</p>',
             '</div>',
+            '</div>',
+            '<div class="lz-intro__content-wrap">',
             statsHtml,
             '<hr class="lz-intro__divider">',
             '<div class="lz-intro__categories">' + catsHtml + '</div>',
+            '</div>',
             '</div>'
         ].join('');
     };
