@@ -642,67 +642,203 @@
 
         <!-- 🍎 Specifications View Container -->
         <div id="specs-view" style="display: none;">
-            <div class="card" style="padding: 40px; margin-bottom: 30px;">
-                <h2 style="margin-top:0; font-family: 'Noto Sans JP'; color: var(--primary);">1. プロジェクト・ビジョン
-                </h2>
-                <p style="line-height: 1.8; color: var(--text);">
-                    飯綱町が誇る「りんご」の魅力を、国内のみならず多言語で発信し、直感的な検索と美麗なビジュアルでユーザーの興味を惹きつける「デジタル・ショーケース」の実現。</p>
-                <img src="https://takizawa-debug.github.io/appletown-iizuna-images/images/top_page_screenshot_1771156263192.png"
-                    alt="Top Page"
-                    style="width: 100%; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <div class="card" style="padding: 40px; margin-bottom: 30px; font-family: 'Noto Sans JP', sans-serif;">
+                <h1
+                    style="color: var(--text); border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 30px;">
+                    飯綱町産りんごPR事業 システム仕様書</h1>
 
-                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">2.
-                    インタラクティブ・ユーザー体験 (UX)</h2>
-                <p style="line-height: 1.8;">ユーザーの「知りたい」に即座に応える、高度なフロントエンド機能を搭載。</p>
+                <div style="text-align: right; margin-bottom: 30px; color: #666;">
+                    <p>作成・更新日: 2025年10月1日 / システム実装: Antigravity</p>
+                </div>
+
+                <!-- 1. 背景と目的 -->
+                <h2
+                    style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
+                    1. 事業の背景と目的</h2>
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; color: var(--text);">背景</h3>
+                    <ul style="line-height: 1.8;">
+                        <li>飯綱町産りんごに関する情報は町内外に散在し、体系的にまとめられていない。</li>
+                        <li>農家や事業者は発信ノウハウ・時間に制約があり、個別PRに限界がある。</li>
+                        <li>SNS・EC・観光・移住など各分野で「りんご」を活用した取り組みがあるが、横断的なまとめがなく、消費者が迷子になる課題が存在する。</li>
+                    </ul>
+                    <h3 style="color: var(--text); margin-top: 20px;">目的</h3>
+                    <ul style="line-height: 1.8;">
+                        <li>飯綱町産りんごに関するあらゆる情報を<strong>ワンストップで提供</strong>する。</li>
+                        <li>消費者が「知る→買う→訪れる→住む」といった行動変容を自然に進められる仕組みを整備する。</li>
+                        <li>単なるWebサイトやパンフレットに留まらず、長期的に更新・活用できる<strong>ブランド資産化</strong>を目指す。</li>
+                    </ul>
+                </div>
+
+                <!-- 2. システム・運用設計 -->
+                <h2
+                    style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
+                    2. システム・運用設計</h2>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                    <tbody>
+                        <tr>
+                            <th style="background: #f1f3f5; padding: 12px; width: 25%; text-align: left;">更新性重視（CMS）
+                            </th>
+                            <td style="padding: 12px; line-height: 1.6;">
+                                GoogleスプレッドシートをCMS（コンテンツ管理システム）として利用。担当者がプロのエンジニアでなくても情報更新が可能な体制を構築。反映ラグは許容し、継続運用のしやすさを最優先する。
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="background: #f1f3f5; padding: 12px; text-align: left;">Web構築基盤</th>
+                            <td style="padding: 12px; line-height: 1.6;">
+                                ペライチ形式をベースに実装。直観的編集・拡張が可能なアーキテクチャを活用したフロントエンド実装。</td>
+                        </tr>
+                        <tr>
+                            <th style="background: #f1f3f5; padding: 12px; text-align: left;">ナビゲーション構造</th>
+                            <td style="padding: 12px; line-height: 1.6;">
+                                消費者の行動プロセスに合わせた5カテゴリ分類：<br>
+                                <span
+                                    style="display:inline-block; background:#fff; border:1px solid #ccc; border-radius:4px; padding:2px 8px; margin:4px 4px 4px 0; font-size:12px;">1.
+                                    知る</span>
+                                <span
+                                    style="display:inline-block; background:#fff; border:1px solid #ccc; border-radius:4px; padding:2px 8px; margin:4px 4px 4px 0; font-size:12px;">2.
+                                    味わう</span>
+                                <span
+                                    style="display:inline-block; background:#fff; border:1px solid #ccc; border-radius:4px; padding:2px 8px; margin:4px 4px 4px 0; font-size:12px;">3.
+                                    体験する</span>
+                                <span
+                                    style="display:inline-block; background:#fff; border:1px solid #ccc; border-radius:4px; padding:2px 8px; margin:4px 4px 4px 0; font-size:12px;">4.
+                                    働く・住む</span>
+                                <span
+                                    style="display:inline-block; background:#fff; border:1px solid #ccc; border-radius:4px; padding:2px 8px; margin:4px 4px 4px 0; font-size:12px;">5.
+                                    販売・発信する</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th style="background: #f1f3f5; padding: 12px; text-align: left;">UI/UX設計</th>
+                            <td style="padding: 12px; line-height: 1.6;">
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    <li>小テーマごとのカード表示アーキテクチャ。</li>
+                                    <li>クリックによるモーダル展開で詳細情報を提示（ページ遷移のストレス排除）。</li>
+                                    <li>モーダル内には、タイトル、リード文、本文、及び営業日・住所・参加費などの実用情報を表組み表示。</li>
+                                    <li>外部リンク（Web・EC・SNS）へのアイコンボタンによる直感的な遷移導線。</li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 3. 実装機能 -->
+                <h2
+                    style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
+                    3. 実装機能仕様一覧</h2>
+
+                <h3 style="color: var(--text);">3.1 情報表示機能（基礎機能）</h3>
                 <ul style="line-height: 1.8;">
-                    <li><strong>多言語対応</strong>：日本語、English、繁體中文の3言語を即座にシームレス切り替え可能。</li>
-                    <li><strong>統合検索ジャーニー</strong>：検索窓からのキーワード入力や、記事内に散りばめられた関連キーワードを横断し、回遊性を重視した設計。</li>
+                    <li><strong>コンテンツ統合:</strong> 品種紹介、直売所、観光情報、求人、イベント等、既存情報の整理統合表示。</li>
+                    <li><strong>基本情報＋補足導線:</strong> 各テーマの基本情報表示に加え、関連リンクへの導線を設置。</li>
                 </ul>
 
-                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">3.
-                    動的デジタル・パンフレット発行 (Flyer Studio)</h2>
-                <p style="line-height: 1.8;">ブラウザ上で誰でも簡単に、記事データベースと連動したオリジナルパンフレットを生成できる独立したシステムです。</p>
+                <h3 style="color: var(--text);">3.2 アクション機能</h3>
+                <ul style="line-height: 1.8;">
+                    <li><strong>共有ボタン (Share):</strong> ユーザーのブラウザ・OS標準のシェア機能を起動し、LINEやメール等を通じた拡散を促進。</li>
+                    <li><strong>ダウンロードボタン (Download):</strong> パンフレットPDFなど、配布資料の直接取得。</li>
+                    <li><strong>印刷ボタン (Print):</strong>
+                        PC版のみ。モーダル表示情報をA4サイズに自動整理し、アクセス用QRコードとクレジット表記を付与した上でブラウザの印刷機能(Print to PDF)を呼び出す。</li>
+                </ul>
+
+                <h3 style="color: var(--text);">3.3 拡張予定機能（ロードマップ）</h3>
+                <ul style="line-height: 1.8;">
+                    <li>トップページ（ニュース・動画・記事フィードの実装）</li>
+                    <li>多言語化（英語先行、将来拡充予定）</li>
+                    <li>Googleマップ連携（りんご関連マップの表示）</li>
+                    <li><strong>問い合わせ・情報提供窓口フォーム:</strong>
+                        <ul style="margin-top: 5px;">
+                            <li>生産者の生産体制や品種に関する情報受付フォーム</li>
+                            <li>参画事業者の要件・登録申請フォーム</li>
+                            <li>行政からの情報発信物の受け口および発信口としての統合窓口</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <!-- 4. 連動システム -->
+                <h2
+                    style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
+                    4. 連携独立システム</h2>
+
+                <h3 style="color: var(--text);">4.1 動的デジタル・パンフレット発行 (Flyer Studio)</h3>
+                <p style="line-height: 1.8;">ブラウザ上で誰でも簡単に、記事データベースと連動したオリジナルパンフレットを生成できる独立したシステム。</p>
                 <div
-                    style="background: rgba(255,149,0,0.1); padding: 15px 20px; border-radius: 12px; border-left: 4px solid var(--accent); margin: 15px 0;">
+                    style="background: rgba(255,149,0,0.1); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent); margin-bottom: 20px;">
                     <a href="https://iizuna-flyer-studio.vercel.app/" target="_blank"
-                        style="color: var(--primary); font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px;">
-                        🔗 Flyer Studio を開く
-                    </a>
+                        style="color: var(--primary); font-weight: bold; text-decoration: none;">🔗 Flyer Studio
+                        稼働システムを開く</a>
                 </div>
                 <ul style="line-height: 1.8;">
-                    <li><strong>Canvas
-                            UI搭載</strong>：ズームイン・アウト機能を備えた直感的なプレビュー画面。ユーザーのOS環境に依存せず、常に1:1のピクセルパーフェクトな配置を保証。</li>
-                    <li><strong>テーマカスタマイズ機能</strong>：Apple Pink, Terracotta, Matchaなど、季節や好みに応じた表紙カラーを即座に反映。</li>
-                    <li><strong>多言語静的PDF出力</strong>：画面の内容をそのまま高画質印刷用データ(A4三つ折りサイズ)としてブラウザ標準機能から保存・印刷可能。</li>
+                    <li><strong>Canvas UI搭載:</strong> ズームイン・アウト機能を備えた直感的なプレビュー画面。OS環境に依存せず、常に1:1のピクセルパーフェクト配置を保証。</li>
+                    <li><strong>テーマカスタマイズ機能:</strong> Apple Pink, Terracotta, Matcha等、季節や好みに応じたカラーテーマを即座に反映。</li>
+                    <li><strong>多言語静的PDF出力機能:</strong> 画面内容を構造化されたHTML/CSSとして描写し、ブラウザ標準の印刷機能から高品位なA4三つ折りサイズの印刷用データを出力可能。
+                    </li>
                 </ul>
 
-                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">4.
-                    次世代型アクセス分析システム (Analytics)</h2>
-                <p style="line-height: 1.8;">単なる数字の集計を超え、ユーザーの「真の関心」を可視化するGASベースの解析エンジンです。</p>
+                <h3 style="color: var(--text);">4.2 次世代型アクセス分析システム (Analytics)</h3>
+                <p style="line-height: 1.8;">単なる数字の集計を超え、ユーザーの「真の関心」を可視化するGASベースの解析エンジン（本ダッシュボード）。</p>
                 <ul style="line-height: 1.8;">
-                    <li><strong>アクティブ滞在時間計測</strong>：Page Visibility
-                        APIを活用し、「実際に画面を注視していた時間」だけを測定。本当に読まれている記事を正確にランキングします。</li>
-                    <li><strong>モバイル完全対応</strong>：スタック表示と2x2グリッドにより、スマートフォンでも素早くKPIを確認可能。</li>
-                    <li><strong>シームレス連動</strong>：このダッシュボード自体が解析結果のビジュアライズを担当しています。</li>
+                    <li><strong>アクティブ滞在時間計測:</strong> Page Visibility
+                        APIを活用し、「実際に画面を注視していた時間」だけを測定。本当に読まれている記事を正確にランキング。</li>
+                    <li><strong>モバイル最適化UI:</strong> スタック表示と2x2グリッドにより、スマートフォンでも素早くKPIの確認が可能。</li>
+                    <li><strong>シームレス連動:</strong> 分析ダッシュボードと仕様書を統合し、データとプロジェクト目標の乖離を運用担当者が随時確認できる体制を構築。</li>
                 </ul>
 
-                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">5.
-                    システムURL・リソース一覧</h2>
-                <ul style="line-height: 2; padding-left: 0; list-style: none;">
-                    <li>🌍 <strong>ウェブサイト (本番):</strong> <a href="https://appletown-iizuna.com/" target="_blank"
-                            style="color:var(--primary);">https://appletown-iizuna.com/</a></li>
-                    <li>🎨 <strong>パンフレット (Flyer):</strong> <a href="https://iizuna-flyer-studio.vercel.app/"
-                            target="_blank" style="color:var(--primary);">https://iizuna-flyer-studio.vercel.app/</a>
-                    </li>
-                    <li>📊 <strong>管理Database (GAS/DB):</strong> <a
-                            href="https://docs.google.com/spreadsheets/d/1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU/edit"
-                            target="_blank" style="color:var(--primary);">Google Sheets を開く</a></li>
-                    <li>🔐 <strong>GAS API エンドポイント:</strong> <code
-                            style="background:#eee; padding:2px 6px; border-radius:4px; font-size: 12px;">https://script.google.com/macros/s/AKfycbwOeaN1HpkdpmSVW0fh7oLITiN3c48Rb6IuoL5bT8otQL82gv8jxw1bQK4ZWUOvM47d/exec</code>
-                    </li>
-                </ul>
-                <div style="margin-top: 50px; text-align: right; color: var(--text-muted); font-size: 12px;">
-                    作成者: Antigravity (Advanced AI Architecture Lead)
+                <!-- 5. システムリソース -->
+                <h2
+                    style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
+                    5. システムURL・リソース管理</h2>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;" border="1">
+                    <thead>
+                        <tr>
+                            <th style="background: #f1f3f5; padding: 10px; text-align: left;">リソース種別</th>
+                            <th style="background: #f1f3f5; padding: 10px; text-align: left;">URL / エンドポイント</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold;">WEBサイト (本番候補)</td>
+                            <td style="padding: 10px;"><a href="https://appletown-iizuna.com/" target="_blank"
+                                    style="color:var(--primary);">https://appletown-iizuna.com/</a></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold;">CMS 管理用 Spreadsheet</td>
+                            <td style="padding: 10px;"><a
+                                    href="https://docs.google.com/spreadsheets/d/1ODqTU1KspNWDZq7NYICyeAjUOHNdQIV9TfFs9fpPKkU/edit?usp=sharing"
+                                    target="_blank" style="color:var(--primary);">Google Sheets を開く</a></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold;">Flyer Studio (パンフレット)</td>
+                            <td style="padding: 10px;"><a href="https://iizuna-flyer-studio.vercel.app/" target="_blank"
+                                    style="color:var(--primary);">https://iizuna-flyer-studio.vercel.app/</a></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; font-weight: bold;">アクセス解析 (GAS API)</td>
+                            <td style="padding: 10px;"><code
+                                    style="background:#eee; padding:2px 6px; border-radius:4px; font-size: 11px;">https://script.google.com/macros/s/AKfycbwOeaN1HpkdpmSVW0fh7oLITiN3c48Rb6IuoL5bT8otQL82gv8jxw1bQK4ZWUOvM47d/exec</code>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 6. 懸案・決定事項 -->
+                <h2 style="color: #e03131; margin-top: 40px; border-left: 4px solid #e03131; padding-left: 10px;">6.
+                    懸案事項・確認事項</h2>
+                <div style="background: #fff5f5; padding: 20px; border-radius: 8px; border: 1px solid #ffc9c9;">
+                    <ul style="line-height: 1.8; margin-bottom: 0;">
+                        <li><strong>ドメイン:</strong> 公式サイトのURL設定方針のご検討（例：www.apple-iizuna.jp など）</li>
+                        <li><strong>サイト名称:</strong> 「りんごのまちいいづな」など仮称になっている部分の本番向け正式決定</li>
+                        <li><strong>サイトロゴ:</strong> Webサイト・パンフレット・SNS等で共通使用できるロゴデザインのご準備</li>
+                        <li><strong>その他素材:</strong> 町として優先的に使用したいキャッチコピーやビジュアル（シンボル写真、キャラクター等）の共有</li>
+                        <li><strong>画像素材の提供事項:</strong> 農園や直売所、イベントなど、町の特色が伝わる写真素材のご提供</li>
+                        <li><strong>パンフレットデータ提供:</strong> 既存の観光・農産物パンフレットやイベント資料などの提供（Webコンテンツ化の参考情報として）</li>
+                    </ul>
+                </div>
+
+                <div
+                    style="margin-top: 50px; text-align: right; color: #999; font-size: 12px; border-top: 1px solid #eee; padding-top: 20px;">
+                    システム設計統括: Antigravity (Advanced AI Architecture Lead)
                 </div>
             </div>
         </div>
