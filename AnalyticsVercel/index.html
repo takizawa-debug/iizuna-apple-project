@@ -449,10 +449,21 @@
         <header>
             <div>
                 <span class="badge" style="background: var(--text); padding: 4px 14px; font-size: 11px;">Iizuna Apple
-                    Town Analytics</span>
-                <h1>りんごのまちいいづな<br><span style="color:var(--text); font-size: 0.8em;">アクセス解析ダッシュボード</span></h1>
+                    Town System</span>
+                <h1>りんごのまちいいづな<br><span style="color:var(--text); font-size: 0.8em;">ダッシュボード & 仕様書</span></h1>
+
+                <!-- 🍎 Tab Navigation -->
+                <div class="tabs" style="margin-top: 20px; display: flex; gap: 10px;">
+                    <button class="tab-btn active" onclick="switchView('analytics', this)"
+                        style="padding: 10px 20px; border: none; background: var(--primary); color: white; border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.2s;">📊
+                        Analytics 解析</button>
+                    <button class="tab-btn" onclick="switchView('specs', this)"
+                        style="padding: 10px 20px; border: none; background: #eee; color: var(--text); border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.2s;">📄
+                        System 仕様書</button>
+                </div>
             </div>
-            <div class="header-actions">
+
+            <div class="header-actions" id="analytics-actions">
                 <div class="date-range-selector">
                     <select id="range-preset" onchange="onPresetChange()">
                         <option value="7d">直近7日間</option>
@@ -472,161 +483,248 @@
             </div>
         </header>
 
-        <div class="grid metrics-grid">
-            <div class="card clickable active" onclick="switchMetric('pv', this)">
-                <div class="card-title">指定期間の合計PV</div>
-                <div class="card-value" id="total-pv">-</div>
-            </div>
-            <div class="card clickable" onclick="switchMetric('uu', this)">
-                <div class="card-title">ユニークユーザー数 (UU)</div>
-                <div class="card-value" id="total-uu">-</div>
-            </div>
-            <div class="card clickable" onclick="switchMetric('modal', this)">
-                <div class="card-title">詳細表示回数</div>
-                <div class="card-value" id="modal-opens">-</div>
-            </div>
-            <div class="card clickable" onclick="switchMetric('kw', this)">
-                <div class="card-title">キーワードクリック</div>
-                <div class="card-value" id="kw-clicks">-</div>
-            </div>
-        </div>
+        <!-- 🍎 Analytics View Container -->
+        <div id="analytics-view">
 
-        <div class="chart-card">
-            <div class="chart-header">
-                <div class="table-title">トレンド推移 <i>前期間との比較</i></div>
-                <div class="chart-legend">
-                    <div class="legend-item"><span class="dot current"></span> <span>選択期間</span></div>
-                    <div class="legend-item"><span class="dot prev"></span> <span>前期間</span></div>
+            <div class="grid metrics-grid">
+                <div class="card clickable active" onclick="switchMetric('pv', this)">
+                    <div class="card-title">指定期間の合計PV</div>
+                    <div class="card-value" id="total-pv">-</div>
+                </div>
+                <div class="card clickable" onclick="switchMetric('uu', this)">
+                    <div class="card-title">ユニークユーザー数 (UU)</div>
+                    <div class="card-value" id="total-uu">-</div>
+                </div>
+                <div class="card clickable" onclick="switchMetric('modal', this)">
+                    <div class="card-title">詳細表示回数</div>
+                    <div class="card-value" id="modal-opens">-</div>
+                </div>
+                <div class="card clickable" onclick="switchMetric('kw', this)">
+                    <div class="card-title">キーワードクリック</div>
+                    <div class="card-value" id="kw-clicks">-</div>
                 </div>
             </div>
-            <div style="height: 300px; position: relative;">
-                <canvas id="main-chart"></canvas>
-            </div>
-        </div>
 
-        <div class="grid">
-            <div class="table-card">
-                <div class="table-title">人気ページ <i>集計済パス</i></div>
-                <table id="base-rank-table">
-                    <thead>
-                        <tr>
-                            <th>ページ</th>
-                            <th style="text-align: right;">PV数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="table-title">トレンド推移 <i>前期間との比較</i></div>
+                    <div class="chart-legend">
+                        <div class="legend-item"><span class="dot current"></span> <span>選択期間</span></div>
+                        <div class="legend-item"><span class="dot prev"></span> <span>前期間</span></div>
+                    </div>
+                </div>
+                <div style="height: 300px; position: relative;">
+                    <canvas id="main-chart"></canvas>
+                </div>
             </div>
-            <div class="table-card">
-                <div class="table-title">記事のアクティブ滞在時間ランキング <i>平均読了時間</i></div>
-                <table id="duration-rank-table">
-                    <thead>
-                        <tr>
-                            <th>記事タイトル</th>
-                            <th style="text-align: right;">平均時間</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="grid">
-            <div class="table-card">
-                <div class="table-title">注目キーワード <i>検索・自動リンク</i></div>
-                <table id="kw-rank-table">
-                    <thead>
-                        <tr>
-                            <th>単語</th>
-                            <th style="text-align: right;">ヒット数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="grid">
+                <div class="table-card">
+                    <div class="table-title">人気ページ <i>集計済パス</i></div>
+                    <table id="base-rank-table">
+                        <thead>
+                            <tr>
+                                <th>ページ</th>
+                                <th style="text-align: right;">PV数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <div class="table-title">記事のアクティブ滞在時間ランキング <i>平均読了時間</i></div>
+                    <table id="duration-rank-table">
+                        <thead>
+                            <tr>
+                                <th>記事タイトル</th>
+                                <th style="text-align: right;">平均時間</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-card">
-                <div class="table-title">人気アイテム <i>詳細表示</i></div>
-                <table id="item-rank-table">
-                    <thead>
-                        <tr>
-                            <th>項目</th>
-                            <th style="text-align: right;">閲覧数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="grid">
-            <div class="table-card">
-                <div class="table-title">流入地域ランキング <i>アクセス元地域</i></div>
-                <table id="region-rank-table">
-                    <thead>
-                        <tr>
-                            <th>都道府県・市区町村</th>
-                            <th style="text-align: right;">アクセス数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="grid">
+                <div class="table-card">
+                    <div class="table-title">注目キーワード <i>検索・自動リンク</i></div>
+                    <table id="kw-rank-table">
+                        <thead>
+                            <tr>
+                                <th>単語</th>
+                                <th style="text-align: right;">ヒット数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <div class="table-title">人気アイテム <i>詳細表示</i></div>
+                    <table id="item-rank-table">
+                        <thead>
+                            <tr>
+                                <th>項目</th>
+                                <th style="text-align: right;">閲覧数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-card">
-                <div class="table-title">流入元ランキング <i>参照元サイト</i></div>
-                <table id="ref-rank-table">
-                    <thead>
-                        <tr>
-                            <th>ドメイン</th>
-                            <th style="text-align: right;">流入数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="grid">
-            <div class="table-card">
-                <div class="table-title">SNS共有ランキング <i>シェア数</i></div>
-                <table id="share-rank-table">
-                    <thead>
-                        <tr>
-                            <th>記事タイトル</th>
-                            <th style="text-align: right;">シェア数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="grid">
+                <div class="table-card">
+                    <div class="table-title">流入地域ランキング <i>アクセス元地域</i></div>
+                    <table id="region-rank-table">
+                        <thead>
+                            <tr>
+                                <th>都道府県・市区町村</th>
+                                <th style="text-align: right;">アクセス数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <div class="table-title">流入元ランキング <i>参照元サイト</i></div>
+                    <table id="ref-rank-table">
+                        <thead>
+                            <tr>
+                                <th>ドメイン</th>
+                                <th style="text-align: right;">流入数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
-            <div class="table-card">
-                <div class="table-title">PDF発行ランキング <i>印刷数</i></div>
-                <table id="pdf-rank-table">
-                    <thead>
-                        <tr>
-                            <th>記事タイトル</th>
-                            <th style="text-align: right;">発行数</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
 
-        <div class="table-card" style="margin-top: 20px;">
-            <div class="table-title">外部リンク遷移 <i>離脱アクション</i></div>
-            <table id="exit-rank-table">
-                <thead>
-                    <tr>
-                        <th>遷移先URL / ドメイン</th>
-                        <th style="text-align: right;">クリック数</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="grid">
+                <div class="table-card">
+                    <div class="table-title">SNS共有ランキング <i>シェア数</i></div>
+                    <table id="share-rank-table">
+                        <thead>
+                            <tr>
+                                <th>記事タイトル</th>
+                                <th style="text-align: right;">シェア数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="table-card">
+                    <div class="table-title">PDF発行ランキング <i>印刷数</i></div>
+                    <table id="pdf-rank-table">
+                        <thead>
+                            <tr>
+                                <th>記事タイトル</th>
+                                <th style="text-align: right;">発行数</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="table-card" style="margin-top: 20px;">
+                <div class="table-title">外部リンク遷移 <i>離脱アクション</i></div>
+                <table id="exit-rank-table">
+                    <thead>
+                        <tr>
+                            <th>遷移先URL / ドメイン</th>
+                            <th style="text-align: right;">クリック数</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div> <!-- End Analytics View -->
+
+        <!-- 🍎 Specifications View Container -->
+        <div id="specs-view" style="display: none;">
+            <div class="card" style="padding: 40px; margin-bottom: 30px;">
+                <h2 style="margin-top:0; font-family: 'Noto Sans JP'; color: var(--primary);">1. プロジェクト・ビジョン
+                </h2>
+                <p style="line-height: 1.8; color: var(--text);">
+                    飯綱町が誇る「りんご」の魅力を、国内のみならず多言語で発信し、直感的な検索と美麗なビジュアルでユーザーの興味を惹きつける「デジタル・ショーケース」の実現。</p>
+                <img src="https://takizawa-debug.github.io/appletown-iizuna-images/images/top_page_screenshot_1771156263192.png"
+                    alt="Top Page"
+                    style="width: 100%; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+
+                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">2.
+                    インタラクティブ・ユーザー体験 (UX)</h2>
+                <p style="line-height: 1.8;">ユーザーの「知りたい」に即座に応える、高度なフロントエンド機能を搭載。</p>
+                <ul style="line-height: 1.8;">
+                    <li><strong>多言語対応</strong>：日本語、English、繁體中文の3言語を即座にシームレス切り替え可能。</li>
+                    <li><strong>統合検索ジャーニー</strong>：検索窓からのキーワード入力や、記事内に散りばめられた関連キーワードを横断し、回遊性を重視した設計。</li>
+                </ul>
+
+                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">3.
+                    動的デジタル・パンフレット発行 (Flyer Studio)</h2>
+                <p style="line-height: 1.8;">ブラウザ上で誰でも簡単に、記事データベースと連動したオリジナルパンフレットを生成できる独立したシステムです。</p>
+                <div
+                    style="background: rgba(255,149,0,0.1); padding: 15px 20px; border-radius: 12px; border-left: 4px solid var(--accent); margin: 15px 0;">
+                    <a href="https://iizuna-flyer-studio.vercel.app/" target="_blank"
+                        style="color: var(--primary); font-weight: bold; text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                        🔗 Flyer Studio を開く
+                    </a>
+                </div>
+                <ul style="line-height: 1.8;">
+                    <li><strong>Canvas
+                            UI搭載</strong>：ズームイン・アウト機能を備えた直感的なプレビュー画面。ユーザーのOS環境に依存せず、常に1:1のピクセルパーフェクトな配置を保証。</li>
+                    <li><strong>テーマカスタマイズ機能</strong>：Apple Pink, Terracotta, Matchaなど、季節や好みに応じた表紙カラーを即座に反映。</li>
+                    <li><strong>多言語静的PDF出力</strong>：画面の内容をそのまま高画質印刷用データ(A4三つ折りサイズ)としてブラウザ標準機能から保存・印刷可能。</li>
+                </ul>
+
+                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">4.
+                    次世代型アクセス分析システム (Analytics)</h2>
+                <p style="line-height: 1.8;">単なる数字の集計を超え、ユーザーの「真の関心」を可視化するGASベースの解析エンジンです。</p>
+                <ul style="line-height: 1.8;">
+                    <li><strong>アクティブ滞在時間計測</strong>：Page Visibility
+                        APIを活用し、「実際に画面を注視していた時間」だけを測定。本当に読まれている記事を正確にランキングします。</li>
+                    <li><strong>モバイル完全対応</strong>：スタック表示と2x2グリッドにより、スマートフォンでも素早くKPIを確認可能。</li>
+                    <li><strong>シームレス連動</strong>：このダッシュボード自体が解析結果のビジュアライズを担当しています。</li>
+                </ul>
+
+                <h2 style="font-family: 'Noto Sans JP'; color: var(--primary); margin-top: 40px;">5.
+                    システムURL・リソース一覧</h2>
+                <ul style="line-height: 2; padding-left: 0; list-style: none;">
+                    <li>🌍 <strong>ウェブサイト (本番):</strong> <a href="https://appletown-iizuna.com/" target="_blank"
+                            style="color:var(--primary);">https://appletown-iizuna.com/</a></li>
+                    <li>🎨 <strong>パンフレット (Flyer):</strong> <a href="https://iizuna-flyer-studio.vercel.app/"
+                            target="_blank" style="color:var(--primary);">https://iizuna-flyer-studio.vercel.app/</a>
+                    </li>
+                    <li>📊 <strong>管理Database (GAS/DB):</strong> <a
+                            href="https://docs.google.com/spreadsheets/d/1bXo0glShkmUXFF-LwTm8HkWs9N9bUbTWxJel7x9sLEU/edit"
+                            target="_blank" style="color:var(--primary);">Google Sheets を開く</a></li>
+                    <li>🔐 <strong>GAS API エンドポイント:</strong> <code
+                            style="background:#eee; padding:2px 6px; border-radius:4px; font-size: 12px;">https://script.google.com/macros/s/AKfycbwOeaN1HpkdpmSVW0fh7oLITiN3c48Rb6IuoL5bT8otQL82gv8jxw1bQK4ZWUOvM47d/exec</code>
+                    </li>
+                </ul>
+                <div style="margin-top: 50px; text-align: right; color: var(--text-muted); font-size: 12px;">
+                    作成者: Antigravity (Advanced AI Architecture Lead)
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // 🍎 Tab Switching Logic
+        function switchView(viewName, btnEl) {
+            // Update buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.style.background = '#eee';
+                btn.style.color = 'var(--text)';
+            });
+            btnEl.style.background = 'var(--primary)';
+            btnEl.style.color = 'white';
+
+            // Update views
+            document.getElementById('analytics-view').style.display = viewName === 'analytics' ? 'block' : 'none';
+            document.getElementById('analytics-actions').style.display = viewName === 'analytics' ? 'flex' : 'none';
+            document.getElementById('specs-view').style.display = viewName === 'specs' ? 'block' : 'none';
+        }
+
         function onPresetChange() {
             const preset = document.getElementById('range-preset').value;
             const customUi = document.getElementById('custom-range-ui');
