@@ -74,11 +74,15 @@
 
     const getUtmParams = () => {
       const params = new URLSearchParams(L.search);
-      return {
+      const res = {
         utm_source: params.get('utm_source'),
         utm_medium: params.get('utm_medium'),
         utm_campaign: params.get('utm_campaign')
       };
+      if (params.has('uid')) res.uid = params.get('uid');
+      if (params.has('time')) res.time = params.get('time');
+      if (params.has('type')) res.type = params.get('type');
+      return res;
     };
 
     /* ==========================================
@@ -240,7 +244,7 @@
         // 🍎 URLクリーンアップ (utm_source 等をアドレスバーから削除)
         if (W.history.replaceState) {
           const url = new URL(L.href);
-          const targets = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+          const targets = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'uid', 'time', 'type'];
           let changed = false;
           targets.forEach(k => { if (url.searchParams.has(k)) { url.searchParams.delete(k); changed = true; } });
           if (changed) {

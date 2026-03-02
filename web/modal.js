@@ -17,6 +17,22 @@ window.lzModal = (function () {
 
   var track = function (name, params) { if (window.mzTrack) window.mzTrack(name, params); };
 
+  var getAppUID = function () {
+    var uid = localStorage.getItem('app_uid');
+    if (!uid) {
+      uid = 'user_' + Math.random().toString(36).substr(2, 11);
+      localStorage.setItem('app_uid', uid);
+    }
+    return uid;
+  };
+
+  var getActionTimestamp = function () {
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) +
+      pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+  };
+
   var ICON = {
     web: `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20" stroke="currentColor" stroke-width="2" fill="none"/></svg>`,
     ec: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.6a2 2 0 0 0 2-1.6L20 8H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="19" r="1.6" fill="currentColor"/><circle cx="17" cy="19" r="1.6" fill="currentColor"/></svg>`,
@@ -133,7 +149,7 @@ window.lzModal = (function () {
       if (!window.jspdf) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
       if (!window.html2canvas) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
       if (!window.QRCode) await C.loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
-      var qrUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(cardId) + "&utm_source=pdf_qr";
+      var qrUrl = window.location.origin + window.location.pathname + "?lang=" + MODAL_ACTIVE_LANG + "&id=" + encodeURIComponent(cardId) + "&utm_source=pdf_qr&uid=" + getAppUID() + "&time=" + getActionTimestamp() + "&type=print";
       var clone = element.cloneNode(true);
       clone.querySelector(".lz-actions").remove();
       if (clone.querySelector(".lz-m-lang-tabs")) clone.querySelector(".lz-m-lang-tabs").remove();
@@ -331,7 +347,7 @@ window.lzModal = (function () {
     MODAL.querySelector(".lz-share").onclick = function () {
       var detailsLabel = getTranslation('詳しくはこちら', MODAL_ACTIVE_LANG);
       var hashtags = getTranslation('hashtags', MODAL_ACTIVE_LANG);
-      var shareUrl = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'utm_source=share';
+      var shareUrl = window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'utm_source=share&uid=' + getAppUID() + '&time=' + getActionTimestamp() + '&type=share';
       var parts = [
         window.LZ_COMMON.RED_APPLE + title + window.LZ_COMMON.GREEN_APPLE,
         lead, "ーーー", detailsLabel, shareUrl, "", hashtags
