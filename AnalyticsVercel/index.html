@@ -3594,8 +3594,22 @@
 
             // Print function
             function triggerPrint() {
-                window.print();
+                // すべてのアコーディオンを強制的に開く
+                document.querySelectorAll('details').forEach(details => {
+                    details.open = true;
+                });
+                // 開くアニメーション等の反映を少し待ってからプリントダイアログを起動
+                setTimeout(() => {
+                    window.print();
+                }, 100);
             }
+
+            // ブラウザの標準印刷機能（Ctrl+P / Cmd+P）のアクション時にも発火させる
+            window.addEventListener('beforeprint', () => {
+                document.querySelectorAll('details').forEach(details => {
+                    details.open = true;
+                });
+            });
 
             // --- Accordion Logic for H2 Sections ---
             document.addEventListener('DOMContentLoaded', () => {
