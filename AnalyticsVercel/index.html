@@ -2653,16 +2653,22 @@
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 15px;">
-                        <img src="images/keyword_link.png" alt="キーワード自動リンクの仕組み"
-                            style="width: 100%; max-width: 600px; border-radius: 6px; border: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: block; margin: 0 auto;">
+                    <div
+                        style="margin-bottom: 25px; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+                        <img src="images/keyword_link.png" alt="キーワード自動リンクの仕組み（記事本文）"
+                            style="width: 100%; max-width: 600px; border-radius: 6px; border: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: block;">
+                        <img src="images/keyword_link_2.png" alt="キーワード自動リンクの仕組み（関連記事一覧）"
+                            style="width: 100%; max-width: 600px; border-radius: 6px; border: 1px solid #ddd; box-shadow: 0 2px 6px rgba(0,0,0,0.05); display: block;">
                     </div>
                     <div
                         style="background: rgba(0, 122, 255, 0.04); border-left: 3px solid var(--primary); padding: 15px 20px; margin-bottom: 30px; border-radius: 0 4px 4px 0;">
                         <strong
                             style="color: var(--primary); display: block; margin-bottom: 8px; font-size: 14px;">具体的なシステム実装（独自の内部リンク網）</strong>
+                        <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: #555; margin-bottom: 10px;">
+                            多言語対応の<strong>「キーワードリスト（マスターデータ）」</strong>をシステム側に保持し、それを軸に記事を作成しています。記事の本文の中でキーワードが出現すると緑色（クリッカブル）になり、それを押すと他の記事で同様のキーワードが紐づいた記事の一覧が表示される仕組みです。
+                        </p>
                         <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: #555;">
-                            単に記事を書くのではなく、多言語対応の<strong>「キーワードリスト（マスターデータ）」</strong>をシステム側に保持し、それを軸に記事を作成しています。ユーザーが読む記事の本文中に登録キーワードが出現した場合、<strong>自動的にクリック可能なリンクとなり、関連する別記事へとシームレスに飛べる構造</strong>を実現しています。この独自の内部リンク・エコシステムが、AIの要約だけでは完結しない「サイト内の回遊体験」を生み出します。
+                            つまり、記事自体もこのキーワードをできるだけ使いながら構成していくことで、ページ全体が網目のような構成になっていきます。この独自の内部リンク・エコシステムにより、AIの要約だけでは完結しない「サイト内の回遊体験」を生み出し、<strong>記事が増えれば増えるほど回遊性が高まる仕組み</strong>を実現しています。
                         </p>
                     </div>
 
