@@ -945,10 +945,9 @@
                         <p>更新日: 2026年3月1日 / システム実装: 株式会社みみずや</p>
                     </div>
 
-                    <!-- 1. サイト基本定義 -->
                     <h2 id="sec-1"
                         style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
-                        1. サイト定義・基本情報 (Site Identity)</h2>
+                        1. サイト定義・基本情報</h2>
                     <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;" border="1">
                         <tbody>
                             <tr>
@@ -3594,6 +3593,83 @@
             function triggerPrint() {
                 window.print();
             }
+
+            // --- Accordion Logic for H2 Sections ---
+            document.addEventListener('DOMContentLoaded', () => {
+                const style = document.createElement('style');
+                style.innerHTML = 'summary::-webkit-details-marker { display: none; } details summary { list-style: none; outline: none; }';
+                document.head.appendChild(style);
+
+                const sections = Array.from(document.querySelectorAll('.specs-content h2[id^="sec-"]'));
+                sections.forEach(h2 => {
+                    const details = document.createElement('details');
+                    details.style.marginBottom = '40px';
+
+                    const summary = document.createElement('summary');
+                    summary.style.cursor = 'pointer';
+                    summary.style.display = 'flex';
+                    summary.style.alignItems = 'center';
+                    summary.style.justifyContent = 'space-between';
+                    summary.style.background = '#fafafa';
+                    summary.style.padding = '15px 20px';
+                    summary.style.borderRadius = '8px';
+                    summary.style.border = '1px solid #eee';
+                    summary.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)';
+
+                    const newH2 = h2.cloneNode(true);
+                    newH2.style.margin = '0';
+                    newH2.style.padding = '0';
+                    newH2.style.border = 'none';
+
+                    const icon = document.createElement('span');
+                    icon.innerHTML = '▼';
+                    icon.style.color = 'var(--primary)';
+                    icon.style.transition = 'transform 0.3s';
+                    icon.style.transform = 'rotate(-90deg)';
+
+                    summary.appendChild(newH2);
+                    summary.appendChild(icon);
+                    details.appendChild(summary);
+
+                    const content = document.createElement('div');
+                    content.style.paddingTop = '20px';
+                    content.style.paddingLeft = '5px';
+                    content.style.paddingRight = '5px';
+
+                    let next = h2.nextSibling;
+                    while (next) {
+                        if (next.nodeType === 1) { // Element
+                            if (next.tagName === 'H2' && next.id.startsWith('sec-')) break;
+                            if (next.classList.contains('print-btn')) break;
+                            if (next.textContent.includes('システム設計統括')) break;
+                        }
+                        const toMove = next;
+                        next = next.nextSibling;
+                        content.appendChild(toMove);
+                    }
+
+                    details.appendChild(content);
+                    h2.parentNode.replaceChild(details, h2);
+
+                    details.addEventListener('toggle', () => {
+                        icon.style.transform = details.open ? 'rotate(0deg)' : 'rotate(-90deg)';
+                    });
+                });
+
+                // Open accordion when clicking TOC link
+                document.querySelectorAll('.toc-list a').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        const targetId = link.getAttribute('href').substring(1);
+                        const targetH2 = document.getElementById(targetId);
+                        if (targetH2) {
+                            const details = targetH2.closest('details');
+                            if (details && !details.open) {
+                                details.open = true;
+                            }
+                        }
+                    });
+                });
+            });
 
             // --- Scroll Spy Logic for TOC ---
             document.addEventListener('DOMContentLoaded', () => {
