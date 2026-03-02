@@ -712,16 +712,16 @@
 
                 <!-- 🍎 Tab Navigation -->
                 <div class="tabs" style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="tab-btn active" onclick="switchView('analytics', this)"
-                        style="padding: 10px 20px; border: none; background: var(--primary); color: white; border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.2s;">📊
+                    <button class="tab-btn" onclick="switchView('analytics', this)"
+                        style="padding: 10px 20px; border: none; background: #eee; color: var(--text); border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.2s;">📊
                         Analytics 解析</button>
-                    <button class="tab-btn" onclick="switchView('specs', this)"
-                        style="padding: 10px 20px; border: none; background: #eee; color: var(--text); border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.2s;">📄
+                    <button class="tab-btn active" onclick="switchView('specs', this)"
+                        style="padding: 10px 20px; border: none; background: var(--primary); color: white; border-radius: 99px; font-weight: 700; cursor: pointer; transition: 0.2s;">📄
                         System 仕様書</button>
                 </div>
             </div>
 
-            <div class="header-actions" id="analytics-actions">
+            <div class="header-actions" id="analytics-actions" style="display: none;">
                 <div class="date-range-selector">
                     <select id="range-preset" onchange="onPresetChange()">
                         <option value="7d">直近7日間</option>
@@ -742,7 +742,7 @@
         </header>
 
         <!-- 🍎 Analytics View Container -->
-        <div id="analytics-view">
+        <div id="analytics-view" style="display: none;">
 
             <div class="grid metrics-grid">
                 <div class="card clickable active" onclick="switchMetric('pv', this)">
@@ -899,7 +899,7 @@
         </div> <!-- End Analytics View -->
 
         <!-- 🍎 Specifications View Container -->
-        <div id="specs-view" style="display: none; margin-top: 30px;">
+        <div id="specs-view" style="margin-top: 30px;">
             <div class="specs-layout">
                 <!-- Left Sidebar TOC -->
                 <div class="toc-container">
@@ -934,7 +934,7 @@
                         飯綱町産りんごPR事業 システム仕様書</h1>
 
                     <div style="text-align: right; margin-bottom: 30px; color: #666;">
-                        <p>作成・更新日: 2025年10月1日 / システム実装: Antigravity</p>
+                        <p>作成・更新日: 2025年10月1日 / システム実装: 株式会社みみずや</p>
                     </div>
 
                     <!-- 1. サイト基本定義 -->
@@ -2977,9 +2977,11 @@
             function switchView(viewName, btnEl) {
                 // Update buttons
                 document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
                     btn.style.background = '#eee';
                     btn.style.color = 'var(--text)';
                 });
+                btnEl.classList.add('active');
                 btnEl.style.background = 'var(--primary)';
                 btnEl.style.color = 'white';
 
