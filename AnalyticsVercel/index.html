@@ -2578,7 +2578,7 @@
                     <div style="margin-bottom: 30px;">
                         <p
                             style="font-size: 14.5px; line-height: 1.8; color: #333; margin-bottom: 25px; padding: 15px; background: rgba(0, 122, 255, 0.04); border-radius: 6px; border-left: 4px solid var(--primary);">
-                            <strong>【結論】</strong>当初の計画であった「特定の切り口での取材スタイル（大型特集）」よりも優先順位として、<strong>「基盤となる客観的な小さい記事（カードデータ）」を大量に作成し、網の目のように整備していく方針</strong>へと大きく転換しました。
+                            <strong>【結論】</strong>当初の計画であった「特定の切り口での取材スタイル（特集）」よりも優先順位として、<strong>「基盤となる客観的な小さい記事」を大量に作成し、網の目のように整備していく方針へと転換しました。</strong>
                         </p>
 
                         <!-- プロジェクトにおける記事の2つの役割 -->
@@ -2612,7 +2612,7 @@
                             <div
                                 style="background: #fff; border-left: 4px solid #888; padding: 15px; border-radius: 0 4px 4px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
                                 <strong
-                                    style="color: #333; display: block; margin-bottom: 12px; font-size: 14px;">【背景・課題】読み物の価値低下と、基本データの欠如</strong>
+                                    style="color: #333; display: block; margin-bottom: 12px; font-size: 14px;">【背景・課題】AIの急速な普及による情報優位性の変化</strong>
                                 <ul
                                     style="margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.7; color: #444;">
                                     <li style="margin-bottom: 12px;">
@@ -2631,7 +2631,7 @@
                             <!-- 矢印 -->
                             <div
                                 style="text-align: center; color: #888; margin: 15px 0; font-size: 14px; font-weight: bold;">
-                                ▼ この両輪を成立させるための「戦略的優先度の変更」
+                                ▼ 戦略的優先度の変更
                             </div>
 
                             <!-- 解決策（戦略） -->
@@ -2642,7 +2642,7 @@
                                 <ul
                                     style="margin: 0; padding-left: 20px; font-size: 13.5px; line-height: 1.7; color: #444;">
                                     <li style="margin-bottom: 8px;">
-                                        <strong>最優先アプローチ：</strong>特集記事の制作も重要だが、まずは受け皿となる客観的な<strong>「基礎データの網羅的CMS化（小記事）」</strong>を最優先で実行する。
+                                        <strong>最優先アプローチ：</strong>特集記事の制作も重要だが、まずは受け皿となる客観的な<strong>「ローカル情報の網羅的CMS化（小記事）」と「多言語対応」</strong>を最優先で実行する。
                                     </li>
                                     <li>
                                         <strong>対
@@ -3593,10 +3593,15 @@
             document.addEventListener('DOMContentLoaded', () => {
                 const specsTab = document.querySelector('button[onclick="switchView(\'specs\', this)"]');
 
+                // 初期化（Specsがデフォルト表示のため）
+                setTimeout(initScrollSpy, 300);
+
                 // Re-eval spy when tab is clicked
-                specsTab.addEventListener('click', () => {
-                    setTimeout(initScrollSpy, 100);
-                });
+                if (specsTab) {
+                    specsTab.addEventListener('click', () => {
+                        setTimeout(initScrollSpy, 100);
+                    });
+                }
             });
 
             function initScrollSpy() {
