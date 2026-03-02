@@ -594,12 +594,14 @@
                 background: #fff;
                 color: #000;
                 font-size: 11pt;
+                padding: 0 !important;
+                margin: 0 !important;
             }
 
             .container {
                 box-shadow: none;
-                margin: 0;
-                padding: 0;
+                margin: 0 !important;
+                padding: 0 !important;
                 width: 100%;
                 max-width: 100%;
             }
@@ -617,6 +619,13 @@
                 /* Remove flex sidebar layout */
             }
 
+            .specs-content {
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+
             #specs-view h2 {
                 page-break-after: avoid;
                 /* Keep heading with content */
@@ -626,9 +635,20 @@
 
             #specs-view h3,
             #specs-view table,
-            #specs-view img {
+            #specs-view img,
+            #specs-view svg,
+            .market-gap-diagram,
+            .positioning-map,
+            .diagram-container {
                 page-break-inside: avoid;
-                /* Prevent orphans */
+                /* Prevent orphans and breaking diagrams in half */
+            }
+
+            /* Identify any blocks that shouldn't be broken */
+            div[style*="border-radius"],
+            div[style*="border: 2px solid"],
+            div[style*="position: relative"] {
+                page-break-inside: avoid;
             }
 
             #specs-view img {
