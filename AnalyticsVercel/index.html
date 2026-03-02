@@ -920,7 +920,7 @@
                         </li>
                         <li><a href="#sec-8">8. コンテンツ企画・記事制作体制</a></li>
                         <li><a href="#sec-9">9. アクセス分析システム (Analytics)</a></li>
-                        <li><a href="#sec-10">10. 動的パンフレットシステム</a></li>
+                        <li><a href="#sec-10">10. 連動パンフレット</a></li>
                         <li><a href="#sec-11">11. システムURL・リソース管理</a></li>
                         <li><a href="#sec-12">12. 進行状況・全体予算（見積もり）</a></li>
                     </ul>
@@ -1022,7 +1022,7 @@
                                 <strong
                                     style="display: block; margin-bottom: 8px; font-size: 15px; color: var(--primary);">運用負荷ゼロのCMS＆自動生成</strong>
                                 <p style="margin: 0; font-size: 13.5px; line-height: 1.6; color: #555;">
-                                    一般職員でも更新可能なスプレッドシートCMSを採用し、リアルタイムでWEBに反映。さらにそのデータから紙媒体（パンフレット）を自動生成し、発信コストを劇的に削減。
+                                    一般職員でも更新可能なスプレッドシートCMSを採用し、リアルタイムでWEBに反映。同時に、WEBと連動する紙媒体（パンフレット）を展開し、オフラインの接点も強化。
                                 </p>
                             </div>
                         </div>
@@ -1306,7 +1306,7 @@
                                             </td>
                                             <td
                                                 style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: rgba(0,122,255,0.02); color: #333; line-height: 1.6;">
-                                                DB連携で全員が常に最新情報のみを扱える「動的デジタル・パンフレット（Flyer Studio）」の確立</td>
+                                                WEBと対をなすリアルな接点として、常に最新情報を持ち歩ける「連動パンフレット」の展開</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1318,8 +1318,7 @@
                                     </strong>
                                     <p style="margin-bottom: 30px; font-size: 13.5px; line-height: 1.8; color: #333;">
                                         分析の結果、既存メディアはいずれも<strong>「多言語対応＋SEO」</strong>と<strong>「情報統合＋更新性」</strong>の間に横たわるトレードオフの壁に阻まれていることが判明しました。<br>
-                                        本プロジェクトは、この市場のスキマ（空白地帯）を正確に突き、圧倒的な優位性を持たせることこそが、後述する<strong>「システム設計」や「Flyer
-                                            Studio」の根幹思想</strong>となっています。
+                                        本プロジェクトは、この市場のスキマ（空白地帯）を正確に突き、圧倒的な優位性を持たせることこそが、後述する<strong>「システム設計」や「連動パンフレット展開」の根幹思想</strong>となっています。
                                     </p>
 
                                     <!-- Market Gap Matrix Diagram -->
@@ -1390,7 +1389,7 @@
                                                 <li><strong>単一デザインでの多言語対応</strong></li>
                                                 <li><strong>高度に構造化されたUI/SEO</strong></li>
                                                 <li><strong>全情報のハブ機能</strong></li>
-                                                <li><strong>動的パンフ等、現場への還元</strong></li>
+                                                <li><strong>連動パンフ等、現場への還元</strong></li>
                                             </ul>
                                         </div>
                                     </div>
@@ -2293,41 +2292,23 @@
                             <li><strong>人気アイテム (詳細表示):</strong> 品種やスポットなど、個別のカードがどれだけ詳細閲覧されたかをランキング形式で一覧化。</li>
                             <li><strong>流入地域 (都道府県・市区町村):</strong> IPベースでアクセス元の地域（県内外、国内外）を解析しターゲティングの評価に活用。</li>
                             <li><strong>外部アクション (SNS・PDF・リンク):</strong>
-                                記事のSNSシェア数、動的パンフレットのPDF発行数、外部サイト（行政資料等）への遷移数など、コンバージョン指標を正確にトラッキング。</li>
+                                記事のSNSシェア数、連動パンフレットのPDF発行数、外部サイト（行政資料等）への遷移数など、コンバージョン指標を正確にトラッキング。</li>
                         </ul>
                     </div>
 
                     <!-- 10. パンフレットシステム -->
                     <h2 id="sec-10"
                         style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
-                        10. 動的デジタル・パンフレット発行 (Flyer Studio)</h2>
-                    <p style="line-height: 1.8;">蓄積されたりんご情報データベースを活用し、ブラウザ上で誰でも簡単にオリジナルパンフレットを生成できる独立したシステム。</p>
-                    <div
-                        style="background: rgba(255,149,0,0.1); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent); margin-bottom: 20px;">
-                        <a href="https://iizuna-flyer-studio.vercel.app/" target="_blank"
-                            style="color: var(--primary); font-weight: bold; text-decoration: none;">🔗 Flyer Studio
-                            稼働システムを開く</a>
-                        <br><span
-                            style="font-size: 13px; color: #555; display: inline-block; margin-top: 8px;"><strong>導入目的:</strong>
-                            webサイトだけでなく、観光案内所や直売所での「紙媒体配布」というリアルな接点においても、常に最新情報が反映された高品質なパンフレットを、外部業者に都度発注することなく即座に印刷・補充可能にするため。</span>
-                    </div>
-                    <ul style="line-height: 1.8;">
-                        <li><strong>高度なCanvas UI搭載:</strong>
-                            ズームイン・アウト機能を備えた直感的なプレビュー画面。利用者のOS環境（Windows/Mac）やブラウザに依存せず、常に1:1のピクセルパーフェクト配置を強固に保証する独自描画アルゴリズム。
-                        </li>
-                        <li><strong>Next.js モダンフロントエンド:</strong> Flyer
-                            Studio単体として独立したリポジトリで管理し、React/Next.jsの高いコンポーネント指向を活用して複雑なUI状態を管理。</li>
-                        <li><strong>テーマカスタマイズ機能:</strong> Apple Pink, Terracotta,
-                            Matcha等、季節、イベント、ターゲット層の好みに応じたカラーテーマを即座に反映・生成。</li>
-                        <li><strong>多言語静的PDF出力機能:</strong> ブラウザ標準の印刷機能(Print to
-                            PDF)をハックし、不要なヘッダー・フッターを完全に排除した高品位なA4三つ折りサイズの印刷用データを出力可能。</li>
-                    </ul>
+                        10. 連動パンフレット</h2>
+                    <p style="line-height: 1.8;">
+                        WEBサイトと完全連動し、観光案内所や直売所、イベント会場といったリアルな接点において手渡しできる物理的なタッチポイントとしての役割を担います。単なる「動的生成の仕組み」としてではなく、りんごの町としての高いブランド価値をパッケージングする「デザイン媒体」として定義しています。
+                    </p>
 
                     <div
                         style="background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 25px; margin-top: 30px; margin-bottom: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.03);">
-                        <h4
+                        <h3
                             style="margin-top: 0; color: var(--primary); font-size: 16px; border-bottom: 1px dashed #ccc; padding-bottom: 8px;">
-                            デザイン・コンセプト</h4>
+                            デザイン・コンセプト</h3>
                         <ul style="line-height: 1.8; font-size: 13.5px; color: #444; margin-bottom: 25px;">
                             <li style="margin-bottom: 12px;">
                                 <div style="display: flex; align-items: flex-start; gap: 12px;">
@@ -2351,18 +2332,14 @@
                                         style="height: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                                 </div>
                             </li>
-                            <li style="margin-bottom: 12px;">
-                                <strong>ワンクリックでのPDF出力:</strong>
-                                編集後、PDF出力ボタンから即座に印刷用データ（A4サイズ）を出力可能。店舗やイベント会場でのオンデマンド印刷を強力にサポートします。
-                                <div style="margin-top: 8px;">
-                                    <img src="images/spec/flyer_btn_pdf.png" alt="PDF出力ボタン"
-                                        style="height: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                </div>
-                            </li>
                             <li style="margin-bottom: 12px;"><strong>QRコードによるWEBへの還流:</strong>
-                                表紙にはシンプルで大きなQRコードを一つだけ配置し、詳細な最新情報（WEBサイト）への強力な導線として機能させます。</li>
+                                表紙にはシンプルで大きなQRコードを一つだけ配置し、詳細な最新情報（WEBサイト）への強力な導線として機能させます。紙面で興味を引き、WEBで詳細な体験（予約・購入）へ繋げる<span
+                                    class="glossary">AIDMA<span
+                                        class="tooltip-text">Attention(注意)・Interest(関心)・Desire(欲求)・Memory(記憶)・Action(行動)の頭文字をとった、消費者の心理プロセスモデルです。</span></span>モデルを体現します。
+                            </li>
                             <li><strong>情報の網羅性（裏面）:</strong>
-                                裏面には、WEBサイトが持つポータルとしての網羅的な情報を、テキスト主体で分かりやすく一覧化し、「このパンフレット（サイト）を見れば全てが分かる」状態を作ります。</li>
+                                裏面には、WEBサイトが持つポータルとしての網羅的な情報を、テキスト主体で分かりやすく一覧化し、「このパンフレット（サイト）を見れば全てが分かる」状態を作ります。
+                            </li>
                         </ul>
 
                         <h4 style="margin-top: 0; color: var(--text); font-size: 15px; margin-bottom: 15px;">
@@ -2400,6 +2377,28 @@
                         </div>
                     </div>
 
+                    <h3 style="color: var(--text); margin-top: 30px;">（補足機能）Flyer Studio システム</h3>
+                    <p style="line-height: 1.8;">
+                        上記の連動パンフレットを、外部業者へ都度発注することなく「必要な時に、必要な言語で、即座に印刷・補充」するためのサポートツールとして、『Flyer
+                        Studio』システムを整備しています。</p>
+                    <div
+                        style="background: rgba(255,149,0,0.1); padding: 15px 20px; border-radius: 8px; border-left: 4px solid var(--accent); margin-bottom: 20px;">
+                        <a href="https://iizuna-flyer-studio.vercel.app/" target="_blank"
+                            style="color: var(--primary); font-weight: bold; text-decoration: none;">🔗 Flyer Studio
+                            システムを開く（β版）</a>
+                        <br><span
+                            style="font-size: 13px; color: #555; display: inline-block; margin-top: 8px;"><strong>ステータス:</strong>
+                            ※ 本システムはWEBと連動するパンフレットをブラウザ上で出力するための補助システムとして検討・運用中です。</span>
+                    </div>
+                    <ul style="line-height: 1.8; margin-bottom: 40px;">
+                        <li><strong>ブラウザ上での高度な描画:</strong>
+                            利用者のOS環境（Windows/Mac）やブラウザに依存せず、常に1:1のピクセルパーフェクト配置を強固に保証する独自描画アルゴリズムを搭載。
+                        </li>
+                        <li><strong>ワンクリックでのPDF出力:</strong>
+                            編集後、PDF出力ボタンから該当言語・カラーのA4印刷用高品位PDFを出力可能。店舗やイベント会場でのオンデマンド印刷を強力にサポートします。
+                        </li>
+                    </ul>
+
                     <!-- 11. システムURL・リソース管理 -->
                     <h2 id="sec-11"
                         style="color: var(--primary); margin-top: 40px; border-left: 4px solid var(--primary); padding-left: 10px;">
@@ -2426,10 +2425,11 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td style="padding: 10px; font-weight: bold;">Flyer Studio (パンフレット)</td>
+                                <td style="padding: 10px; font-weight: bold;">連動パンフレット (Flyer Studio)</td>
                                 <td style="padding: 10px;"><a href="https://iizuna-flyer-studio.vercel.app/"
                                         target="_blank"
-                                        style="color:var(--primary);">https://iizuna-flyer-studio.vercel.app/</a></td>
+                                        style="color:var(--primary);">https://iizuna-flyer-studio.vercel.app/</a>
+                                </td>
                             </tr>
                             <tr>
                                 <td style="padding: 10px; font-weight: bold;">アクセス解析 (GAS API)</td>
@@ -2456,11 +2456,13 @@
                         border="1">
                         <thead>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: right; width: 25%;">
                                     見積額（税率10%）
                                 </th>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: center; width: 15%;">進捗状況
                                 </th>
                             </tr>
@@ -2518,11 +2520,13 @@
                         border="1">
                         <thead>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: right; width: 25%;">
                                     見積額（税率10%）
                                 </th>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: center; width: 15%;">進捗状況
                                 </th>
                             </tr>
@@ -2572,11 +2576,13 @@
                         border="1">
                         <thead>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: right; width: 25%;">
                                     見積額（税率10%）
                                 </th>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: center; width: 15%;">進捗状況
                                 </th>
                             </tr>
@@ -2652,11 +2658,13 @@
                         border="1">
                         <thead>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: right; width: 25%;">
                                     見積額（税率10%）
                                 </th>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: center; width: 15%;">進捗状況
                                 </th>
                             </tr>
@@ -2714,11 +2722,13 @@
                         border="1">
                         <thead>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: right; width: 25%;">
                                     見積額（税率10%）
                                 </th>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: center; width: 15%;">進捗状況
                                 </th>
                             </tr>
@@ -2771,11 +2781,13 @@
                         border="1">
                         <thead>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 45%;">項目
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: right; width: 25%;">
                                     見積額（税率10%）
                                 </th>
-                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳</th>
+                                <th style="background: #f1f3f5; padding: 10px; text-align: left; width: 15%;">内訳
+                                </th>
                                 <th style="background: #f1f3f5; padding: 10px; text-align: center; width: 15%;">進捗状況
                                 </th>
                             </tr>
