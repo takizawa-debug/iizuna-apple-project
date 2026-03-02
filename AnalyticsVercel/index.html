@@ -1998,6 +1998,14 @@
                                     orient="auto" markerUnits="strokeWidth">
                                     <path d="M0,0 L0,6 L9,3 z" fill="#34C759" />
                                 </marker>
+                                <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="9" refY="3"
+                                    orient="auto" markerUnits="strokeWidth">
+                                    <path d="M0,0 L0,6 L9,3 z" fill="#007aff" />
+                                </marker>
+                                <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="9" refY="3"
+                                    orient="auto" markerUnits="strokeWidth">
+                                    <path d="M0,0 L0,6 L9,3 z" fill="#FF9500" />
+                                </marker>
                             </defs>
 
                             <!-- 1. CMS Input -->
@@ -2006,68 +2014,73 @@
                             <text x="300" y="45" font-family="sans-serif" font-size="14" font-weight="bold" fill="#333"
                                 text-anchor="middle">Google Sheets CMS</text>
                             <text x="300" y="65" font-family="sans-serif" font-size="11" fill="#666"
-                                text-anchor="middle">役場職員・関係者が直接編集</text>
+                                text-anchor="middle">役場職員等が直接データ入力</text>
 
-                            <!-- Arrows down from CMS -->
-                            <path d="M 300 80 L 300 130" stroke="#34C759" stroke-width="2.5"
+                            <!-- Arrow down to GAS/AWS -->
+                            <path d="M 300 80 L 300 110" stroke="#34C759" stroke-width="2.5"
                                 marker-end="url(#arrow-green)" />
-                            <path d="M 300 105 L 150 105 L 150 140" stroke="#34C759" stroke-width="2.5"
-                                marker-end="url(#arrow-green)" fill="none" />
-                            <path d="M 300 105 L 450 105 L 450 140" stroke="#34C759" stroke-width="2.5"
-                                marker-end="url(#arrow-green)" fill="none" />
 
-                            <!-- 2. Main Web App -->
-                            <rect x="220" y="150" width="160" height="80" rx="6" fill="#fff" stroke="var(--primary)"
+                            <!-- 2. Middle Layer (GAS / AWS) -->
+                            <rect x="180" y="120" width="240" height="60" rx="6" fill="#f0f8ff" stroke="#007aff"
+                                stroke-width="2" stroke-dasharray="4,2" />
+                            <text x="300" y="145" font-family="sans-serif" font-size="14" font-weight="bold"
+                                fill="#0056b3" text-anchor="middle">GAS連携API ＆ AWS (画像格納)</text>
+                            <text x="300" y="165" font-family="sans-serif" font-size="11" fill="#666"
+                                text-anchor="middle">バックエンド処理・メディア配信</text>
+
+                            <!-- Arrow down to Web App -->
+                            <path d="M 300 180 L 300 210" stroke="#007aff" stroke-width="2.5"
+                                marker-end="url(#arrow-blue)" />
+
+                            <!-- 3. Main Web App (ペライチ) -->
+                            <rect x="220" y="220" width="160" height="80" rx="6" fill="#fff" stroke="var(--primary)"
                                 stroke-width="2.5" />
-                            <text x="300" y="175" font-family="sans-serif" font-size="14" font-weight="bold"
+                            <text x="300" y="245" font-family="sans-serif" font-size="14" font-weight="bold"
                                 fill="var(--primary)" text-anchor="middle">Apple Town Web</text>
-                            <text x="300" y="195" font-family="sans-serif" font-size="11" fill="#666"
-                                text-anchor="middle">多言語対応・SEO強化</text>
-                            <rect x="240" y="205" width="120" height="15" rx="3" fill="#e8f3ff" />
-                            <text x="300" y="216" font-family="sans-serif" font-size="9" fill="#0056b3"
-                                text-anchor="middle">日・英・繁体字切替</text>
+                            <text x="300" y="265" font-family="sans-serif" font-size="11" fill="#666"
+                                text-anchor="middle">ペライチ (フロントエンド)</text>
+                            <rect x="240" y="275" width="120" height="15" rx="3" fill="#ffeeee" />
+                            <text x="300" y="286" font-family="sans-serif" font-size="9" fill="var(--primary)"
+                                text-anchor="middle">データ取得しUI生成・表示</text>
 
-                            <!-- 3. 連動パンフレット -->
-                            <rect x="390" y="150" width="160" height="80" rx="6" fill="#fff" stroke="#FF9500"
+                            <!-- Arrow right to Pamphlet -->
+                            <path d="M 380 260 L 410 260" stroke="#FF9500" stroke-width="2.5"
+                                marker-end="url(#arrow-orange)" />
+
+                            <!-- 4. 連動パンフレット -->
+                            <rect x="420" y="220" width="160" height="80" rx="6" fill="#fff" stroke="#FF9500"
                                 stroke-width="2.5" />
-                            <text x="470" y="175" font-family="sans-serif" font-size="14" font-weight="bold"
+                            <text x="500" y="245" font-family="sans-serif" font-size="14" font-weight="bold"
                                 fill="#FF9500" text-anchor="middle">連動パンフレット</text>
-                            <text x="470" y="195" font-family="sans-serif" font-size="11" fill="#666"
+                            <text x="500" y="265" font-family="sans-serif" font-size="11" fill="#666"
                                 text-anchor="middle">WEBと対をなす紙媒体</text>
-                            <rect x="410" y="205" width="120" height="15" rx="3" fill="#fff3e0" />
-                            <text x="470" y="216" font-family="sans-serif" font-size="9" fill="#e65100"
-                                text-anchor="middle">ローカル拠点等で印刷配布</text>
+                            <rect x="440" y="275" width="120" height="15" rx="3" fill="#fff3e0" />
+                            <text x="500" y="286" font-family="sans-serif" font-size="9" fill="#e65100"
+                                text-anchor="middle">WEB情報とQRコード連携</text>
 
-                            <!-- 4. Real touch points -->
-                            <rect x="50" y="150" width="160" height="80" rx="6" fill="#fff" stroke="#666"
-                                stroke-width="1.5" stroke-dasharray="4,2" />
-                            <text x="130" y="175" font-family="sans-serif" font-size="13" font-weight="bold" fill="#333"
-                                text-anchor="middle">リアルタッチポイント</text>
-                            <text x="130" y="195" font-family="sans-serif" font-size="11" fill="#666"
-                                text-anchor="middle">EC・農園・観光拠点</text>
-                            <rect x="70" y="205" width="120" height="15" rx="3" fill="#f5f5f5" />
-                            <text x="130" y="216" font-family="sans-serif" font-size="9" fill="#555"
-                                text-anchor="middle">独自URL連携・集客ハブ</text>
+                            <!-- Arrow down to Analytics -->
+                            <path d="M 300 300 L 300 330" stroke="#888" stroke-width="2" marker-end="url(#arrow)" />
 
-                            <!-- Analytics Loop -->
-                            <path d="M 300 230 L 300 270" stroke="#888" stroke-width="2" marker-end="url(#arrow)" />
-                            <rect x="220" y="280" width="160" height="60" rx="6" fill="#f8f9fa" stroke="#333"
+                            <!-- 5. Analytics Loop -->
+                            <rect x="220" y="340" width="160" height="50" rx="6" fill="#f8f9fa" stroke="#333"
                                 stroke-width="1" />
-                            <text x="300" y="305" font-family="sans-serif" font-size="14" font-weight="bold" fill="#333"
+                            <text x="300" y="360" font-family="sans-serif" font-size="13" font-weight="bold" fill="#333"
                                 text-anchor="middle">Analytics ダッシュボード</text>
-                            <text x="300" y="325" font-family="sans-serif" font-size="11" fill="#666"
+                            <text x="300" y="378" font-family="sans-serif" font-size="11" fill="#666"
                                 text-anchor="middle">利用状況の可視化とPDCA</text>
 
                             <!-- Return arrow to CMS -->
-                            <path d="M 220 310 L 20 310 L 20 50 L 220 50" stroke="#888" stroke-width="1.5"
+                            <path d="M 220 365 L 40 365 L 40 50 L 220 50" stroke="#888" stroke-width="1.5"
                                 stroke-dasharray="5,5" marker-end="url(#arrow)" fill="none" />
-                            <text x="120" y="300" font-family="sans-serif" font-size="10" fill="#888"
-                                text-anchor="middle">データに基づく記事改善・企画方針決定</text>
+                            <text x="130" y="355" font-family="sans-serif" font-size="10" fill="#888"
+                                text-anchor="middle">データに基づく企画方針決定</text>
 
                         </svg>
-                        <p style="font-size: 12px; color: #666; margin-top: 15px; text-align: left; line-height: 1.6;">
-                            現場の運用負担を最小限にするため、役場職員や関係者が使い慣れた<strong>「Googleスプレッドシート」をデータベース（CMS）として採用</strong>。入力されたデータは即座に多言語Webサイトと連動パンフレットの両方へ同期され、一度の入力で全ての媒体が最新化される「One
-                            Source, Multi Use」を実現しています。
+                        <p
+                            style="font-size: 13.5px; color: #555; margin-top: 15px; text-align: left; line-height: 1.8;">
+                            バックエンド（データ管理）は使い慣れた<strong>Googleスプレッドシート</strong>に集約。画像ファイル等は外部ストレージ（AWS等）に格納し、そのURLをシートに記載する設計としています。<br>
+                            フロントエンドは<strong>ペライチ（WEB構築サービス）</strong>を活用し、GAS（Google Apps
+                            Script）で構築した独自API経由でスプレッドシートのデータを動的に取得して画面を生成。さらに、このWEBサイトと連動する形で紙のパンフレットへ情報を展開するアーキテクチャです。
                         </p>
                     </div>
 
@@ -2077,25 +2090,22 @@
                                 <th style="background: #f1f3f5; padding: 12px; width: 25%; text-align: left;">更新性重視（CMS）
                                 </th>
                                 <td style="padding: 12px; line-height: 1.6;">
-                                    コーディング技術がない一般職員でも情報更新、追記がしやすいよう、Googleスプレッドシートを<span class="glossary">CMS<span
-                                            class="tooltip-text">Content Management
-                                            Systemの略。Web知識がなくてもサイトの文章や画像を更新・管理できるシステムです。</span></span>として活用。スプレッドシートに記載した情報が即時反映される仕組みを構築し、日々の継続運用のしやすさを最優先する。
+                                    コーディング技術がない一般職員でも情報更新、追記がしやすいよう、Googleスプレッドシートを<span class="glossary">ヘッドレスCMS<span
+                                            class="tooltip-text">フロントエンド（表示画面）を持たず、API経由でデータのみを提供するバックエンドシステムのことです。</span></span>として活用。
                                 </td>
                             </tr>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 12px; text-align: left;">URL設計・SEO戦略</th>
+                                <th style="background: #f1f3f5; padding: 12px; text-align: left;">画像・ファイル管理（AWS）</th>
                                 <td style="padding: 12px; line-height: 1.6;">
-                                    ペライチ構成（SPA）でありながら、記事ごと・言語ごとに独立したパラメータ付きURL（<code
-                                        style="background:#eee; padding:2px 4px; border-radius:3px; font-size:12px;">?=</code>
-                                    等）を動的に発行・制御。これにより、静的サイト並みに<span class="glossary">SEO<span
-                                            class="tooltip-text">Search Engine
-                                            Optimization（検索エンジン最適化）の略。Google検索等で上位に表示されやすくするための対策です。</span></span>に強い構造を実現。同時に、ユーザーが特定の記事や特定の言語表示をピンポイントでSNS等に<strong>シェアしやすい設計</strong>となっている（トップから情報ルートを探し直させるユーザビリティ低下を排除）。
+                                    CMS（スプレッドシート）を軽量に保つため、画像やPDFなどの大容量メディアファイルは<strong>AWS等のクラウドストレージに保存</strong>。その公開URLをスプレッドシートの指定セルに記載する運用とし、システム負荷を分離するアーキテクチャ。
                                 </td>
                             </tr>
                             <tr>
-                                <th style="background: #f1f3f5; padding: 12px; text-align: left;">Web構築基盤</th>
+                                <th style="background: #f1f3f5; padding: 12px; text-align: left;">Web構築基盤（ペライチ）</th>
                                 <td style="padding: 12px; line-height: 1.6;">
-                                    ペライチ形式をベースに実装。直観的編集・拡張が可能なアーキテクチャを活用したフロントエンド実装。</td>
+                                    フロントエンドは直観的なUI構築が可能な「ペライチ」などのサービスを採用。GAS（Google Apps
+                                    Script）を用いて作成した<strong>独自API</strong>経由でスプレッドシートのデータをポーリング（取得）し、最新のコンテンツをWeb画面上に成形して表示する仕組みを実現。
+                                </td>
                             </tr>
                             <tr>
                                 <th style="background: #f1f3f5; padding: 12px; text-align: left;">ナビゲーション構造</th>
