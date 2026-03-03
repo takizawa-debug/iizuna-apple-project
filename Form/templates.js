@@ -4,10 +4,10 @@
 import { i18n } from './i18n.js';
 
 export const catLabels = {
-  shop: i18n.types.shop.catLabel,
-  event: i18n.types.event.catLabel,
-  farmer: i18n.types.farmer.catLabel,
-  other: i18n.types.other.catLabel
+  shop: i18n.types.shop.cat_label,
+  event: i18n.types.event.cat_label,
+  farmer: i18n.types.farmer.cat_label,
+  other: i18n.types.other.cat_label
 };
 
 // 🍎 リンクとSNSのHTMLを動的に生成するヘルパー関数
