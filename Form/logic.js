@@ -22,7 +22,7 @@ export async function initFormLogic() {
   const inpLead = document.getElementsByName('art_lead')[0];
   const inpBody = document.getElementsByName('art_body')[0];
 
-  function updateTypeView() {
+  async function updateTypeView() {
     if (!typeSelect) return;
     const type = typeSelect.value;
     const set = i18n.types[type];
@@ -44,11 +44,7 @@ export async function initFormLogic() {
 
     const btnPrintPdf = document.getElementById('btn-print-pdf');
     if (btnPrintPdf) {
-      if (['shop', 'event', 'farmer'].includes(type)) {
-        btnPrintPdf.style.display = 'inline-block';
-      } else {
-        btnPrintPdf.style.display = 'none';
-      }
+      btnPrintPdf.style.display = 'none'; // Temporarily hide print button while fetching categories
     }
 
     lblTitle.textContent = set.title;
@@ -113,7 +109,13 @@ export async function initFormLogic() {
       sCustom.style.display = mode === 'custom' ? 'block' : 'none';
     }
 
-    loadAndBuildGenres(type);
+    await loadAndBuildGenres(type);
+
+    if (btnPrintPdf) {
+      if (['shop', 'event', 'farmer'].includes(type) && currentFetchType === type) {
+        btnPrintPdf.style.display = 'inline-block';
+      }
+    }
   }
 
   async function loadAndBuildGenres(type) {
