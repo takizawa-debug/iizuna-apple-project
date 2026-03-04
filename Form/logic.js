@@ -5,6 +5,8 @@
 import { utils } from './utils.js';
 import { i18n } from './i18n.js';
 import { catLabels } from './templates.js';
+import { generatePrintHTML } from './printLogic.js';
+import { printStyles } from './printStyles.js';
 
 export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
@@ -39,6 +41,15 @@ export async function initFormLogic() {
 
     const lblDynCat = document.getElementById('lbl-dynamic-cat');
     if (lblDynCat) lblDynCat.textContent = catLabels[type];
+
+    const btnPrintPdf = document.getElementById('btn-print-pdf');
+    if (btnPrintPdf) {
+      if (['shop', 'event', 'farmer'].includes(type)) {
+        btnPrintPdf.style.display = 'inline-block';
+      } else {
+        btnPrintPdf.style.display = 'none';
+      }
+    }
 
     lblTitle.textContent = set.title;
     lblLead.textContent = set.lead;
@@ -599,6 +610,47 @@ export async function initFormLogic() {
 
   if (typeSelect) {
     typeSelect.onchange = updateTypeView;
+  }
+
+  const btnPrintPdf = document.getElementById('btn-print-pdf');
+  if (btnPrintPdf) {
+    btnPrintPdf.addEventListener('click', () => {
+      const type = typeSelect.value;
+      if (!type) return;
+
+      const printHtml = generatePrintHTML(type, i18n);
+
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        alert("ポップアップブロックを解除してください。");
+        return;
+      }
+
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta charset="UTF-8">
+          <title>${i18n.types[type].label || ''} 登録シート (手書き用)</title>
+          <style>${printStyles}</style>
+        </head>
+        <body>
+          <div class="print-btn-container">
+            <button class="print-btn" onclick="window.print()">このページを印刷する</button>
+          </div>
+          <div class="print-page">
+            ${printHtml}
+          </div>
+        </body>
+        </html>
+      `);
+      printWindow.document.close();
+
+      // Allow styles to load before promping print dialogue
+      setTimeout(() => {
+        printWindow.print();
+      }, 500);
+    });
   }
 
   let tabToActivate = null;
