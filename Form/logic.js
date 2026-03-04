@@ -26,14 +26,24 @@ export async function initFormLogic() {
     const set = i18n.types[type];
     const url = new URL(window.location);
 
+    const btnPrintFormat = document.getElementById('btn-print-format');
+
     if (!type || !set) {
       if (fieldsContainer) fieldsContainer.style.display = 'none';
+      if (btnPrintFormat) btnPrintFormat.style.display = 'none';
       url.searchParams.delete('type');
       window.history.replaceState({}, '', url.toString());
       return;
     }
 
     if (fieldsContainer) fieldsContainer.style.display = 'flex';
+    if (btnPrintFormat) {
+      btnPrintFormat.style.display = 'block';
+      btnPrintFormat.onclick = () => {
+        window.open(`print.html?type=${type}`, '_blank');
+      };
+    }
+
     url.searchParams.set('type', type);
     window.history.replaceState({}, '', url.toString());
 

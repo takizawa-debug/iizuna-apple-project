@@ -66,14 +66,15 @@ export const getFormHTML = () => {
 
   <div id="pane-article" class="lz-form-body">
     <div class="lz-section-head">${i18n.ui.sections.category}</div>
-    <div class="lz-field">
-      <select name="art_type" id="art_type_select" class="lz-select">
+    <div class="lz-field" style="display: flex; gap: 10px; align-items: center;">
+      <select name="art_type" id="art_type_select" class="lz-select" style="flex: 1;">
         <option value="" selected>${i18n.placeholders.art_type_unselected}</option>
         <option value="farmer">${i18n.types.farmer.label}</option>
         <option value="shop">${i18n.types.shop.label}</option>
         <option value="event">${i18n.types.event.label}</option>
         <option value="other">${i18n.types.other.label}</option>
       </select>
+      <button type="button" id="btn-print-format" class="lz-send-btn" style="width: auto; padding: 0 16px; font-size: 0.9rem; background: #5b3a1e; display: none;">手書き用フォーマット(PDF)を出力</button>
     </div>
 
     <div id="article-fields-container" style="display:none; flex-direction:column; gap:32px;">
