@@ -40,9 +40,9 @@ export async function initFormLogic() {
     if (btnPrintFormat) {
       btnPrintFormat.style.display = 'block';
       btnPrintFormat.onclick = () => {
-        // 現在のスクリプト (logic.js) のパスから相対的に print.html を開く
-        const scriptBase = new URL('.', import.meta.url).href;
-        window.open(`${scriptBase}print.html?type=${type}`, '_blank');
+        // ペライチ等で動的スクリプトから呼び出されるケースを考慮し、絶対パスで指定
+        const printUrl = `https://takizawa-debug.github.io/iizuna-apple-project/Form/print.html?type=${type}`;
+        window.open(printUrl, '_blank');
       };
     }
 
