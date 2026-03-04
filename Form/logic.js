@@ -614,6 +614,7 @@ export async function initFormLogic() {
 
   const btnPrintPdf = document.getElementById('btn-print-pdf');
   if (btnPrintPdf) {
+    btnPrintPdf.style.display = 'none'; // Ensure hidden initially
     btnPrintPdf.addEventListener('click', () => {
       const type = typeSelect.value;
       if (!type) return;
