@@ -622,8 +622,24 @@ export async function initFormLogic() {
       if (!type) return;
 
       const dynamicCategoriesElements = document.querySelectorAll('input[name="cat_l1"]');
-      const dynamicCategories = Array.from(dynamicCategoriesElements).map(el => {
-        return el.nextElementSibling ? el.nextElementSibling.textContent.trim() : el.value;
+      const dynamicCategories = [];
+
+      dynamicCategoriesElements.forEach(el => {
+        const catName = el.nextElementSibling ? el.nextElementSibling.textContent.trim() : el.value;
+        const subId = el.getAttribute('data-subid');
+        const subArea = document.getElementById(`sub-${subId}`);
+
+        if (subArea) {
+          const subItems = Array.from(subArea.querySelectorAll('.lz-sub-choice-item .lz-choice-inner'))
+            .map(subEl => subEl.textContent.trim());
+          if (subItems.length > 0) {
+            dynamicCategories.push({ label: catName, subItems: subItems });
+          } else {
+            dynamicCategories.push({ label: catName });
+          }
+        } else {
+          dynamicCategories.push({ label: catName });
+        }
       });
 
       const printHtml = generatePrintHTML(type, i18n, dynamicCategories);

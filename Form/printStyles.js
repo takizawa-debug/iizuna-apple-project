@@ -151,6 +151,19 @@ body {
   margin-top: 2mm;
 }
 
+.checkbox-group {
+  grid-column: 1 / -1; /* Make grouped categories span full width */
+  margin-bottom: 4mm;
+}
+
+.sub-checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2mm;
+  margin-top: 2mm;
+  margin-left: 6mm;
+}
+
 .checkbox-item {
   display: flex;
   align-items: center;

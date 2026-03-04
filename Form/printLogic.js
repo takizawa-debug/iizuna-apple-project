@@ -19,12 +19,30 @@ export const generatePrintHTML = (type, strings, dynamicCategories = []) => {
       ${subtext ? `<div class="sub-text">${subtext}</div>` : ''}
     </div>`;
 
-  const checkboxList = (items) => `
+  const checkboxList = (items) => {
+    return `
     <div class="field-input checkbox-grid">
-      ${items.map(item => `
-        <div class="checkbox-item"><span class="checkbox-box"></span> ${item}</div>
-      `).join('')}
+      ${items.map(item => {
+      if (typeof item === 'object' && item !== null) {
+        // It's a structured category object
+        let out = `<div class="checkbox-group">`;
+        out += `<div class="checkbox-item" style="font-weight: bold;"><span class="checkbox-box"></span> ${item.label}</div>`;
+        if (item.subItems && item.subItems.length > 0) {
+          out += `<div class="sub-checkbox-grid">`;
+          item.subItems.forEach(sub => {
+            out += `<div class="checkbox-item"><span class="checkbox-box"></span> ${sub}</div>`;
+          });
+          out += `</div>`;
+        }
+        out += `</div>`;
+        return out;
+      } else {
+        // Standard string item
+        return `<div class="checkbox-item"><span class="checkbox-box"></span> ${item}</div>`;
+      }
+    }).join('')}
     </div>`;
+  };
 
   const radioList = (items) => `
     <div class="field-input checkbox-grid" style="grid-template-columns: repeat(2, 1fr);">
