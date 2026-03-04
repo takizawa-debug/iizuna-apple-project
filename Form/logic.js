@@ -619,7 +619,12 @@ export async function initFormLogic() {
       const type = typeSelect.value;
       if (!type) return;
 
-      const printHtml = generatePrintHTML(type, i18n);
+      const dynamicCategoriesElements = document.querySelectorAll('input[name="cat_l1"]');
+      const dynamicCategories = Array.from(dynamicCategoriesElements).map(el => {
+        return el.nextElementSibling ? el.nextElementSibling.textContent.trim() : el.value;
+      });
+
+      const printHtml = generatePrintHTML(type, i18n, dynamicCategories);
 
       const printWindow = window.open('', '_blank');
       if (!printWindow) {
