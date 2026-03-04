@@ -40,7 +40,9 @@ export async function initFormLogic() {
     if (btnPrintFormat) {
       btnPrintFormat.style.display = 'block';
       btnPrintFormat.onclick = () => {
-        window.open(`print.html?type=${type}`, '_blank');
+        // 現在のスクリプト (logic.js) のパスから相対的に print.html を開く
+        const scriptBase = new URL('.', import.meta.url).href;
+        window.open(`${scriptBase}print.html?type=${type}`, '_blank');
       };
     }
 
