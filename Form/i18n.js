@@ -101,10 +101,10 @@ const resources = {
     },
     // Dynamic Labels & Placeholders
     types: {
-      shop: { label: "お店の登録", title: "店名・施設名", lead: "お店の概要", cat_label: "お店のカテゴリを選択してください（複数選択可）" },
-      event: { label: "イベントの登録", title: "イベント名", lead: "イベントの概要", cat_label: "イベントのカテゴリを選択してください（複数選択可）" },
-      farmer: { label: "生産者の登録", title: "農園・団体名", lead: "生産者の概要", cat_label: "取り組みを選択してください（複数選択可）" },
-      other: { label: "記事の登録", title: "記事タイトル", lead: "記事の概要", cat_label: "記事のカテゴリを選択してください（複数選択可）" }
+      shop: { label: "お店の登録", title: "店名・施設名", lead: "お店の概要", cat_label: "お店のカテゴリを選択してください" },
+      event: { label: "イベントの登録", title: "イベント名", lead: "イベントの概要", cat_label: "イベントのカテゴリを選択してください" },
+      farmer: { label: "生産者の登録", title: "農園・団体名", lead: "生産者の概要", cat_label: "取り組みを選択してください" },
+      other: { label: "記事の登録", title: "記事タイトル", lead: "記事の概要", cat_label: "記事のカテゴリを選択してください" }
     },
     placeholders: {
       rep_name: "ニックネーム可", rep_content: "町の発見を教えてください",
@@ -261,10 +261,10 @@ const resources = {
       rel_url: "Related Link URL", rel_title: "Related Link Title"
     },
     types: {
-      shop: { label: "Shop", title: "Shop/Facility Name", lead: "Shop Summary", cat_label: "Please select shop categories (Multiple)" },
-      event: { label: "Event", title: "Event Name", lead: "Event Summary", cat_label: "Please select event categories (Multiple)" },
-      farmer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", cat_label: "Please select initiatives (Multiple)" },
-      other: { label: "Article", title: "Article Title", lead: "Article Summary", cat_label: "Please select article categories (Multiple)" }
+      shop: { label: "Shop", title: "Shop/Facility Name", lead: "Shop Summary", cat_label: "Features (Multiple)" },
+      event: { label: "Event", title: "Event Name", lead: "Event Summary", cat_label: "Genre (Multiple)" },
+      farmer: { label: "Farmer", title: "Farm/Group Name", lead: "Farm Summary", cat_label: "Style (Multiple)" },
+      other: { label: "Article", title: "Article Title", lead: "Article Summary", cat_label: "Genre (Multiple)" }
     },
     placeholders: {
       rep_name: "Nickname OK", rep_content: "Tell us what you found",
@@ -420,10 +420,10 @@ const resources = {
       rel_url: "相关链接URL", rel_title: "相关链接标题"
     },
     types: {
-      shop: { label: "店铺", title: "店名/设施名", lead: "店铺概要", cat_label: "请选择店铺类别（多选）" },
-      event: { label: "活动", title: "活动名称", lead: "活动概要", cat_label: "请选择活动类别（多选）" },
-      farmer: { label: "生产者注册", title: "农园/团体名", lead: "生产者概要", cat_label: "请选择相关举措（多选）" },
-      other: { label: "文章", title: "文章标题", lead: "文章概要", cat_label: "请选择文章类别（多选）" }
+      shop: { label: "店铺", title: "店名/设施名", lead: "店铺概要", cat_label: "操作内容（多选）" },
+      event: { label: "活动", title: "活动名称", lead: "活动概要", cat_label: "活动类型（多選）" },
+      farmer: { label: "生产者注册", title: "农园/团体名", lead: "生产者概要", cat_label: "生产/销售风格（多選）" },
+      other: { label: "文章", title: "文章标题", lead: "文章概要", cat_label: "文章类型（多選）" }
     },
     placeholders: {
       rep_name: "可填昵称", rep_content: "请告诉我们您的发现",
