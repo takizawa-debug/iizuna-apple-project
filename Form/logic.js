@@ -5,6 +5,8 @@
 import { utils } from './utils.js';
 import { i18n } from './i18n.js';
 import { catLabels } from './templates.js';
+import { printStyles } from './printStyles.js';
+import { generatePrintHTML } from './printLogic.js';
 
 export async function initFormLogic() {
   const ENDPOINT = "https://script.google.com/macros/s/AKfycby1OYtOSLShDRw9Jlzv8HS09OehhUpuSKwjMOhV_dXELtp8wNdz_naZ72IyuBBjDGPwKg/exec";
@@ -40,9 +42,35 @@ export async function initFormLogic() {
     if (btnPrintFormat) {
       btnPrintFormat.style.display = 'block';
       btnPrintFormat.onclick = () => {
-        // ペライチ等で動的スクリプトから呼び出されるケースを考慮し、絶対パスで指定
-        const printUrl = `https://takizawa-debug.github.io/iizuna-apple-project/Form/print.html?type=${type}`;
-        window.open(printUrl, '_blank');
+        // ペライチ等で動的スクリプトから呼び出されるケースを考慮し、別タブを開いてHTMLを直接流し込む
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(`
+            <!DOCTYPE html>
+            <html lang="ja">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>印刷用フォーマット</title>
+              <style>${printStyles}</style>
+            </head>
+            <body>
+              <div class="print-btn-container">
+                <button class="print-btn" onclick="window.print()">このページを印刷（PDFで保存）</button>
+              </div>
+              <div class="print-page">
+                ${generatePrintHTML(type, i18n)}
+              </div>
+              <script>
+                setTimeout(() => window.print(), 800);
+              </script>
+            </body>
+            </html>
+          `);
+          printWindow.document.close();
+        } else {
+          alert('ポップアップがブロックされました。ブラウザの設定で許可してください。');
+        }
       };
     }
 
@@ -121,9 +149,9 @@ export async function initFormLogic() {
     const container = document.getElementById('lz-dynamic-category-area');
     if (!container) return;
     currentFetchType = type;
-    container.innerHTML = `<div style="font-size:0.9rem; color:#888;">${i18n.ui.status.loading_cat}</div>`;
+    container.innerHTML = `< div style = "font-size:0.9rem; color:#888;" > ${i18n.ui.status.loading_cat}</div > `;
     try {
-      const res = await fetch(`${ENDPOINT}?mode=form_genres&type=${type}&_t=${Date.now()}`);
+      const res = await fetch(`${ENDPOINT} ? mode = form_genres & type=${type} & _t=${Date.now()}`);
       const json = await res.json();
       if (type !== currentFetchType) return;
       if (!json.ok) throw new Error('Failed to fetch categories');
@@ -131,14 +159,14 @@ export async function initFormLogic() {
       let l1Html = '<div class="lz-choice-flex">';
       let l2Html = '';
       (json.l1_order || Object.keys(json.items)).forEach((l1, idx) => {
-        const baseId = `gen-${idx}`;
+        const baseId = `gen - ${idx}`;
         const isRootOther = l1 === i18n.ui.common.other;
         const idAttr = isRootOther ? 'id="catRootOtherCheck"' : '';
 
-        l1Html += `<label class="lz-choice-item"><input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}" data-l1key="${l1}"><span class="lz-choice-inner">${l1}</span></label>`;
+        l1Html += `< label class= "lz-choice-item" > <input type="checkbox" name="cat_l1" value="${l1}" ${idAttr} data-subid="${baseId}" data-l1key="${l1}"><span class="lz-choice-inner">${l1}</span></label>`;
 
         if (json.items[l1] && !isRootOther) {
-          l2Html += `<div id="sub-${baseId}" class="lz-dynamic-sub-area" style="display:none;"><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}${i18n.misc.genre_suffix}</label><div class="lz-choice-flex">`;
+          l2Html += `< div id = "sub-${baseId}" class= "lz-dynamic-sub-area" style = "display:none;" ><label class="lz-label" style="font-size:1.1rem; color:#5b3a1e;">${l1}${i18n.misc.genre_suffix}</label><div class="lz-choice-flex">`;
           json.items[l1].forEach(l2 => {
             const isOther = l2.includes(i18n.ui.common.other);
             l2Html += `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="cat_${baseId}" value="${l2}" class="${isOther ? 'lz-sub-trigger' : ''}"><span class="lz-choice-inner">${l2}</span></label>`;
@@ -147,13 +175,13 @@ export async function initFormLogic() {
         }
       });
 
-      container.innerHTML = l1Html + '</div>' + l2Html + `<div id="sub-cat-root-other" class="lz-dynamic-sub-area" style="display:none; border-left-color: #cf3a3a;"><label class="lz-label">${i18n.fields.genre_free}</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="${i18n.placeholders.genre_free}"></div>`;
+      container.innerHTML = l1Html + '</div>' + l2Html + `< div id = "sub-cat-root-other" class= "lz-dynamic-sub-area" style = "display:none; border-left-color: #cf3a3a;" ><label class="lz-label">${i18n.fields.genre_free}</label><input type="text" name="cat_root_other_val" class="lz-input" placeholder="${i18n.placeholders.genre_free}"></div>`;
 
       const buildChips = (targetId, list, namePrefix) => {
         const area = document.getElementById(targetId);
         if (!area || !list) return;
-        area.innerHTML = list.map(item => `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') +
-          `<label class="lz-choice-item lz-sub-choice-item"><input type="checkbox" name="${namePrefix}" value="${i18n.ui.common.other}" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">${i18n.ui.common.other}</span></label>`;
+        area.innerHTML = list.map(item => `< label class= "lz-choice-item lz-sub-choice-item" > <input type="checkbox" name="${namePrefix}" value="${item}"><span class="lz-choice-inner">${item}</span></label>`).join('') +
+          `< label class= "lz-choice-item lz-sub-choice-item" > <input type="checkbox" name="${namePrefix}" value="${i18n.ui.common.other}" class="pr-other-trigger" data-target="${targetId === 'area-apple-varieties' ? 'pr-variety-other-input' : 'pr-product-other-input'}"><span class="lz-choice-inner">${i18n.ui.common.other}</span></label>`;
         area.querySelectorAll('.pr-other-trigger').forEach(chk => {
           chk.onchange = (e) => {
             const inputEl = document.getElementById(e.target.dataset.target);
@@ -165,14 +193,14 @@ export async function initFormLogic() {
       buildChips('area-apple-products', json.appleProducts, 'pr_product');
 
       bindDynamicEvents();
-    } catch (e) { console.error(e); container.innerHTML = `<div style="color:#cf3a3a;">${i18n.ui.status.error_cat}</div>`; }
+    } catch (e) { console.error(e); container.innerHTML = `< div style = "color:#cf3a3a;" > ${i18n.ui.status.error_cat}</div > `; }
   }
 
   function bindDynamicEvents() {
     document.getElementsByName('cat_l1').forEach(c => {
       c.onchange = (e) => {
         const targetId = e.target.getAttribute('data-subid');
-        const el = document.getElementById(`sub-${targetId}`);
+        const el = document.getElementById(`sub - ${targetId}`);
         const isOtherCheckbox = e.target.id === 'catRootOtherCheck';
 
         if (el && !isOtherCheckbox) {
@@ -200,8 +228,8 @@ export async function initFormLogic() {
   const customBody = document.getElementById('customSchedBody');
   if (customBody) {
     days.forEach((d, i) => {
-      const tr = document.createElement('tr'); tr.id = `row-${d}`;
-      tr.innerHTML = `<td><strong>${d}${i18n.ui.common.day_suffix}</strong></td><td data-label="${i18n.misc.closed}"><input type="checkbox" name="c_closed_${i}" class="lz-closed-trigger"></td><td data-label="${i18n.misc.open_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_' + i)}</div></td><td data-label="${i18n.misc.close_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_' + i)}</div></td>`;
+      const tr = document.createElement('tr'); tr.id = `row - ${d}`;
+      tr.innerHTML = `< td > <strong>${d}${i18n.ui.common.day_suffix}</strong></td ><td data-label="${i18n.misc.closed}"><input type="checkbox" name="c_closed_${i}" class="lz-closed-trigger"></td><td data-label="${i18n.misc.open_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_s_' + i)}</div></td><td data-label="${i18n.misc.close_time}"><div class="lz-time-box">${utils.createTimeSelectorHTML('c_e_' + i)}</div></td>`;
       customBody.appendChild(tr);
       const trigger = tr.querySelector('.lz-closed-trigger');
       const timeBoxes = tr.querySelectorAll('.lz-time-box');
@@ -220,7 +248,7 @@ export async function initFormLogic() {
   if (simpleBox) {
     days.forEach(d => {
       const l = document.createElement('label'); l.className = 'lz-day-chip';
-      l.innerHTML = `<input type="checkbox" name="simple_days" value="${d}"><span class="lz-day-text">${d}</span>`;
+      l.innerHTML = `< input type = "checkbox" name = "simple_days" value = "${d}" > <span class="lz-day-text">${d}</span>`;
       simpleBox.appendChild(l);
     });
   }
@@ -236,7 +264,7 @@ export async function initFormLogic() {
       hSelect.onchange = (e) => {
         if (e.target.value !== "") {
           const mSelectName = e.target.name.replace('_h', '_m');
-          const mSelect = document.querySelector(`select[name="${mSelectName}"]`);
+          const mSelect = document.querySelector(`select[name = "${mSelectName}"]`);
           if (mSelect && mSelect.value === "") mSelect.value = "00";
         }
       };
@@ -260,7 +288,7 @@ export async function initFormLogic() {
         b.classList.remove('is-active');
         b.querySelectorAll('[required]').forEach(el => { el.dataset.required = "true"; el.required = false; });
       });
-      const target = document.getElementById(`pane-${t.dataset.type}`);
+      const target = document.getElementById(`pane - ${t.dataset.type}`);
       if (target) {
         target.classList.add('is-active');
         target.querySelectorAll('[data-required="true"]').forEach(el => el.required = true);
@@ -287,7 +315,7 @@ export async function initFormLogic() {
       if (e.target.name === 'link_trigger') {
         const checkedVals = Array.from(document.getElementsByName('link_trigger')).filter(i => i.checked).map(i => i.value);
         Object.keys(i18n.links).forEach(key => {
-          const targetInp = document.getElementById(`f-${key}`);
+          const targetInp = document.getElementById(`f - ${key}`);
           if (targetInp) targetInp.style.display = checkedVals.includes(key) ? (key === 'rel' ? 'flex' : 'block') : 'none';
         });
       }
@@ -338,7 +366,7 @@ export async function initFormLogic() {
     c.onchange = () => {
       const v = Array.from(document.getElementsByName('cm')).filter(i => i.checked).map(i => i.value);
       ['form', 'email', 'tel', 'other'].forEach(m => {
-        const el = document.getElementById(`cm-${m}-box`);
+        const el = document.getElementById(`cm - ${m} - box`);
         if (el) el.style.display = v.includes(m) ? 'flex' : 'none';
       });
       const sync = document.getElementById('syncField');
@@ -389,7 +417,7 @@ export async function initFormLogic() {
         const reader = new FileReader();
         reader.onload = (event) => {
           const div = document.createElement('div'); div.className = 'lz-img-container';
-          div.innerHTML = `<img src="${event.target.result}"><div class="lz-img-remove">×</div>`;
+          div.innerHTML = `< img src = "${event.target.result}" > <div class="lz-img-remove">×</div>`;
           div.querySelector('.lz-img-remove').onclick = () => {
             div.remove(); uploadedFiles = uploadedFiles.filter(f => f !== file);
             imgAddBtn.style.display = 'flex';
@@ -514,7 +542,7 @@ export async function initFormLogic() {
           const endM = payload[endKeyM] || "00";
 
           if (endH) {
-            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+            displayVal = `${startH}: ${startM} - ${endH}: ${endM}`;
             label = `${days[dayIndex]}${i18n.ui.common.day_suffix}`;
             processedKeys.add(key.replace('_h', '_m'));
             processedKeys.add(endKeyH);
@@ -526,7 +554,7 @@ export async function initFormLogic() {
           const endH = payload['simple_e_h'];
           const endM = payload['simple_e_m'] || "00";
           if (endH) {
-            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+            displayVal = `${startH}: ${startM} - ${endH}: ${endM}`;
             label = i18n.misc.std_biz_hours;
             processedKeys.add('simple_s_m').add('simple_e_h').add('simple_e_m');
           }
@@ -536,7 +564,7 @@ export async function initFormLogic() {
           const endH = payload['ev_e_h'];
           const endM = payload['ev_e_m'] || "00";
           if (endH) {
-            displayVal = `${startH}:${startM} - ${endH}:${endM}`;
+            displayVal = `${startH}: ${startM} - ${endH}: ${endM}`;
             label = i18n.fields.ev_stime;
             processedKeys.add('ev_s_m').add('ev_e_h').add('ev_e_m');
           }
@@ -550,15 +578,15 @@ export async function initFormLogic() {
           displayVal += translateValue(payload.pr_area_unit || '');
         }
 
-        previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div>`;
+        previewHtml += `< div class= "lz-modal-item" ><div class="lz-modal-label">${label}</div><div class="lz-modal-value">${displayVal}</div></div > `;
         processedKeys.add(key);
       });
 
-      if (uploadedFiles.length > 0) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.fields.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div>`;
+      if (uploadedFiles.length > 0) previewHtml += `< div class= "lz-modal-item" ><div class="lz-modal-label">${i18n.fields.art_images}</div><div class="lz-modal-value">${uploadedFiles.length} 枚</div></div > `;
       const docFile = form.querySelector('input[name="art_file"]')?.files[0];
-      if (docFile) previewHtml += `<div class="lz-modal-item"><div class="lz-modal-label">${i18n.fields.art_file}</div><div class="lz-modal-value">${docFile.name}</div></div>`;
+      if (docFile) previewHtml += `< div class= "lz-modal-item" ><div class="lz-modal-label">${i18n.fields.art_file}</div><div class="lz-modal-value">${docFile.name}</div></div > `;
 
-      confirmBody.innerHTML = previewHtml || `<div style="text-align:center; padding:20px;">入力内容がありません</div>`;
+      confirmBody.innerHTML = previewHtml || `< div style = "text-align:center; padding:20px;" > 入力内容がありません</div > `;
       confirmOverlay.style.display = 'flex';
 
       const isConfirmed = await new Promise(res => {
@@ -615,7 +643,7 @@ export async function initFormLogic() {
 
   let tabToActivate = null;
   if (formTypeFromUrl) {
-    tabToActivate = document.querySelector(`.lz-form-tab[data-type="${formTypeFromUrl}"]`);
+    tabToActivate = document.querySelector(`.lz - form - tab[data - type="${formTypeFromUrl}"]`);
   }
 
   if (!tabToActivate) {
