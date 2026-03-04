@@ -643,7 +643,7 @@ export async function initFormLogic() {
 
   let tabToActivate = null;
   if (formTypeFromUrl) {
-    tabToActivate = document.querySelector(`.lz - form - tab[data - type="${formTypeFromUrl}"]`);
+    tabToActivate = document.querySelector(`.lz-form-tab[data-type="${formTypeFromUrl}"]`);
   }
 
   if (!tabToActivate) {
