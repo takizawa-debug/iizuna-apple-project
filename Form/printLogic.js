@@ -28,10 +28,9 @@ export const generatePrintHTML = (type, strings, dynamicCategories = []) => {
         let out = `<div class="checkbox-group">`;
         out += `<div class="checkbox-item" style="font-weight: bold;"><span class="checkbox-box"></span> ${item.label}</div>`;
         if (item.subItems && item.subItems.length > 0) {
-          out += `<div class="sub-checkbox-grid">`;
-          item.subItems.forEach(sub => {
-            out += `<div class="checkbox-item"><span class="checkbox-box"></span> ${sub}</div>`;
-          });
+          out += `<div class="sub-category-list">`;
+          out += `<span style="margin-right: 6px;">※該当するものに丸:</span>`;
+          out += item.subItems.map(sub => `<span style="margin-right: 8px;">${sub}</span>`).join('');
           out += `</div>`;
         }
         out += `</div>`;

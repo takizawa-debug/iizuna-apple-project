@@ -156,12 +156,12 @@ body {
   margin-bottom: 4mm;
 }
 
-.sub-checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2mm;
-  margin-top: 2mm;
+.sub-category-list {
+  font-size: 8.5pt;
+  color: #555;
   margin-left: 6mm;
+  margin-top: 1mm;
+  line-height: 1.4;
 }
 
 .checkbox-item {
